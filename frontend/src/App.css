@@ -32,7 +32,17 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.tile {
+  border: 1px solid;
+  height: 1000px;
+}
+
+body {
+  background-color: black;
 }

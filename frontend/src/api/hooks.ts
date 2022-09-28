@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react'
 import { useRequest } from 'ahooks'
-import { AllData } from './interfaces'
+import { CalendarDatum } from '@nivo/calendar'
 
-async function loadAllTimeData(location: string, sport: string) {
-  const response = await fetch('/data')
-  const data = await response.json()
-  return data as AllData[]
+async function loadCountDay() {
+  const response = await fetch('/api/alldata')
+  const data = await response.json();
+  return data as CalendarDatum[];
 }
 
-export function useAllTimeData(location: string, sport: string) {
+export function useCountDay() {
   const { error, loading, data, run } = useRequest(() =>
-    loadAllTimeData(location, sport),
+    loadCountDay(),
   )
   return { error, loading, data, run } as const
 }

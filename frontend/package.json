@@ -4,6 +4,9 @@
     "private": true,
     "proxy": "http://localhost:5000",
     "dependencies": {
+        "@nivo/calendar": "^0.80.0",
+        "@nivo/colors": "^0.80.0",
+        "@nivo/core": "^0.80.0",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",
         "@testing-library/user-event": "^13.5.0",

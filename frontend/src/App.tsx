@@ -1,13 +1,16 @@
 import './App.css';
-import { useAllTimeData } from './api/hooks';
+import { useCountDay } from './api/hooks';
+import { CalendarChart } from './components/calendarChart';
 
 function App() {
-  const {data, loading} = useAllTimeData("Polyterasse", "Tennis");
+  const { data, loading } = useCountDay();
+
+  console.log(data);
 
   return (
-    <div>
+    <div className='tile'>
       {loading && "Loading"}
-      {!loading && data && data.map((res) => res.location)}
+      {data && CalendarChart(data)}
     </div>
   );
 }
