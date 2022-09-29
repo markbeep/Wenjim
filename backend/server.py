@@ -1,5 +1,7 @@
+from typing import List
 from flask import Flask
 import sqlite3
+import sys
 
 app = Flask(__name__)
 
@@ -20,8 +22,8 @@ class DB:
         self.conn.close()
 
 
-@app.route("/api/alldata")
-def all_data():
+@app.route("/api/countday")
+def count_day():
     sql = """
         SELECT
             strftime('%Y-%m-%d', track_date, 'unixepoch') AS day,
@@ -38,6 +40,49 @@ def all_data():
         } for x in res
     ]
     return res
+
+
+@app.route("/api/countdaybar")
+def count_day_sport():
+    sql = f"""
+        SELECT
+            strftime('%Y-%m-%d', track_date, 'unixepoch') AS day,
+            SUM(places_taken),
+            LOWER(sport)
+        FROM Entries
+        INNER JOIN Timestamps USING (entry_id)
+        GROUP BY sport, day"""
+    with DB() as conn:
+        res = conn.execute(sql).fetchall()
+
+    # get all the days
+    sql = f"""
+        SELECT
+            DISTINCT sport
+        FROM Entries
+        INNER JOIN Timestamps USING (entry_id)"""
+    all_sports = sports()
+    data = {}
+    for s in all_sports:
+        data[s] = []
+    for day, value, sport in res:
+        data[sport].append({"x": day, "y": value})
+    final = []
+    for key in data.keys():
+        d = {"id": key, "data": data[key]}
+        final.append(d)
+
+    print(final, flush=True)
+
+    return final
+
+
+@app.route("/api/sports")
+def sports():
+    sql = "SELECT DISTINCT LOWER(sport) FROM Entries"
+    with DB() as conn:
+        res = conn.execute(sql).fetchall()
+    return [x[0] for x in res]
 
 
 if __name__ == "__main__":

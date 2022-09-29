@@ -1,3 +1,5 @@
-export interface filler {
-  type: string
+export interface SportCountDay {
+  day: string,
+  sport: string,
+  value: string,
 };
