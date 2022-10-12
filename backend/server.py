@@ -72,8 +72,6 @@ def count_day_sport():
         d = {"id": key, "data": data[key]}
         final.append(d)
 
-    print(final, flush=True)
-
     return final
 
 

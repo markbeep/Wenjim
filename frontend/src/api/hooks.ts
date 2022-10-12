@@ -1,7 +1,5 @@
 import { useRequest } from 'ahooks'
 import { CalendarDatum } from '@nivo/calendar'
-import { SportCountDay } from './interfaces';
-import { BarDatum } from '@nivo/bar';
 import { Serie } from '@nivo/line';
 
 async function loadCountDay() {
