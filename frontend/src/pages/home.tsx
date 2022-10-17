@@ -4,6 +4,7 @@ import { CalendarChart } from '../components/calendarChart'
 import { BarChart } from '../components/barChart'
 import { useState } from 'react'
 import { CircularProgress, MenuItem, Select } from '@mui/material'
+import NavBar from '../components/navBar'
 
 const Home = () => {
   const { data, loading } = useCountDay()
@@ -13,6 +14,7 @@ const Home = () => {
 
   return (
     <div>
+      <NavBar />
       <div className='bg-neutral'>
         <p>TEST</p>
         {loading && <CircularProgress />}
