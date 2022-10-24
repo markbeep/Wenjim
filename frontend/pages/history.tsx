@@ -12,8 +12,12 @@ const History = () => {
       <NavBar />
       <div className="flex flex-row px-4">
         <div className="p-1 w-1/2">
-          <select className="select select-bordered w-full" disabled={!d1}>
-            <option disabled selected>
+          <select
+            className="select select-bordered w-full"
+            disabled={!d1}
+            defaultValue="Pick an activity"
+          >
+            <option disabled>
               Pick an activity
             </option>
             {d1 && d1.map((v) => <option key={v}>{v}</option>)}
@@ -25,8 +29,12 @@ const History = () => {
           )}
         </div>
         <div className="p-1 w-1/2">
-          <select className="select select-bordered w-full" disabled={!d2}>
-            <option disabled selected>
+          <select
+            className="select select-bordered w-full"
+            disabled={!d2}
+            defaultValue="Pick a location"
+          >
+            <option disabled>
               Pick a location
             </option>
             {d2 && d2.map((v) => <option key={v}>{v}</option>)}

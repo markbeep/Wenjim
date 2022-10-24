@@ -6,7 +6,7 @@ export enum Pages {
   home,
 }
 export const ThemeContext = React.createContext({
-  theme: 'dark',
+  theme: 'night',
   handleTheme: () => {},
 })
 
@@ -16,10 +16,10 @@ interface Children {
 
 export default function ThemeProvider({ children }: Children) {
   const [theme, setTheme] = useLocalStorageState('theme', {
-    defaultValue: 'dark',
+    defaultValue: 'night',
   })
   const handleTheme = () => {
-    setTheme((cur) => (cur === 'dark' ? 'light' : 'dark'))
+    setTheme((cur) => (cur === 'night' ? 'light' : 'night'))
   }
   useEffect(() => {
     themeChange(false)

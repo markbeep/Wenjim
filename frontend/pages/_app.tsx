@@ -6,9 +6,9 @@ function MyApp({ Component, pageProps }: AppProps) {
   const { theme } = useTheme()
   return (
     <ThemeProvider>
-      {/* <html data-theme={theme}> */}
-      <Component {...pageProps} />
-      {/* </html> */}
+      <div data-theme={theme}>
+        <Component {...pageProps} />
+      </div>
     </ThemeProvider>
   )
 }
