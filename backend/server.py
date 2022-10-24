@@ -77,7 +77,15 @@ def count_day_sport():
 
 @app.route("/api/sports")
 def sports():
-    sql = "SELECT DISTINCT LOWER(sport) FROM Entries"
+    sql = "SELECT DISTINCT sport FROM Entries"
+    with DB() as conn:
+        res = conn.execute(sql).fetchall()
+    return [x[0] for x in res]
+
+
+@app.route("/api/locations")
+def locations():
+    sql = "SELECT DISTINCT location FROM Entries"
     with DB() as conn:
         res = conn.execute(sql).fetchall()
     return [x[0] for x in res]
