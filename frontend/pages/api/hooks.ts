@@ -53,7 +53,7 @@ async function loadLocations() {
 
 export function useLocations() {
   const { error, loading, data, run } = useRequest(() =>
-  loadLocations(),
+    loadLocations(),
   )
   return { error, loading, data, run } as const
 }

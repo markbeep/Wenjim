@@ -12,4 +12,15 @@ const InternalServerError = () => {
   )
 }
 
+export const Warning = (text: string) => {
+  return (
+    <div className="alert alert-error shadow-lg h-5">
+      <div className="h-full">
+        <CancelIcon />
+        <span>{text}</span>
+      </div>
+    </div>
+  )
+}
+
 export default InternalServerError
