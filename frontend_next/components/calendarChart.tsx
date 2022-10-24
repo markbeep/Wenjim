@@ -9,7 +9,10 @@ export function CalendarChart({ data }: Data) {
   return (
     <ThemeContext.Consumer>
       {({ theme, handleTheme }) => (
-        <div className="w-full m-0 p-0" style={{ height: '30vw' }}>
+        <div
+          className="w-full"
+          style={{ height: '100px', backgroundColor: 'red' }}
+        >
           <ResponsiveCalendar
             data={data}
             from="2022-01-01"
