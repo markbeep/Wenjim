@@ -43,3 +43,17 @@ export function useSports() {
   )
   return { error, loading, data, run } as const
 }
+
+async function loadLocations() {
+  const url = "/api/locations"
+  const response = await fetch(url)
+  const data = await response.json();
+  return data as string[];
+}
+
+export function useLocations() {
+  const { error, loading, data, run } = useRequest(() =>
+  loadLocations(),
+  )
+  return { error, loading, data, run } as const
+}

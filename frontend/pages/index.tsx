@@ -2,11 +2,11 @@ import { CircularProgress } from '@mui/material'
 import Link from 'next/link'
 import { useCountDay } from './api/hooks'
 import NavBar from '../components/navBar'
-import dynamic from 'next/dynamic'
 import { CalendarChart } from '../components/calendarChart'
+import ErrorIcon from '@mui/icons-material/Error'
 
 const Home = () => {
-  const { data, loading } = useCountDay()
+  const { data, loading, error } = useCountDay()
 
   return (
     <div>
@@ -42,10 +42,11 @@ const Home = () => {
       </div>
 
       <div className="p-4">
-        <div className="hero rounded-xl border-separate overflow-hidden h-screen">
+        <div className="hero rounded-xl border-separate overflow-hidden h-1/2">
           <div className="hero-overlay bg-opacity-60"></div>
-          <div className="hero-content w-full h-full flex-col">
+          <div className="hero-content w-full flex-col">
             {loading && <CircularProgress />}
+            {error && <ErrorIcon />}
             {data && <CalendarChart data={data} />}
           </div>
         </div>
