@@ -1,5 +1,5 @@
 from typing import List
-from flask import Flask
+from flask import Flask, request
 import sqlite3
 import sys
 
@@ -77,7 +77,7 @@ def count_day_sport():
 
 @app.route("/api/sports")
 def sports():
-    sql = "SELECT DISTINCT sport FROM Entries"
+    sql = "SELECT DISTINCT sport FROM Entries ORDER BY sport"
     with DB() as conn:
         res = conn.execute(sql).fetchall()
     return [x[0] for x in res]
@@ -85,10 +85,52 @@ def sports():
 
 @app.route("/api/locations")
 def locations():
-    sql = "SELECT DISTINCT location FROM Entries"
+    sql = "SELECT DISTINCT location FROM Entries ORDER BY location"
     with DB() as conn:
         res = conn.execute(sql).fetchall()
     return [x[0] for x in res]
+
+
+@app.route("/api/history", methods=["POST"])
+def count_history():
+    args = request.get_json()
+    print(request.get_json(), file=sys.stdout, flush=True)
+    activities = args["activities"]
+    activities_sql = " OR ".join([f"sport LIKE ?" for _ in activities])
+    locations = args["locations"]
+    locations_sql = " OR ".join([f"location LIKE ?" for _ in locations])
+    from_date = args["from"]
+    to_date = args["to"]
+    order_by = args["orderBy"]
+    order_desc = args["desc"]
+    order_desc_sql = "DESC" if order_desc else "ASC"
+
+    sql = f"""
+        SELECT
+            strftime('%Y-%m-%d ', track_date, 'unixepoch') || from_date AS date,
+            sport,
+            location,
+            places_max,
+            places_taken,
+            DATE(track_date, 'unixepoch') as cmp_date
+        FROM Entries
+        INNER JOIN Timestamps USING (entry_id)
+        WHERE ({activities_sql}) AND ({locations_sql}) AND DATE(?) <= cmp_date AND DATE(?) >= cmp_date
+        ORDER BY ? {order_desc_sql}
+        """
+    with DB() as conn:
+        res = conn.execute(sql, activities+locations +
+                           [from_date, to_date, order_by]).fetchall()
+    res = [
+        {
+            "date": x[0],
+            "activity": x[1],
+            "location": x[2],
+            "spots_available": x[3],
+            "spots_taken": x[4],
+        } for x in res
+    ]
+    return res
 
 
 if __name__ == "__main__":

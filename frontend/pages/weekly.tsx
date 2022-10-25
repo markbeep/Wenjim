@@ -5,7 +5,6 @@ const Weekly = () => {
   return (
     <div>
       <NavBar />
-
     </div>
   )
 }

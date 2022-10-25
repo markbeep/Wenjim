@@ -4,10 +4,6 @@ import InternalServerError, { Warning } from './error'
 import CloseIcon from '@mui/icons-material/Close';
 
 interface SearchData {
-  activities: string[],
-  setActivities: React.Dispatch<React.SetStateAction<string[]>>,
-  locations: string[],
-  setLocations: React.Dispatch<React.SetStateAction<string[]>>,
   handleSearch: (from: Date, to: Date, activities: string[], locations: string[]) => void,
 }
 
@@ -22,7 +18,7 @@ interface PreDateDuo {
   setPreDate: React.Dispatch<React.SetStateAction<PreDate>>
 }
 
-const Search = ({ activities, setActivities, locations, setLocations, handleSearch }: SearchData) => {
+const Search = ({ handleSearch }: SearchData) => {
   const { loading: l1, data: d1, error: e1 } = useSports()
   const { loading: l2, data: d2, error: e2 } = useLocations()
   const [preDateFrom, setPreDateFrom] = useState<PreDate>({ day: 1, month: 1, year: 2022 })
@@ -31,6 +27,9 @@ const Search = ({ activities, setActivities, locations, setLocations, handleSear
   const [invalidFrom, setInvalidFrom] = useState(false);
   const [invalidTo, setInvalidTo] = useState(false);
   const [invalidBoth, setInvalidBoth] = useState(false);
+
+  const [activities, setActivities] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
 
   const removeFlags = () => {
     setInvalidFrom(false);
@@ -87,6 +86,26 @@ const Search = ({ activities, setActivities, locations, setLocations, handleSear
         </div>
       </div >)
   };
+
+  const handleButton = () => {
+    const from = new Date(`${preDateFrom.year}-${preDateFrom.month}-${preDateFrom.day}`)
+    if (from.valueOf() !== from.valueOf()) {
+      setInvalidFrom(true);
+      return;
+    }
+    const to = new Date(`${preDateTo.year}-${preDateTo.month}-${preDateTo.day}`)
+    if (to.valueOf() !== to.valueOf()) {
+      setInvalidTo(true);
+      return;
+    }
+
+    if (to.getTime() - from.getTime() < 0) {
+      setInvalidBoth(true);
+      return;
+    }
+
+    handleSearch(from, to, activities, locations);
+  }
 
   return <>
     <div className="flex flex-row px-4">
@@ -162,31 +181,15 @@ const Search = ({ activities, setActivities, locations, setLocations, handleSear
     </div>
 
     <div className='w-full px-4 py-2'>
-      <button
-        className='w-full btn btn-primary'
-        disabled={invalidFrom || invalidTo || invalidBoth}
-        onClick={() => {
-          const from = new Date(`${preDateFrom.year}-${preDateFrom.month}-${preDateFrom.day}`)
-          if (from.valueOf() !== from.valueOf()) {
-            setInvalidFrom(true);
-            return;
-          }
-          const to = new Date(`${preDateTo.year}-${preDateTo.month}-${preDateTo.day}`)
-          if (to.valueOf() !== to.valueOf()) {
-            setInvalidTo(true);
-            return;
-          }
-
-          if (to.getTime() - from.getTime() < 0) {
-            setInvalidBoth(true);
-            return;
-          }
-
-          handleSearch(from, to, activities, locations);
-        }}
-      >
-        Search
-      </button>
+      <div className={(activities.length === 0) || (locations.length === 0) ? `tooltip tooltip-bottom tooltip-error w-full z-10` : ""} data-tip="Select activities and locations">
+        <button
+          className='w-full btn btn-primary'
+          disabled={invalidFrom || invalidTo || invalidBoth || (activities.length === 0) || (locations.length === 0)}
+          onClick={handleButton}
+        >
+          Search
+        </button>
+      </div>
     </div>
     <div className='px-4'>
       {invalidBoth && Warning("Invalid date range")}
