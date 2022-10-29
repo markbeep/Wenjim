@@ -3,9 +3,6 @@ import { useLocations, useSports } from '../pages/api/hooks'
 import InternalServerError, { Warning } from './error'
 import CloseIcon from '@mui/icons-material/Close';
 
-interface SearchData {
-  handleSearch: (from: Date, to: Date, activities: string[], locations: string[]) => void,
-}
 
 interface PreDate {
   day: number,
@@ -13,23 +10,31 @@ interface PreDate {
   year: number
 }
 
-interface PreDateDuo {
-  preDate: PreDate,
-  setPreDate: React.Dispatch<React.SetStateAction<PreDate>>
+interface SearchData {
+  activities: string[],
+  setActivities: React.Dispatch<React.SetStateAction<string[]>>,
+  locations: string[],
+  setLocations: React.Dispatch<React.SetStateAction<string[]>>,
+  fromDate: Date,
+  setFromDate: React.Dispatch<React.SetStateAction<Date>>,
+  toDate: Date,
+  setToDate: React.Dispatch<React.SetStateAction<Date>>,
+  refresh: () => void,
 }
 
-const Search = ({ handleSearch }: SearchData) => {
+const Search = ({ activities, setActivities, locations, setLocations, fromDate, setFromDate, toDate, setToDate, refresh }: SearchData) => {
   const { loading: l1, data: d1, error: e1 } = useSports()
   const { loading: l2, data: d2, error: e2 } = useLocations()
-  const [preDateFrom, setPreDateFrom] = useState<PreDate>({ day: 1, month: 1, year: 2022 })
-  const [preDateTo, setPreDateTo] = useState<PreDate>({ day: 31, month: 12, year: 2024 })
-  const both: PreDateDuo[] = [{ preDate: preDateFrom, setPreDate: setPreDateFrom }, { preDate: preDateTo, setPreDate: setPreDateTo }];
+
+  const [preFrom, setPreFrom] = useState<PreDate>({ day: 1, month: 1, year: 2022 });
+  const [preTo, setPreTo] = useState<PreDate>({ day: 31, month: 12, year: 2024 });
+  const bothDates = [preFrom, preTo];
+  const bothSetPreDates = [setPreFrom, setPreTo];
+  const bothSetDates = [setFromDate, setToDate];
+
   const [invalidFrom, setInvalidFrom] = useState(false);
   const [invalidTo, setInvalidTo] = useState(false);
   const [invalidBoth, setInvalidBoth] = useState(false);
-
-  const [activities, setActivities] = useState<string[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
 
   const removeFlags = () => {
     setInvalidFrom(false);
@@ -38,7 +43,9 @@ const Search = ({ handleSearch }: SearchData) => {
   }
 
   const dateInput = (ind: number) => {
-    const { preDate, setPreDate } = both[ind];
+    const preDate = bothDates[ind];
+    const setPreDate = bothSetPreDates[ind];
+    const setDate = bothSetDates[ind];
     const { day, month, year } = preDate;
     return (
       <div className="flex flex-row w-full">
@@ -46,7 +53,14 @@ const Search = ({ handleSearch }: SearchData) => {
           <select
             className="select w-full"
             defaultValue={day}
-            onChange={(e) => { removeFlags(); setPreDate((old) => ({ ...old, day: Number(e.target.value) })) }}
+            onChange={(e) => {
+              removeFlags();
+              const x = Number(e.target.value);
+              setPreDate((old) => {
+                setDate(new Date(`${old.year}-${old.month}-${x}`));
+                return { ...old, day: x };
+              })
+            }}
           >
             <option disabled>
               Day
@@ -60,7 +74,14 @@ const Search = ({ handleSearch }: SearchData) => {
           <select
             className="select w-full"
             defaultValue={month}
-            onChange={(e) => { removeFlags(); setPreDate((old) => ({ ...old, month: Number(e.target.value) })) }}
+            onChange={(e) => {
+              removeFlags();
+              const x = Number(e.target.value);
+              setPreDate((old) => {
+                setDate(new Date(`${old.year}-${x}-${old.day}`));
+                return { ...old, month: x };
+              })
+            }}
           >
             <option disabled>
               Month
@@ -74,7 +95,14 @@ const Search = ({ handleSearch }: SearchData) => {
           <select
             className="select w-full"
             defaultValue={year}
-            onChange={(e) => { removeFlags(); setPreDate((old) => ({ ...old, year: Number(e.target.value) })) }}
+            onChange={(e) => {
+              removeFlags();
+              const x = Number(e.target.value);
+              setPreDate((old) => {
+                setDate(new Date(`${x}-${old.month}-${old.day}`));
+                return { ...old, year: x };
+              })
+            }}
           >
             <option disabled>
               Year
@@ -88,23 +116,22 @@ const Search = ({ handleSearch }: SearchData) => {
   };
 
   const handleButton = () => {
-    const from = new Date(`${preDateFrom.year}-${preDateFrom.month}-${preDateFrom.day}`)
-    if (from.valueOf() !== from.valueOf()) {
+    if (fromDate.valueOf() !== fromDate.valueOf()) {
       setInvalidFrom(true);
       return;
     }
-    const to = new Date(`${preDateTo.year}-${preDateTo.month}-${preDateTo.day}`)
-    if (to.valueOf() !== to.valueOf()) {
+    if (toDate.valueOf() !== toDate.valueOf()) {
       setInvalidTo(true);
       return;
     }
 
-    if (to.getTime() - from.getTime() < 0) {
+    if (toDate.getTime() - fromDate.getTime() < 0) {
       setInvalidBoth(true);
       return;
     }
 
-    handleSearch(from, to, activities, locations);
+    console.log(fromDate, toDate);
+    refresh();
   }
 
   return <>
@@ -181,10 +208,10 @@ const Search = ({ handleSearch }: SearchData) => {
     </div>
 
     <div className='w-full px-4 py-2'>
-      <div className={(activities.length === 0) || (locations.length === 0) ? `tooltip tooltip-bottom tooltip-error w-full z-10` : ""} data-tip="Select activities and locations">
+      <div className={activities.length === 0 ? `tooltip tooltip-bottom tooltip-error w-full z-10` : ""} data-tip="Select some activities">
         <button
           className='w-full btn btn-primary'
-          disabled={invalidFrom || invalidTo || invalidBoth || (activities.length === 0) || (locations.length === 0)}
+          disabled={invalidFrom || invalidTo || invalidBoth || (activities.length === 0)}
           onClick={handleButton}
         >
           Search

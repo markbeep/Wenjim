@@ -95,15 +95,33 @@ def locations():
 def count_history():
     args = request.get_json()
     print(request.get_json(), file=sys.stdout, flush=True)
-    activities = args["activities"]
-    activities_sql = " OR ".join([f"sport LIKE ?" for _ in activities])
-    locations = args["locations"]
-    locations_sql = " OR ".join([f"location LIKE ?" for _ in locations])
-    from_date = args["from"]
-    to_date = args["to"]
-    order_by = args["orderBy"]
-    order_desc = args["desc"]
-    order_desc_sql = "DESC" if order_desc else "ASC"
+
+    try:
+        activities = args["activities"]
+
+        if len(activities) == 0:
+            return "Empty activities", 400
+
+        activities_sql = " OR ".join([f"sport LIKE ?" for _ in activities])
+        locations = args["locations"]
+        locations_sql = " OR ".join([f"location LIKE ?" for _ in locations])
+        if len(locations) == 0:
+            locations_sql = "TRUE"
+
+        from_date = args["from"]
+        to_date = args["to"]
+        order_by = args["orderBy"]
+
+        # required to prevent sql injection, because sql doesn't support
+        # insertion of order by
+        if order_by not in ["date", "sport", "location", "places_max", "places_taken"]:
+            return "Invalid orderBy", 400
+
+        order_desc = args["desc"]
+        order_desc_sql = "DESC" if order_desc else "ASC"
+
+    except KeyError:
+        return "Invalid POST request", 400
 
     sql = f"""
         SELECT
@@ -116,11 +134,11 @@ def count_history():
         FROM Entries
         INNER JOIN Timestamps USING (entry_id)
         WHERE ({activities_sql}) AND ({locations_sql}) AND DATE(?) <= cmp_date AND DATE(?) >= cmp_date
-        ORDER BY ? {order_desc_sql}
+        ORDER BY {order_by} {order_desc_sql}
         """
     with DB() as conn:
         res = conn.execute(sql, activities+locations +
-                           [from_date, to_date, order_by]).fetchall()
+                           [from_date, to_date]).fetchall()
     res = [
         {
             "date": x[0],

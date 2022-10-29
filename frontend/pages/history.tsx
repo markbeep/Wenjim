@@ -1,62 +1,86 @@
 import React, { useEffect, useState } from 'react'
 import NavBar from '../components/navBar'
 import Search from '../components/search'
-import { useHistory, useLocations, useSports } from './api/hooks'
+import { useHistory } from './api/hooks'
 import { HistoryOrder } from './api/interfaces'
+import { CircularProgress } from '@mui/material'
 
 const History = () => {
   const [activities, setActivities] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
-  const [from, setFrom] = useState<Date>(new Date());
-  const [to, setTo] = useState<Date>(new Date());
-  const { data, loading, error, refresh } = useHistory(activities, locations, from, to, HistoryOrder.date, false);
+  const [from, setFrom] = useState<Date>(new Date("1970-1-1"));
+  const [to, setTo] = useState<Date>(new Date("2040-12-31"));
+  const [orderBy, setOrderBy] = useState<HistoryOrder>(HistoryOrder.location);
+  const [desc, setDesc] = useState(false);
+  const { data, loading, refresh } = useHistory(activities, locations, from, to, orderBy, desc);
 
-  const handleSearch = (from: Date, to: Date, activities: string[], locations: string[]) => {
-    console.log(from, to, activities, locations);
-    setActivities(activities);
-    setLocations(locations);
-    setFrom(from);
-    setTo(to);
-    refresh();
+  const handleSortClick = (d: HistoryOrder) => {
+    if (orderBy === d) {
+      setDesc(b => !b);
+      return;
+    }
+    setOrderBy(d);
+    setDesc(false);
   };
 
   useEffect(() => {
     refresh();
-  }, [activities, locations, from, to])
+  }, [desc, orderBy])
 
   return (
     <div>
       <NavBar />
 
-      <Search
-        handleSearch={handleSearch}
-      />
-
-      <div className="overflow-auto p-4">
-        <table className="table table-compact w-full">
-          <thead>
-            <tr>
-              <th></th>
-              <th><button className='w-full'>DATE</button></th>
-              <th>Activity</th>
-              <th>Location</th>
-              <th>Spots Available</th>
-              <th>Spots Taken</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data && data.map((e, i) => (
-              <tr key={i}>
-                <th>{i + 1}</th>
-                <td>{e.date}</td>
-                <td>{e.activity}</td>
-                <td>{e.location}</td>
-                <td>{e.spots_available}</td>
-                <td>{e.spots_taken}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className='p-16'>
+        <Search
+          activities={activities}
+          setActivities={setActivities}
+          locations={locations}
+          setLocations={setLocations}
+          fromDate={from}
+          setFromDate={setFrom}
+          toDate={to}
+          setToDate={setTo}
+          refresh={refresh}
+        />
+        {data && data.length > 0 &&
+          <div className="overflow-auto p-4 w-full border-solid" style={{ height: "30rem" }}>
+            <table className="table table-compact w-full border-collapse">
+              <thead>
+                <tr className='h-full'>
+                  <th></th>
+                  <th style={{ position: "sticky", top: 0, zIndex: 1 }} className={orderBy === HistoryOrder.date ? `bg-neutral` : ""}>
+                    <button onClick={() => handleSortClick(HistoryOrder.date)}>DATE</button>
+                  </th>
+                  <th style={{ position: "sticky", top: 0, zIndex: 1 }} className={orderBy === HistoryOrder.activity ? `bg-neutral` : ""}>
+                    <button onClick={() => handleSortClick(HistoryOrder.activity)}>ACTIVITY</button>
+                  </th>
+                  <th style={{ position: "sticky", top: 0, zIndex: 1 }} className={orderBy === HistoryOrder.location ? `bg-neutral` : ""}>
+                    <button onClick={() => handleSortClick(HistoryOrder.location)}>LOCATION</button>
+                  </th>
+                  <th style={{ position: "sticky", top: 0, zIndex: 1 }} className={orderBy === HistoryOrder.spots_taken ? `bg-neutral` : ""}>
+                    <button onClick={() => handleSortClick(HistoryOrder.spots_taken)}>SPOTS TAKEN</button>
+                  </th>
+                  <th style={{ position: "sticky", top: 0, zIndex: 1 }} className={orderBy === HistoryOrder.spots_available ? `bg-neutral` : ""}>
+                    <button onClick={() => handleSortClick(HistoryOrder.spots_available)}>SPOTS TOTAL</button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((e, i) => (
+                  <tr key={i}>
+                    <th>{i + 1}</th>
+                    <td>{e.date}</td>
+                    <td>{e.activity}</td>
+                    <td>{e.location}</td>
+                    <td>{e.spots_taken}</td>
+                    <td>{e.spots_available}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
 
     </div>
