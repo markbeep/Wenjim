@@ -9,3 +9,5 @@ services:
     expose: [ 5000 ]
     volumes:
       - ./data:/data
+    environment:
+      - FLASK_DEBUG=true

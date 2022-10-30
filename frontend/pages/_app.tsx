@@ -1,14 +1,19 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-import ThemeProvider, { useTheme } from '../context/themeProvider'
+import ThemeProvider, { ThemeContext, useTheme } from '../context/themeProvider'
+import { QueryClient, QueryClientProvider } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const { theme } = useTheme()
+  const queryClient = new QueryClient();
+
   return (
     <ThemeProvider>
-      <div data-theme={theme}>
+      <QueryClientProvider client={queryClient}>
         <Component {...pageProps} />
-      </div>
+
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </ThemeProvider>
   )
 }
