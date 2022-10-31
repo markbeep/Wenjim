@@ -6,7 +6,7 @@ export enum Pages {
 }
 export const ThemeContext = React.createContext({
   theme: 'dracula',
-  setTheme: React.Dispatch<React.SetStateAction<string>>,
+  handleTheme: (_: string) => { },
 })
 
 interface Children {
@@ -19,8 +19,12 @@ export default function ThemeProvider({ children }: Children) {
     themeChange(false)
   }, [])
 
+  const handleTheme = (_: string) => {
+    setTheme(o => o == "dracula" ? "light" : "dracula")
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, handleTheme }}>
       {children}
     </ThemeContext.Provider>
   )

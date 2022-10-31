@@ -5,7 +5,7 @@ import Link from 'next/link'
 import HomeIcon from '@mui/icons-material/Home'
 
 const NavBar = () => {
-  const { theme, setTheme } = useTheme()
+  const { theme, handleTheme } = useTheme()
   return (
     <div className="navbar bg-base-100 w-full">
       <div className="flex-1">
@@ -23,7 +23,7 @@ const NavBar = () => {
       </div>
       <button
         className="btn btn-ghost normal-case text-xl flex-none"
-        onClick={() => setTheme(o => o == "dracula" ? "light" : "dracula")}
+        onClick={() => handleTheme("placeholder")}
       >
         {theme === 'light' ? <LightModeIcon fontSize='large' /> : <DarkModeIcon fontSize='large' />}
       </button>
