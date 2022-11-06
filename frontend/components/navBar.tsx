@@ -7,7 +7,7 @@ import HomeIcon from '@mui/icons-material/Home'
 const NavBar = () => {
   const { theme, handleTheme } = useTheme()
   return (
-    <div className="navbar bg-base-100 w-full">
+    <div className="navbar bg-base-100 w-full top-0">
       <div className="flex-1">
         <Link href="/">
           <button className="btn btn-ghost">

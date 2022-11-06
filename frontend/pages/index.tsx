@@ -15,20 +15,23 @@ const Home = () => {
   const { theme } = useTheme()
 
   return (
-    <div data-theme={theme}>
+    <div data-theme={theme} className="h-screen overflow-x-hidden overflow-y-auto bg-opacity-0">
       <NavBar />
 
-      <div className="px-10 pb-10 h-full w-full">
-        <div className={`${CardStyle} p-10 w-full text-center items-center`}>
-          <Image
-            alt="mountain"
-            src="/dark-bg.jpg"
-            quality={100}
-            layout="fill"
-            objectFit='cover'
-            className='opacity-30'
-          />
-          <div className="max-w-md z-10">
+      <span className='fixed -z-50 top-0 w-full h-full bg-base-100'>
+        <Image
+          alt="mountain"
+          src="/dark-bg.jpg"
+          quality={100}
+          layout="fill"
+          objectFit='cover'
+          className='opacity-40 w-full h-full fixed top-0'
+        />
+      </span>
+
+      <div className="pt-10 relative align-center flex flex-col h-full">
+        <div className={`w-full h-full`}>
+          <div className="max-w-md z-10 py-10 m-auto text-center">
             <h1 className="mb-5 text-5xl font-bold">Welcome</h1>
             <p className="mb-5">
               Ever went to a ASVZ activity just for it to be packed? Fret no more! With this tool you can
@@ -44,21 +47,14 @@ const Home = () => {
           </div>
         </div>
 
-        <div className={`${CardStyle} w-full text-center mt-5 items-center`} style={{ height: "30vw" }}>
+        <div className={`w-full pb-20`} style={{ height: "40vw" }}>
           {isLoading && <CircularProgress />}
           {isError && <ErrorIcon />}
           {data && <CalendarChart data={data} />}
         </div>
 
-        <div className={`${CardStyle} p-10 w-full text-center mt-5 items-center`}>
-          <h1 className="mb-5 text-2xl font-bold">Changelog</h1>
-          <ul>
-            <li>v01 - Initial Website with History and Weekly</li>
-          </ul>
-        </div>
-
+        <Footer />
       </div>
-      <Footer />
     </div>
   )
 }

@@ -8,6 +8,7 @@ COPY . .
 COPY public/ public/
 COPY tsconfig.json .
 COPY tailwind.config.js .
+COPY .env.deployment .env.local
 
 RUN npm run build
 

@@ -11,7 +11,7 @@ async function loadCountDay() {
 }
 
 export function useCountDay() {
-  const { isError, isLoading, data } = useQuery("countday", () =>
+  const { isError, isLoading, data } = useQuery(["countday"], () =>
     loadCountDay(),
   )
   return { isError, isLoading, data } as const
@@ -26,7 +26,7 @@ async function loadCountDaySport() {
 }
 
 export function useCountDaySport() {
-  const { isError, isLoading, data } = useQuery("countdaysport", () =>
+  const { isError, isLoading, data } = useQuery(["countdaysport"], () =>
     loadCountDaySport(),
   )
   return { isError, isLoading, data } as const
@@ -40,7 +40,7 @@ async function loadSports() {
 }
 
 export function useSports() {
-  const { isError, isLoading, data } = useQuery("sports", () =>
+  const { isError, isLoading, data } = useQuery(["sports"], () =>
     loadSports(),
   )
   return { isError, isLoading, data } as const
@@ -54,7 +54,7 @@ async function loadLocations() {
 }
 
 export function useLocations() {
-  const { isError, isLoading, data } = useQuery("locations", () =>
+  const { isError, isLoading, data } = useQuery(["locations"], () =>
     loadLocations(),
   )
   return { isError, isLoading, data } as const

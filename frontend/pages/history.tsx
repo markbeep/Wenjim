@@ -20,6 +20,8 @@ const History = () => {
   const [to, setTo] = useState<Date>(new Date("2040-12-31"));
   const [orderBy, setOrderBy] = useState<HistoryOrder>(HistoryOrder.date);
   const [desc, setDesc] = useState(false);
+  const [page, setPage] = useState(0);
+  const [amount, setAmount] = useState(500); // amount of items to show per page
   const { data, isLoading } = useHistory(activities, locations, from, to, orderBy, desc);
   const { data: lineData, isLoading: lineIsLoading } = useHistoryLine(activities, locations, from, to);
 
@@ -94,9 +96,9 @@ const History = () => {
                 </tr>
               </thead>
               <tbody>
-                {data.map((e, i) => (
-                  <tr key={i}>
-                    <th>{i + 1}</th>
+                {data.slice(page * amount, (page + 1) * amount).map((e, i) => (
+                  <tr key={page * amount + i}>
+                    <th>{page * amount + i + 1}</th>
                     <td>{e.date}</td>
                     <td>{e.activity}</td>
                     <td>{e.location}</td>
@@ -108,6 +110,13 @@ const History = () => {
             </table>
           }
         </div>
+        {data && data.length > 1 && <div className="btn-group justify-center flex flex-row">
+          <button className="btn" onClick={() => setPage(0)}>1</button>
+          <button className="btn" onClick={() => setPage(1)}>2</button>
+          <button className="btn btn-disabled">...</button>
+          <button className="btn" onClick={() => setPage(Math.floor(data.length / amount) - 1)}>{Math.floor(data.length / amount) - 1}</button>
+          <button className="btn" onClick={() => setPage(Math.floor(data.length / amount))}>{Math.floor(data.length / amount)}</button>
+        </div>}
       </div>
 
       <Footer />
