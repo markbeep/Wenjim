@@ -1,6 +1,9 @@
-import { ReactNode, useContext, useEffect, useState } from 'react'
-import { themeChange } from 'theme-change'
-import React from 'react'
+import { ReactNode, useContext, useEffect, useState } from 'react';
+import { themeChange } from 'theme-change';
+import React from 'react';
+import { MantineProvider, Button } from '@mantine/core';
+
+
 export enum Pages {
   home,
 }
@@ -25,7 +28,9 @@ export default function ThemeProvider({ children }: Children) {
 
   return (
     <ThemeContext.Provider value={{ theme, handleTheme }}>
-      {children}
+      <MantineProvider withGlobalStyles withNormalizeCSS theme={{ colorScheme: "dark" }}>
+        {children}
+      </MantineProvider>
     </ThemeContext.Provider>
   )
 }
