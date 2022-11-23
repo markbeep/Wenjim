@@ -1,18 +1,26 @@
 import { CalendarDatum } from '@nivo/calendar'
+import axios from "axios"
 import { Serie } from '@nivo/line';
 import { HistoryData, HistoryOrder, StringDatum, StringExtraProps, WeeklyDetails, WeeklyDetailsObject } from "./interfaces";
 import { useQuery } from 'react-query';
 import { HeatMapSerie } from '@nivo/heatmap';
+import { showNotification } from '@mantine/notifications';
 
 async function loadCountDay() {
-  const response = await fetch('/api/countday')
-  const data = await response.json();
-  return data as CalendarDatum[];
+  const response = await axios.get('/api/countday')
+  return response.data as CalendarDatum[];
 }
 
 export function useCountDay() {
   const { isError, isLoading, data } = useQuery(["countday"], () =>
     loadCountDay(),
+    {
+      onError: (e: TypeError) => showNotification({
+        title: "Error",
+        message: `${e.message}`,
+        color: "red",
+      })
+    }
   )
   return { isError, isLoading, data } as const
 }
@@ -20,9 +28,8 @@ export function useCountDay() {
 
 async function loadCountDaySport() {
   const url = "/api/countdaybar"
-  const response = await fetch(url)
-  const data = await response.json();
-  return data as Serie[];
+  const response = await axios.get(url)
+  return response.data as Serie[];
 }
 
 export function useCountDaySport() {
@@ -34,9 +41,8 @@ export function useCountDaySport() {
 
 async function loadSports() {
   const url = "/api/sports"
-  const response = await fetch(url)
-  const data = await response.json();
-  return data as string[];
+  const response = await axios.get(url)
+  return response.data as string[];
 }
 
 export function useSports() {
@@ -48,9 +54,8 @@ export function useSports() {
 
 async function loadLocations() {
   const url = "/api/locations"
-  const response = await fetch(url)
-  const data = await response.json();
-  return data as string[];
+  const response = await axios.get(url)
+  return response.data as string[];
 }
 
 export function useLocations() {
@@ -78,20 +83,11 @@ async function loadHistory(activities: string[], locations: string[], from: Date
       break;
   }
   const body = JSON.stringify({ activities, locations, from: from.toISOString(), to: to.toISOString(), orderBy: orderByKey, desc });
-  const content = {
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    method: "POST",
-    body: body
-  }
 
   const url = "/api/history"
   console.log(`POST: ${url} | BODY ${body}`)
-  const response = await fetch(url, content)
-  const data = await response.json();
-  return data as HistoryData[];
+  const response = await axios.post(url, body)
+  return response.data as HistoryData[];
 }
 
 export function useHistory(activities: string[], locations: string[], from: Date, to: Date, orderBy: HistoryOrder, desc: boolean) {
@@ -105,20 +101,11 @@ export function useHistory(activities: string[], locations: string[], from: Date
 async function loadHistoryLine(activities: string[], locations: string[], from: Date, to: Date) {
   if (activities.length === 0 || from === undefined || to === undefined) return [];
   const body = JSON.stringify({ activities, locations, from: from.toISOString(), to: to.toISOString() });
-  const content = {
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    method: "POST",
-    body: body
-  }
 
   const url = "/api/historyline"
   console.log(`POST: ${url} | BODY ${body}`)
-  const response = await fetch(url, content)
-  const data = await response.json();
-  return data as Serie[];
+  const response = await axios.post(url, body)
+  return response.data as Serie[];
 }
 
 export function useHistoryLine(activities: string[], locations: string[], from: Date, to: Date) {
@@ -131,21 +118,11 @@ export function useHistoryLine(activities: string[], locations: string[], from: 
 async function loadWeekly(activities: string[], locations: string[], from: Date, to: Date) {
   if (activities.length === 0 || from === undefined || to === undefined) return [];
   const body = JSON.stringify({ activities, locations, from: from.toISOString(), to: to.toISOString() });
-  const content = {
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    method: "POST",
-    body: body
-  }
 
   const url = "/api/weekly"
-  console.log(`POST: ${url} | BODY ${body}`)
-  const response = await fetch(url, content)
-  const data = await response.json();
+  const response = await axios.post(url, body)
 
-  return data as HeatMapSerie<StringDatum, StringExtraProps>[];
+  return response.data as HeatMapSerie<StringDatum, StringExtraProps>[];
 }
 
 export function useWeekly(activities: string[], locations: string[], from: Date, to: Date) {
