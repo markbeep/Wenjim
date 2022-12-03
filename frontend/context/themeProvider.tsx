@@ -1,38 +1,20 @@
-import { ReactNode, useContext, useEffect, useState } from 'react';
-import { themeChange } from 'theme-change';
+import { ReactNode } from 'react';
 import React from 'react';
-import { MantineProvider, Button } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 
 
 export enum Pages {
   home,
 }
-export const ThemeContext = React.createContext({
-  theme: 'dracula',
-  handleTheme: (_: string) => { },
-})
 
 interface Children {
   children: ReactNode
 }
 
 export default function ThemeProvider({ children }: Children) {
-  const [theme, setTheme] = useState("dracula");
-  useEffect(() => {
-    themeChange(false)
-  }, [])
-
-  const handleTheme = (_: string) => {
-    setTheme(o => o == "dracula" ? "light" : "dracula")
-  };
-
   return (
-    <ThemeContext.Provider value={{ theme, handleTheme }}>
-      <MantineProvider withGlobalStyles withNormalizeCSS theme={{ colorScheme: "dark" }}>
-        {children}
-      </MantineProvider>
-    </ThemeContext.Provider>
+    <MantineProvider withGlobalStyles withNormalizeCSS theme={{ colorScheme: "dark" }}>
+      {children}
+    </MantineProvider>
   )
 }
-
-export const useTheme = () => useContext(ThemeContext)
