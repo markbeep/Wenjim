@@ -1,8 +1,8 @@
 import os
-from typing import List
-from flask import Flask, request
+from flask import Flask, request, abort, jsonify
 import sqlite3
 import sys
+
 
 app = Flask(__name__)
 
@@ -39,7 +39,7 @@ def count_day():
             "value": x[1],
         } for x in res
     ]
-    return res
+    return jsonify(res)
 
 
 @app.route("/api/sports")
@@ -62,12 +62,12 @@ def locations():
 def history():
     args = request.get_json()
     print(request.get_json(), file=sys.stdout, flush=True)
-
     try:
         activities = args["activities"]
 
         if len(activities) == 0:
-            return "Empty activities", 400
+            print("Empty activities", file=sys.stdout)
+            return abort(400, "Empty activities")
 
         activities_sql = " OR ".join([f"sport LIKE ?" for _ in activities])
         locations = args["locations"]
@@ -82,7 +82,8 @@ def history():
         # required to prevent sql injection, because sql doesn't support
         # insertion of order by
         if order_by not in ["date", "sport", "location", "places_max", "places_taken", "places_max-places_taken"]:
-            return "Invalid orderBy", 400
+            print("Invalid orderby", file=sys.stdout)
+            return abort(400, "Invalid orderBy")
             
         order_desc = args["desc"]
         order_desc_sql = "DESC" if order_desc else "ASC"
@@ -94,7 +95,8 @@ def history():
             order_by_sql += ",date ASC"
 
     except KeyError:
-        return "Invalid POST request", 400
+        print("Invalid POST request", file=sys.stdout)
+        return abort(400, "Invalid POST request")
 
     sql = f"""
         SELECT
@@ -121,7 +123,7 @@ def history():
             "spots_free": x[4],
         } for x in res
     ]
-    return res
+    return jsonify(res)
 
 
 @app.route("/api/historyline", methods=["POST"])
@@ -131,7 +133,7 @@ def history_line():
     try:
         activities = args["activities"]
         if len(activities) == 0:
-            return "Empty activities", 400
+            return abort(400, "Empty activities")
 
         activities_sql = " OR ".join([f"sport LIKE ?" for _ in activities])
         locations = args["locations"]
@@ -143,7 +145,7 @@ def history_line():
         to_date = args["to"]
 
     except KeyError:
-        return "Invalid POST request", 400
+        return abort(400, "Invalid POST request")
     
     sql = f"""
         SELECT
@@ -169,7 +171,7 @@ def history_line():
         d = {"id": key, "data": data[key.lower()]}
         final.append(d)
 
-    return final
+    return jsonify(final)
 
 
 @app.route("/api/weekly", methods=["POST"])
@@ -179,7 +181,7 @@ def weekly():
     try:
         activities = args["activities"]
         if len(activities) == 0:
-            return "Empty activities", 400
+            return abort(400, "Empty activities")
 
         activities_sql = " OR ".join([f"sport LIKE ?" for _ in activities])
         locations = args["locations"]
@@ -191,7 +193,7 @@ def weekly():
         to_date = args["to"]
 
     except KeyError:
-        return "Invalid POST request", 400
+        return abort(400, "Invalid POST request")
     
     sql = f"""
         SELECT
@@ -237,6 +239,17 @@ def weekly():
     
     
     return [{"id": k, "data": [{"x": w, "y": data[k][w]} for w in weekdays]} for k in data.keys()]
+
+
+@app.route("/api/minmaxdate", methods=["GET"])
+def min_max_date():
+    sql = "SELECT DATE(MIN(track_date), 'unixepoch'), DATE(MAX(track_date), 'unixepoch') FROM Timestamps"
+    with DB() as conn:
+        res = conn.execute(sql).fetchone()  
+    if not res:
+        return abort(500, "No Data")
+    return {"from": res[0], "to": res[1]}
+
 
 if __name__ == "__main__":
     app.run(debug=os.getenv("FLASK_DEBUG", "true") == "true", host="0.0.0.0")
