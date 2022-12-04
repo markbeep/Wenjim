@@ -9,9 +9,9 @@ const Home = () => {
   return (
     <Container fluid mt="xl">
       <Center>
-        <Paper className='text-center' w="600px" p="sm" radius={10}>
+        <Container className='text-center' w="600px" p="sm">
           <Title size={50}>Welcome</Title>
-          <Text className="mb-5">
+          <Text className="my-5">
             Ever went to a ASVZ activity just for it to be packed? Fret no more! With this tool you can
             find out at what time the least people are present and whatever event you want. With the history
             view you can get a glimpse from every single day. With the weekly view you get the average taken spots
@@ -19,12 +19,12 @@ const Home = () => {
           </Text>
           <Title>Get started</Title>
           <Link href="/history">
-            <Button m="sm" variant='outline'>History</Button>
+            <Button m="sm" size='lg' variant='outline'>History</Button>
           </Link>
           <Link href="/weekly">
-            <Button m="sm" variant='outline'>Weekly</Button>
+            <Button m="sm" size="lg" variant='outline'>Weekly</Button>
           </Link>
-        </Paper>
+        </Container>
       </Center>
 
 

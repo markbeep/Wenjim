@@ -29,6 +29,7 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
         opened={opened}
         onClose={() => setOpened(false)}
         title={`${data.details.sport}`}
+        overlayBlur={2}
       >
         <Flex w="100%" direction="row" align="center" justify="center">
           <Flex w="100%" direction="column" align="flex-start" justify="flex-start" mr="sm">
@@ -50,8 +51,9 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
         <Container
           mt="sm"
           bg={colors[ind][4] ?? c.dark[6]}
-          mih={30}
+          h={30}
           w="100%"
+          pt={6}
           c={c.dark[4]}
         >
           {Math.round(data.details.avgFree)}
@@ -99,7 +101,7 @@ const Weekly = () => {
         <Divider />
         <SimpleGrid cols={8} miw={1300} >
           <Flex direction="column" align="center">
-            {data && data.monday.map((e, i) => <Container key={i} mt="sm" w="100%" mih={30}><Center>{e.time}</Center></Container>)}
+            {data && data.monday.map((e, i) => <Container key={i} mt="sm" w="100%" h={30}><Center>{e.time}</Center></Container>)}
           </Flex>
           <Flex direction="column" align="center">
             {data && data.monday.map((e, i) => <Hour key={"monday" + i} data={e} />)}
@@ -123,6 +125,9 @@ const Weekly = () => {
             {data && data.sunday.map((e, i) => <Hour key={"sunday" + i} data={e} />)}
           </Flex>
         </SimpleGrid>
+        <Center>
+          {data && <Text mt={-10}>Hourly average free spots. Click to view in more detail.</Text>}
+        </Center>
       </ScrollArea>
     </Container >
   )
