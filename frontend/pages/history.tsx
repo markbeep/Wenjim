@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Search from '../components/search'
 import { useHistory, useHistoryLine } from './api/hooks'
 import { HistoryOrder } from './api/interfaces'
 import LineChart from '../components/lineChart'
-import { Center, Container, Divider, Flex, Overlay, Pagination, Skeleton, Table, Text, Title, useMantineTheme } from '@mantine/core'
+import { Center, Container, Divider, Flex, Overlay, Pagination, ScrollArea, Skeleton, Table, Title, useMantineTheme } from '@mantine/core'
 import { IconChevronUp, IconChevronDown } from '@tabler/icons'
 import { DateRangePickerValue } from '@mantine/dates'
 import { useWindowScroll } from '@mantine/hooks'
@@ -32,6 +32,29 @@ const History = () => {
     date?.[1] ?? new Date("2022-12-31"),
   );
   const [scroll, scrollTo] = useWindowScroll();
+
+  const [show, setShow] = useState(false);
+
+  const handleResize = (width: number) => {
+    if (width < theme.breakpoints.sm) {
+      setShow(false);
+    } else {
+      setShow(true);
+    }
+  }
+  // initially check for window size
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      handleResize(window.innerWidth);
+    }
+
+  }, [])
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", () => {
+      handleResize(window.innerWidth);
+    })
+  }
 
   const handleSortClick = (d: HistoryOrder) => {
     if (orderBy === d) {
@@ -112,29 +135,31 @@ const History = () => {
         <Title>No data found</Title>
       </Center>}
       <Skeleton visible={!data || isLoading}>
-        <Container sx={{ minHeight: "30rem" }} fluid>
-          {(!data || data.length === 0) && <Overlay color={theme.primaryShade.toString()} blur={2} />}
-          <Table captionSide='bottom' highlightOnHover striped>
-            <thead>{ths}</thead>
-            <tbody>
-              {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
-                <tr key={page * amount + i}>
-                  <th>{page * amount + i + 1}</th>
-                  <td>{e.date}</td>
-                  <td>{e.activity}</td>
-                  <td>{e.location}</td>
-                  <td>{e.spots_free}</td>
-                  <td>{e.spots_total}</td>
-                </tr>
-              ))
-              }
-            </tbody>
-            {data && data.length > 0 && <tfoot>{ths}</tfoot>}
-          </Table>
-        </Container>
+        <ScrollArea type='auto'>
+          <Container sx={{ minHeight: "30rem" }} fluid>
+            {(!data || data.length === 0) && <Overlay color={theme.primaryShade.toString()} blur={2} />}
+            <Table captionSide='bottom' highlightOnHover striped>
+              <thead>{ths}</thead>
+              <tbody>
+                {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
+                  <tr key={page * amount + i}>
+                    <th>{page * amount + i + 1}</th>
+                    <td>{e.date}</td>
+                    <td>{e.activity}</td>
+                    <td>{e.location}</td>
+                    <td>{e.spots_free}</td>
+                    <td>{e.spots_total}</td>
+                  </tr>
+                ))
+                }
+              </tbody>
+              {data && data.length > 0 && <tfoot>{ths}</tfoot>}
+            </Table>
+          </Container>
+        </ScrollArea>
         <Center>
           {data && data.length > amount &&
-            <Pagination siblings={2} withControls total={Math.floor(data.length / amount)} onChange={e => { setPage(e); setTimeout(() => scrollTo({ y: 5000 }), 100) }} />
+            <Pagination siblings={show ? 2 : 1} withControls={show} total={Math.floor(data.length / amount)} onChange={e => { setPage(e); setTimeout(() => scrollTo({ y: 5000 }), 100) }} />
           }
         </Center>
       </Skeleton>

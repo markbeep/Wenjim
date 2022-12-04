@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLocations, useMinMaxDate, useSports } from '../pages/api/hooks'
 import { DateRangePicker, DateRangePickerValue } from '@mantine/dates'
-import { Button, Flex, MultiSelect, Skeleton, Container } from '@mantine/core'
+import { Button, Flex, MultiSelect, Skeleton, Container, useMantineTheme, Tooltip } from '@mantine/core'
+import { completeNavigationProgress, NavigationProgress, resetNavigationProgress, startNavigationProgress } from '@mantine/nprogress'
 
 interface SearchData {
   activities: string[],
@@ -13,13 +14,39 @@ interface SearchData {
 }
 
 const Search = ({ activities, setActivities, locations, setLocations, date, setDate }: SearchData) => {
-  const { isLoading: l1, data: d1, isError: e1 } = useSports()
-  const { isLoading: l2, data: d2, isError: e2 } = useLocations()
+  const { data: d1, isError: e1, isLoading: l1 } = useSports()
+  const { data: d2, isError: e2, isLoading: l2 } = useLocations(activities)
   const { data: d3 } = useMinMaxDate()
+  const theme = useMantineTheme()
+  const [show, setShow] = useState(false);
+
+  const startLoading = () => { resetNavigationProgress(); startNavigationProgress(); }
+
+  const handleResize = (width: number) => {
+    if (width < theme.breakpoints.sm) {
+      setShow(false);
+    } else {
+      setShow(true);
+    }
+  }
+
+  // initially check for window size
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      handleResize(window.innerWidth);
+    }
+
+  }, [])
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", () => {
+      handleResize(window.innerWidth);
+    })
+  }
 
   return (
     <Container fluid>
-      <Flex direction="row" align="center" justify="center" gap="sm">
+      <Flex direction={show ? "row" : "column"} align="center" justify="center" gap="sm">
         <MultiSelect
           label="Pick your activities"
           w="100%"
@@ -27,21 +54,29 @@ const Search = ({ activities, setActivities, locations, setLocations, date, setD
           searchable
           required
           value={activities}
+          disabled={l1 || e1}
           nothingFound="Nothing found"
           data={d1?.map(v => ({ label: v, value: v })) ?? []}
-          onChange={e => setActivities(_ => Array.from(new Set(e)))}
+          onChange={e => { setActivities(_ => [...e]); startLoading() }}
+          clearButtonLabel="Clear Activities"
+          clearable
         />
-        <MultiSelect
-          label="Pick your locations"
-          w="100%"
-          placeholder='Sport Center Polyterasse'
-          searchable
-          required
-          value={locations}
-          nothingFound="Nothing found"
-          data={d2?.map(v => ({ label: v, value: v })) ?? []}
-          onChange={e => { setLocations(_ => Array.from(new Set(e))); }}
-        />
+        <Tooltip label="Pick an activity first" position='bottom' events={{ hover: l2 || e2 || d2?.length === 0, focus: l2 || e2 || d2?.length === 0, touch: l2 || e2 || d2?.length === 0 }}>
+          <MultiSelect
+            label="Pick your locations"
+            w="100%"
+            placeholder='Sport Center Polyterasse'
+            searchable
+            required
+            disabled={l2 || e2 || d2?.length === 0}
+            value={locations}
+            nothingFound="Nothing found"
+            data={d2?.map(v => ({ label: v, value: v })) ?? []}
+            onChange={e => { setLocations(_ => [...e]); }}
+            clearButtonLabel="Clear Locations"
+            clearable
+          />
+        </Tooltip>
         <DateRangePicker
           label="Date Range"
           w="100%"
@@ -54,10 +89,6 @@ const Search = ({ activities, setActivities, locations, setLocations, date, setD
           maxDate={d3?.to}
         />
       </Flex>
-
-      <Button w="100%" mt="sm" variant='outline' onClick={() => { setLocations([]); setActivities([]); setDate(undefined) }}>
-        Clear Selection
-      </Button>
     </Container>
   )
 }

@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+textarea:focus, input:focus{
+    outline: none;
+}

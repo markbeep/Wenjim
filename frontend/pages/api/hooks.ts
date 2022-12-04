@@ -1,10 +1,11 @@
 import { CalendarDatum } from '@nivo/calendar'
 import axios from "axios"
 import { Serie } from '@nivo/line';
-import { HistoryData, HistoryOrder, StringDatum, StringExtraProps, WeeklyDetails, WeeklyDetailsObject } from "./interfaces";
+import { HistoryData, HistoryOrder, StringDatum, StringExtraProps, WeeklyData } from "./interfaces";
 import { useQuery } from 'react-query';
 import { HeatMapSerie } from '@nivo/heatmap';
 import { showNotification } from '@mantine/notifications';
+import { completeNavigationProgress } from '@mantine/nprogress';
 
 async function loadCountDay() {
   const response = await axios.get('/api/countday')
@@ -66,21 +67,23 @@ export function useSports() {
   return { isError, isLoading, data } as const
 }
 
-async function loadLocations() {
+async function loadLocations(activities: string[]) {
+  if (activities.length === 0) return [];
   const url = "/api/locations"
-  const response = await axios.get(url)
+  const response = await axios.post(url, activities)
   return response.data as string[];
 }
 
-export function useLocations() {
-  const { isError, isLoading, data } = useQuery(["locations"], () =>
-    loadLocations(),
+export function useLocations(activities: string[]) {
+  const { isError, isLoading, data } = useQuery(["locations", ...activities], () =>
+    loadLocations(activities),
     {
       onError: (e: TypeError) => showNotification({
         title: "Error",
         message: `${e.message}`,
         color: "red",
-      })
+      }),
+      onSuccess: () => completeNavigationProgress()
     }
   )
   return { isError, isLoading, data } as const
@@ -151,13 +154,13 @@ export function useHistoryLine(activities: string[], locations: string[], from: 
 }
 
 async function loadWeekly(activities: string[], locations: string[], from: Date, to: Date) {
-  if (activities.length === 0 || from === undefined || to === undefined) return [];
+  if (activities.length === 0 || from === undefined || to === undefined) return undefined;
   const body = { activities, locations, from: from.toISOString(), to: to.toISOString() };
 
   const url = "/api/weekly"
   const response = await axios.post(url, body)
 
-  return response.data as HeatMapSerie<StringDatum, StringExtraProps>[];
+  return response.data as WeeklyData;
 }
 
 export function useWeekly(activities: string[], locations: string[], from: Date, to: Date) {

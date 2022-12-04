@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { AppShell, Button, Center, Flex, Navbar, Text, useMantineTheme } from '@mantine/core'
+import { AppShell, Button, Center, Flex, Navbar, NavLink, Text, useMantineTheme } from '@mantine/core'
 import { ReactNode, useEffect, useState } from 'react'
-import { IconBook, IconCalendar, IconHome } from '@tabler/icons'
+import { IconBook, IconBrandGithub, IconCalendar, IconHome } from '@tabler/icons'
 
 const NavBar = ({ children }: { children: ReactNode }) => {
   const theme = useMantineTheme();
@@ -25,7 +25,6 @@ const NavBar = ({ children }: { children: ReactNode }) => {
 
   if (typeof window !== "undefined") {
     window.addEventListener("resize", () => {
-      console.log(window.innerWidth, theme.breakpoints.sm, show);
       handleResize(window.innerWidth);
     })
   }
@@ -35,7 +34,7 @@ const NavBar = ({ children }: { children: ReactNode }) => {
       navbar={
         <Navbar p="md" width={{ base: 50, sm: 150 }}>
 
-          <Navbar.Section mt={10}>
+          <Navbar.Section mt="lg">
             <Center>
               <Link href="/">
                 <Button variant='light'>
@@ -48,7 +47,7 @@ const NavBar = ({ children }: { children: ReactNode }) => {
             </Center>
           </Navbar.Section>
 
-          <Navbar.Section mt={10}>
+          <Navbar.Section mt="lg">
             <Center>
               <Link href="/history">
                 <Button variant='light'>
@@ -61,13 +60,26 @@ const NavBar = ({ children }: { children: ReactNode }) => {
             </Center>
           </Navbar.Section>
 
-          <Navbar.Section mt={10}>
+          <Navbar.Section mt="lg" grow>
             <Center>
               <Link href="/weekly">
                 <Button variant='light'>
                   <Flex direction="row" justify="start" align="center">
                     <IconCalendar size={32} />
                     {show && <Text ml={20}>Weekly</Text>}
+                  </Flex>
+                </Button>
+              </Link>
+            </Center>
+          </Navbar.Section>
+
+          <Navbar.Section mt="lg">
+            <Center>
+              <Link href="https://github.com/markbeep/ASVZ-Graph-Website/issues">
+                <Button variant='light'>
+                  <Flex direction="row" justify="start" align="center">
+                    <IconBrandGithub size={32} />
+                    {show && <Text ml={20}>Report Issue</Text>}
                   </Flex>
                 </Button>
               </Link>
