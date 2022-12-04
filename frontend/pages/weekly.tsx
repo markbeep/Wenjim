@@ -1,9 +1,7 @@
+import { Container, Grid } from '@mantine/core'
 import { DateRangePickerValue } from '@mantine/dates'
 import React, { useState } from 'react'
-import { CardStyle } from '.'
-import Footer from '../components/footer'
 import Search from '../components/search'
-import WeekSchedule from '../components/weekSchedule'
 import { useWeekly } from './api/hooks'
 
 const Weekly = () => {
@@ -18,27 +16,26 @@ const Weekly = () => {
   );
 
   return (
-    <div>
-      <div className='px-10 pb-10 h-full w-full'>
+    <Container fluid>
+      <Search
+        activities={activities}
+        setActivities={setActivities}
+        locations={locations}
+        setLocations={setLocations}
+        date={date}
+        setDate={setDate}
+      />
 
-        <div className={`${CardStyle} p-4 w-full h-1/2`}>
-          <Search
-            activities={activities}
-            setActivities={setActivities}
-            locations={locations}
-            setLocations={setLocations}
-            date={date}
-            setDate={setDate}
-          />
-        </div>
-
-        <div className={`${CardStyle} p-4 w-full mt-5`} style={{ height: "50vw" }}>
-          {data && <WeekSchedule data={data} />}
-        </div>
-
-      </div>
-      <Footer />
-    </div>
+      <Grid columns={7}>
+        <Grid.Col>Monday</Grid.Col>
+        <Grid.Col>Tuesday</Grid.Col>
+        <Grid.Col>Wednesday</Grid.Col>
+        <Grid.Col>Thursday</Grid.Col>
+        <Grid.Col>Friday</Grid.Col>
+        <Grid.Col>Saturday</Grid.Col>
+        <Grid.Col>Sunday</Grid.Col>
+      </Grid>
+    </Container>
   )
 }
 

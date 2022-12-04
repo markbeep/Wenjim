@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { AppShell, Center, Flex, Navbar, Text, useMantineTheme } from '@mantine/core'
+import { AppShell, Button, Center, Flex, Navbar, Text, useMantineTheme } from '@mantine/core'
 import { ReactNode, useEffect, useState } from 'react'
 import { IconBook, IconCalendar, IconHome } from '@tabler/icons'
 
@@ -38,12 +38,12 @@ const NavBar = ({ children }: { children: ReactNode }) => {
           <Navbar.Section mt={10}>
             <Center>
               <Link href="/">
-                <button className="btn btn-ghost">
+                <Button variant='light'>
                   <Flex direction="row" justify="start" align="center">
                     <IconHome size={32} />
                     {show && <Text ml={20}>Home</Text>}
                   </Flex>
-                </button>
+                </Button>
               </Link>
             </Center>
           </Navbar.Section>
@@ -51,12 +51,12 @@ const NavBar = ({ children }: { children: ReactNode }) => {
           <Navbar.Section mt={10}>
             <Center>
               <Link href="/history">
-                <button>
+                <Button variant='light'>
                   <Flex direction="row" justify="start" align="center">
                     <IconBook size={32} />
                     {show && <Text ml={20}>History</Text>}
                   </Flex>
-                </button>
+                </Button>
               </Link>
             </Center>
           </Navbar.Section>
@@ -64,12 +64,12 @@ const NavBar = ({ children }: { children: ReactNode }) => {
           <Navbar.Section mt={10}>
             <Center>
               <Link href="/weekly">
-                <button>
+                <Button variant='light'>
                   <Flex direction="row" justify="start" align="center">
                     <IconCalendar size={32} />
                     {show && <Text ml={20}>Weekly</Text>}
                   </Flex>
-                </button>
+                </Button>
               </Link>
             </Center>
           </Navbar.Section>

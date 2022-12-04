@@ -61,13 +61,11 @@ def locations():
 @app.route("/api/history", methods=["POST"])
 def history():
     args = request.get_json()
-    print(request.get_json(), file=sys.stdout, flush=True)
     try:
         activities = args["activities"]
 
         if len(activities) == 0:
-            print("Empty activities", file=sys.stdout)
-            return abort(400, "Empty activities")
+            return abort(401, "Empty activities")
 
         activities_sql = " OR ".join([f"sport LIKE ?" for _ in activities])
         locations = args["locations"]
@@ -82,8 +80,7 @@ def history():
         # required to prevent sql injection, because sql doesn't support
         # insertion of order by
         if order_by not in ["date", "sport", "location", "places_max", "places_taken", "places_max-places_taken"]:
-            print("Invalid orderby", file=sys.stdout)
-            return abort(400, "Invalid orderBy")
+            return abort(401, "Invalid orderBy")
             
         order_desc = args["desc"]
         order_desc_sql = "DESC" if order_desc else "ASC"
@@ -95,8 +92,7 @@ def history():
             order_by_sql += ",date ASC"
 
     except KeyError:
-        print("Invalid POST request", file=sys.stdout)
-        return abort(400, "Invalid POST request")
+        return abort(402, "Invalid POST request")
 
     sql = f"""
         SELECT
@@ -105,6 +101,15 @@ def history():
             location,
             places_max,
             places_max-places_taken,
+            CASE strftime('%w', track_date, 'unixepoch')
+                WHEN '0' THEN 'Sun'
+                WHEN '1' THEN 'Mon'
+                WHEN '2' THEN 'Tue'
+                WHEN '3' THEN 'Wed'
+                WHEN '4' THEN 'Thu'
+                WHEN '5' THEN 'Fri'
+                ELSE 'Sat'
+            END weekday,
             DATE(track_date, 'unixepoch') as cmp_date
         FROM Entries
         INNER JOIN Timestamps USING (entry_id)
@@ -116,7 +121,7 @@ def history():
                            [from_date, to_date]).fetchall()
     res = [
         {
-            "date": x[0],
+            "date": f"{x[5]} {x[0]}",
             "activity": x[1],
             "location": x[2],
             "spots_total": x[3],

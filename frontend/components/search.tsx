@@ -1,9 +1,7 @@
 import React from 'react'
 import { useLocations, useMinMaxDate, useSports } from '../pages/api/hooks'
-import { IconCircleX } from '@tabler/icons'
 import { DateRangePicker, DateRangePickerValue } from '@mantine/dates'
-import { Button, LoadingOverlay, MultiSelect, Select } from '@mantine/core'
-import { Container } from '@nivo/core'
+import { Button, Flex, MultiSelect, Skeleton, Container } from '@mantine/core'
 
 interface SearchData {
   activities: string[],
@@ -19,42 +17,49 @@ const Search = ({ activities, setActivities, locations, setLocations, date, setD
   const { isLoading: l2, data: d2, isError: e2 } = useLocations()
   const { data: d3 } = useMinMaxDate()
 
-  return <>
-    <Container>
+  return (
+    <Container fluid>
+      <Flex direction="row" align="center" justify="center" gap="sm">
+        <MultiSelect
+          label="Pick your activities"
+          w="100%"
+          placeholder='Fitness'
+          searchable
+          required
+          value={activities}
+          nothingFound="Nothing found"
+          data={d1?.map(v => ({ label: v, value: v })) ?? []}
+          onChange={e => setActivities(_ => Array.from(new Set(e)))}
+        />
+        <MultiSelect
+          label="Pick your locations"
+          w="100%"
+          placeholder='Sport Center Polyterasse'
+          searchable
+          required
+          value={locations}
+          nothingFound="Nothing found"
+          data={d2?.map(v => ({ label: v, value: v })) ?? []}
+          onChange={e => { setLocations(_ => Array.from(new Set(e))); }}
+        />
+        <DateRangePicker
+          label="Date Range"
+          w="100%"
+          placeholder='2022-01-01 - 2022-12-31'
+          defaultValue={date}
+          value={date}
+          onChange={setDate}
+          required
+          minDate={d3?.from}
+          maxDate={d3?.to}
+        />
+      </Flex>
 
-      <LoadingOverlay visible={l1 || l2} />
-      <MultiSelect
-        label="Pick your activities"
-        placeholder='Fitness'
-        searchable
-        required
-        data={d1?.map(v => ({ label: v, value: v })) ?? []}
-        onChange={e => setActivities(old => Array.from(new Set([...old, ...e])))}
-      />
-      <MultiSelect
-        label="Pick your locations"
-        placeholder='Sport Center Polyterasse'
-        searchable
-        required
-        data={d2?.map(v => ({ label: v, value: v })) ?? []}
-        onChange={e => { setLocations(old => Array.from(new Set([...old, ...e]))); }}
-      />
-
-      <DateRangePicker
-        label="Date Range"
-        placeholder='Select a range of date here'
-        value={date}
-        onChange={setDate}
-        required
-        minDate={d3?.from}
-        maxDate={d3?.to}
-      />
-      <Button variant='outline' onClick={() => { setLocations([]); setActivities([]); setDate(undefined) }}>
+      <Button w="100%" mt="sm" variant='outline' onClick={() => { setLocations([]); setActivities([]); setDate(undefined) }}>
         Clear Selection
       </Button>
     </Container>
-
-  </>
+  )
 }
 
 export default Search

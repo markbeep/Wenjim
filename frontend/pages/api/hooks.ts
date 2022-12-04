@@ -103,7 +103,7 @@ async function loadHistory(activities: string[], locations: string[], from: Date
       orderByKey = "places_max-places_taken";
       break;
   }
-  const body = JSON.stringify({ activities, locations, from: from.toISOString(), to: to.toISOString(), orderBy: orderByKey, desc });
+  const body = { activities, locations, from: from.toISOString(), to: to.toISOString(), orderBy: orderByKey, desc };
 
   const url = "/api/history"
   console.log(`POST: ${url} | BODY ${body}`)
@@ -128,7 +128,7 @@ export function useHistory(activities: string[], locations: string[], from: Date
 
 async function loadHistoryLine(activities: string[], locations: string[], from: Date, to: Date) {
   if (activities.length === 0 || locations.length === 0 || !from || !to) return [];
-  const body = JSON.stringify({ activities, locations, from: from.toISOString(), to: to.toISOString() });
+  const body = { activities, locations, from: from.toISOString(), to: to.toISOString() };
 
   const url = "/api/historyline"
   console.log(`POST: ${url} | BODY ${body}`)
@@ -152,7 +152,7 @@ export function useHistoryLine(activities: string[], locations: string[], from: 
 
 async function loadWeekly(activities: string[], locations: string[], from: Date, to: Date) {
   if (activities.length === 0 || from === undefined || to === undefined) return [];
-  const body = JSON.stringify({ activities, locations, from: from.toISOString(), to: to.toISOString() });
+  const body = { activities, locations, from: from.toISOString(), to: to.toISOString() };
 
   const url = "/api/weekly"
   const response = await axios.post(url, body)
