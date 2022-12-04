@@ -4,7 +4,7 @@ import ThemeProvider from '../context/themeProvider'
 import { Hydrate, QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { NotificationsProvider } from '@mantine/notifications'
-import NavBar from '../components/navBar'
+import Shell from '../components/shell'
 import { NavigationProgress } from '@mantine/nprogress'
 import { useState } from 'react'
 
@@ -16,9 +16,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <NotificationsProvider position='top-right' autoClose={8_000}>
           <NavigationProgress />
-          <NavBar>
+          <Shell>
             <Component {...pageProps} />
-          </NavBar>
+          </Shell>
           <ReactQueryDevtools initialIsOpen={false} />
         </NotificationsProvider>
       </QueryClientProvider>

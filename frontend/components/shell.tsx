@@ -1,11 +1,13 @@
 import Link from 'next/link'
-import { AppShell, Button, Center, Flex, Navbar, NavLink, Text, useMantineTheme } from '@mantine/core'
+import { Affix, AppShell, Button, Center, Flex, Navbar, NavLink, Text, Transition, useMantineTheme } from '@mantine/core'
 import { ReactNode, useEffect, useState } from 'react'
-import { IconBook, IconBrandGithub, IconCalendar, IconHome } from '@tabler/icons'
+import { IconArrowUp, IconBook, IconBrandGithub, IconCalendar, IconHome } from '@tabler/icons'
+import { useWindowScroll } from '@mantine/hooks'
 
-const NavBar = ({ children }: { children: ReactNode }) => {
+const Shell = ({ children }: { children: ReactNode }) => {
   const theme = useMantineTheme();
   const [show, setShow] = useState(false);
+  const [scroll, scrollTo] = useWindowScroll();
 
   const handleResize = (width: number) => {
     if (width < theme.breakpoints.sm) {
@@ -79,7 +81,7 @@ const NavBar = ({ children }: { children: ReactNode }) => {
                 <Button variant='light'>
                   <Flex direction="row" justify="start" align="center">
                     <IconBrandGithub size={32} />
-                    {show && <Text ml={20}>Report Issue</Text>}
+                    {show && <Text ml={10}>Report bug</Text>}
                   </Flex>
                 </Button>
               </Link>
@@ -93,8 +95,23 @@ const NavBar = ({ children }: { children: ReactNode }) => {
       })}
     >
       {children}
+
+      <Affix position={{ bottom: 20, right: 20 }}>
+        <Transition transition="slide-up" mounted={scroll.y > 0}>
+          {(transitionStyles) => (
+            <Button
+              leftIcon={<IconArrowUp size={16} />}
+              onClick={() => scrollTo({ y: 0 })}
+              style={transitionStyles}
+              variant="outline"
+            >
+              Scroll to the top
+            </Button>
+          )}
+        </Transition>
+      </Affix>
     </AppShell>
   )
 }
 
-export default NavBar
+export default Shell
