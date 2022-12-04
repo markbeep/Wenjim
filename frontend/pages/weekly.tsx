@@ -22,7 +22,6 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
   const c = theme.colors
   const colors = [c.red, c.orange, c.yellow, c.lime, c.teal, c.lime]
   const ind = Math.floor(data.details.avgFree / data.details.maxAvg * (colors.length - 1))
-  console.log(data.details, ind, data.details.maxAvg);
 
   return (
     <>

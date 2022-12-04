@@ -109,7 +109,6 @@ async function loadHistory(activities: string[], locations: string[], from: Date
   const body = { activities, locations, from: from.toISOString(), to: to.toISOString(), orderBy: orderByKey, desc };
 
   const url = "/api/history"
-  console.log(`POST: ${url} | BODY ${body}`)
   const response = await axios.post(url, body)
   return response.data as HistoryData[];
 }
@@ -134,7 +133,6 @@ async function loadHistoryLine(activities: string[], locations: string[], from: 
   const body = { activities, locations, from: from.toISOString(), to: to.toISOString() };
 
   const url = "/api/historyline"
-  console.log(`POST: ${url} | BODY ${body}`)
   const response = await axios.post(url, body)
   return response.data as Serie[];
 }
