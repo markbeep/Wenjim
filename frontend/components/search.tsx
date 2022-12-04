@@ -1,132 +1,96 @@
-import React from 'react'
-import { useLocations, useSports } from '../pages/api/hooks'
-import InternalServerError from './error'
-import CloseIcon from '@mui/icons-material/Close';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-
-interface PreDate {
-  day: number,
-  month: number,
-  year: number
-}
+import React, { useEffect, useState } from 'react'
+import { useLocations, useMinMaxDate, useSports } from '../pages/api/hooks'
+import { DateRangePicker, DateRangePickerValue } from '@mantine/dates'
+import { Button, Flex, MultiSelect, Skeleton, Container, useMantineTheme, Tooltip } from '@mantine/core'
+import { completeNavigationProgress, NavigationProgress, resetNavigationProgress, startNavigationProgress } from '@mantine/nprogress'
 
 interface SearchData {
   activities: string[],
   setActivities: React.Dispatch<React.SetStateAction<string[]>>,
   locations: string[],
   setLocations: React.Dispatch<React.SetStateAction<string[]>>,
-  fromDate: Date,
-  setFromDate: React.Dispatch<React.SetStateAction<Date>>,
-  toDate: Date,
-  setToDate: React.Dispatch<React.SetStateAction<Date>>,
+  date: DateRangePickerValue | undefined,
+  setDate: React.Dispatch<React.SetStateAction<DateRangePickerValue | undefined>>,
 }
 
-const Search = ({ activities, setActivities, locations, setLocations, fromDate, setFromDate, toDate, setToDate }: SearchData) => {
-  const { isLoading: l1, data: d1, isError: e1 } = useSports()
-  const { isLoading: l2, data: d2, isError: e2 } = useLocations()
+const Search = ({ activities, setActivities, locations, setLocations, date, setDate }: SearchData) => {
+  const { data: d1, isError: e1, isLoading: l1 } = useSports()
+  const { data: d2, isError: e2, isLoading: l2 } = useLocations(activities)
+  const { data: d3 } = useMinMaxDate()
+  const theme = useMantineTheme()
+  const [show, setShow] = useState(false);
 
-  return <>
-    <div className="flex flex-row">
-      <div className="py-1 w-1/2 pr-1">
-        <select
-          className="select select-bordered w-full"
-          disabled={!d1}
-          value="Pick an activity"
-          onChange={e => setActivities(old => Array.from(new Set([...old, e.target.value])))}
-        >
-          <option disabled>
-            Pick an activity
-          </option>
-          {d1 && d1.map((v) => <option key={v}>{v}</option>)}
-        </select>
-        {e1 && (
-          <div className="mt-2">
-            <InternalServerError />
-          </div>
-        )}
-      </div>
-      <div className="py-1 w-1/2 pl-1 card-body">
-        <select
-          className="select select-bordered w-full"
-          disabled={!d2}
-          onChange={e => { setLocations(old => Array.from(new Set([...old, e.target.value]))); }}
-          value="Pick a location"
-        >
-          <option disabled>
-            Pick a location
-          </option>
-          {d2 && d2.map((v) => <option key={v}>{v}</option>)}
-        </select>
-        {e2 && (
-          <div className="mt-2">
-            <InternalServerError />
-          </div>
-        )}
-      </div>
-    </div>
+  const startLoading = () => { resetNavigationProgress(); startNavigationProgress(); }
 
-    <div className="flex flex-row w-full">
-      <div className="w-1/2 flex flex-col px-1">
-        <span>From</span>
-        <DatePicker
-          onChange={(date: Date) => setFromDate(date)}
-          selected={fromDate}
-          selectsStart
-          startDate={fromDate}
-          endDate={toDate}
+  const handleResize = (width: number) => {
+    if (width < theme.breakpoints.sm) {
+      setShow(false);
+    } else {
+      setShow(true);
+    }
+  }
+
+  // initially check for window size
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      handleResize(window.innerWidth);
+    }
+
+  }, [])
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", () => {
+      handleResize(window.innerWidth);
+    })
+  }
+
+  return (
+    <Container fluid>
+      <Flex direction={show ? "row" : "column"} align="center" justify="center" gap="sm">
+        <MultiSelect
+          label="Pick your activities"
+          w="100%"
+          placeholder='Fitness'
+          searchable
+          required
+          value={activities}
+          disabled={l1 || e1}
+          nothingFound="Nothing found"
+          data={d1?.map(v => ({ label: v, value: v })) ?? []}
+          onChange={e => { setActivities(_ => [...e]); startLoading() }}
+          clearButtonLabel="Clear Activities"
+          clearable
         />
-        <button
-          className='mt-2 btn btn-bordered btn-sm flex-none'
-          onClick={() => setActivities([])}
-          disabled={activities.length == 0}
-        >
-          Clear Activities
-        </button>
-      </div>
-      <div className="w-1/2 flex flex-col px-1">
-        <span>To</span>
-        <DatePicker
-          onChange={(date: Date) => setToDate(date)}
-          selected={toDate}
-          selectsEnd
-          startDate={fromDate}
-          endDate={toDate}
-          minDate={fromDate}
+        <Tooltip label="Pick an activity first" position='bottom' events={{ hover: l2 || e2 || d2?.length === 0, focus: l2 || e2 || d2?.length === 0, touch: l2 || e2 || d2?.length === 0 }}>
+          <MultiSelect
+            label="Pick your locations"
+            w="100%"
+            placeholder='Sport Center Polyterasse'
+            searchable
+            required
+            disabled={l2 || e2 || d2?.length === 0}
+            value={locations}
+            nothingFound="Nothing found"
+            data={d2?.map(v => ({ label: v, value: v })) ?? []}
+            onChange={e => { setLocations(_ => [...e]); }}
+            clearButtonLabel="Clear Locations"
+            clearable
+          />
+        </Tooltip>
+        <DateRangePicker
+          label="Date Range"
+          w="100%"
+          placeholder='2022-01-01 - 2022-12-31'
+          defaultValue={date}
+          value={date}
+          onChange={setDate}
+          required
+          minDate={d3?.from}
+          maxDate={d3?.to}
         />
-        <button
-          className='mt-2 btn btn-bordered btn-sm'
-          onClick={() => setLocations([])}
-          disabled={locations.length == 0}
-        >
-          Clear Locations
-        </button>
-      </div>
-    </div>
-
-
-    <div className='w-full flex flex-row mt-2'>
-      <div className='w-1/2'>
-        {activities.map(v => (
-          <div key={v} className='badge badge-neutral h-auto m-1'>
-            {v}
-            <button onClick={() => setActivities(old => [...old.filter(e => v !== e)])}>
-              <CloseIcon />
-            </button>
-          </div>))}
-      </div>
-      <div className='w-1/2'>
-        {locations.map(v => (
-          <div key={v} className='badge badge-neutral h-auto w-auto m-1'>
-            {v}
-            <button onClick={() => setLocations(old => [...old.filter(e => v !== e)])}>
-              <CloseIcon />
-            </button>
-          </div>))}
-      </div>
-    </div>
-
-  </>
+      </Flex>
+    </Container>
+  )
 }
 
 export default Search

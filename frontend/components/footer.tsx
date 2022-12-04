@@ -1,4 +1,4 @@
-import GitHubIcon from '@mui/icons-material/GitHub';
+import { IconBrandGithub } from "@tabler/icons";
 
 const Footer = () => {
     return (
@@ -8,7 +8,7 @@ const Footer = () => {
                 <a href="https://github.com/markbeep/ASVZ-Graph-Website">
                     <div className='flex flex-row'>
                         <p>Source on Github</p>
-                        <GitHubIcon className='ml-2' />
+                        <IconBrandGithub />
                     </div>
                 </a>
             </div>

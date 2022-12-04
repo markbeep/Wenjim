@@ -1,29 +1,60 @@
-import { LinearProgress } from '@mui/material'
-import React, { useState } from 'react'
-import NavBar from '../components/navBar'
+import React, { useEffect, useState } from 'react'
 import Search from '../components/search'
 import { useHistory, useHistoryLine } from './api/hooks'
 import { HistoryOrder } from './api/interfaces'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import LineChart from '../components/lineChart'
-import { CardStyle } from '.'
-import Footer from '../components/footer'
-import { useTheme } from '../context/themeProvider'
+import { Center, Container, Divider, Flex, Overlay, Pagination, ScrollArea, Skeleton, Table, Title, useMantineTheme } from '@mantine/core'
+import { IconChevronUp, IconChevronDown } from '@tabler/icons'
+import { DateRangePickerValue } from '@mantine/dates'
+import { useWindowScroll } from '@mantine/hooks'
 
 const History = () => {
-  const { theme } = useTheme();
-
+  const theme = useMantineTheme();
   const [activities, setActivities] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
-  const [from, setFrom] = useState<Date>(new Date("1970-1-1"));
-  const [to, setTo] = useState<Date>(new Date("2040-12-31"));
+  const [date, setDate] = useState<DateRangePickerValue>();
   const [orderBy, setOrderBy] = useState<HistoryOrder>(HistoryOrder.date);
   const [desc, setDesc] = useState(false);
   const [page, setPage] = useState(0);
-  const [amount, setAmount] = useState(500); // amount of items to show per page
-  const { data, isLoading } = useHistory(activities, locations, from, to, orderBy, desc);
-  const { data: lineData, isLoading: lineIsLoading } = useHistoryLine(activities, locations, from, to);
+  const [amount, setAmount] = useState(50); // amount of items to show per page
+  const { data, isLoading } = useHistory(
+    activities,
+    locations,
+    date?.[0] ?? new Date("2022-08-01"),
+    date?.[1] ?? new Date("2022-12-31"),
+    orderBy,
+    desc
+  );
+  const { data: lineData, isLoading: lineIsLoading } = useHistoryLine(
+    activities,
+    locations,
+    date?.[0] ?? new Date("2022-08-01"),
+    date?.[1] ?? new Date("2022-12-31"),
+  );
+  const [scroll, scrollTo] = useWindowScroll();
+
+  const [show, setShow] = useState(false);
+
+  const handleResize = (width: number) => {
+    if (width < theme.breakpoints.sm) {
+      setShow(false);
+    } else {
+      setShow(true);
+    }
+  }
+  // initially check for window size
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      handleResize(window.innerWidth);
+    }
+
+  }, [])
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", () => {
+      handleResize(window.innerWidth);
+    })
+  }
 
   const handleSortClick = (d: HistoryOrder) => {
     if (orderBy === d) {
@@ -34,69 +65,83 @@ const History = () => {
     setDesc(false);
   };
 
-  console.log(lineData);
+  const ths = (
+    <tr>
+      <th></th>
+      <th className={orderBy === HistoryOrder.date ? `bg-neutral-content` : ""}>
+        <button onClick={() => handleSortClick(HistoryOrder.date)}>
+          <Flex justify="center" direction="row" align="center">
+            DATE
+            {orderBy === HistoryOrder.date && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+          </Flex>
+        </button>
+      </th>
+      <th className={orderBy === HistoryOrder.activity ? `bg-neutral-content` : ""}>
+        <button onClick={() => handleSortClick(HistoryOrder.activity)}>
+          <Flex justify="center" direction="row" align="center">
+            ACTIVITY
+            {orderBy === HistoryOrder.activity && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+          </Flex>
+        </button>
+      </th>
+      <th className={orderBy === HistoryOrder.location ? `bg-neutral-content` : ""}>
+        <button onClick={() => handleSortClick(HistoryOrder.location)}>
+          <Flex justify="center" direction="row" align="center">
+            LOCATION
+            {orderBy === HistoryOrder.location && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+          </Flex>
+        </button>
+      </th>
+      <th className={orderBy === HistoryOrder.spots_free ? `bg-neutral-content` : ""}>
+        <button onClick={() => handleSortClick(HistoryOrder.spots_free)}>
+          <Flex justify="center" direction="row" align="center">
+            SPOTS FREE
+            {orderBy === HistoryOrder.spots_free && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+          </Flex>
+        </button>
+      </th>
+      <th className={orderBy === HistoryOrder.spots_total ? `bg-neutral-content` : ""}>
+        <button onClick={() => handleSortClick(HistoryOrder.spots_total)}>
+          <Flex justify="center" direction="row" align="center">
+            SPOTS TOTAL
+            {orderBy === HistoryOrder.spots_total && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+          </Flex>
+        </button>
+      </th>
+    </tr>
+  )
 
   return (
-    <div data-theme={theme}>
-      <NavBar />
+    <Container fluid>
 
-      <div className='px-10 pb-10 h-full w-full'>
-        <div className={`${CardStyle} p-4 w-full h-1/2`}>
-          <Search
-            activities={activities}
-            setActivities={setActivities}
-            locations={locations}
-            setLocations={setLocations}
-            fromDate={from}
-            setFromDate={setFrom}
-            toDate={to}
-            setToDate={setTo}
-          />
-        </div>
-        <div className={`${CardStyle} overflow-x-auto p-0 w-full mt-5 h-1/2`} style={{ height: "40vw", minHeight: "300px" }}>
-          {<LineChart data={lineData ?? []} />}
-        </div>
-        <div className={`${CardStyle} overflow-auto w-full mt-5 h-1/2`} style={{ height: "30rem" }}>
-          {isLoading && <LinearProgress className='m-10' />}
-          {data && data.length > 0 &&
-            <table className="table table-compact w-full border-collapse">
-              <thead>
-                <tr className='h-full'>
-                  <th></th>
-                  <th className={orderBy === HistoryOrder.date ? `bg-neutral-content` : ""}>
-                    <button onClick={() => handleSortClick(HistoryOrder.date)}>
-                      DATE
-                      {orderBy === HistoryOrder.date && (desc ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />)}
-                    </button>
-                  </th>
-                  <th className={orderBy === HistoryOrder.activity ? `bg-neutral-content` : ""}>
-                    <button onClick={() => handleSortClick(HistoryOrder.activity)}>
-                      ACTIVITY
-                      {orderBy === HistoryOrder.activity && (desc ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />)}
-                    </button>
-                  </th>
-                  <th className={orderBy === HistoryOrder.location ? `bg-neutral-content` : ""}>
-                    <button onClick={() => handleSortClick(HistoryOrder.location)}>
-                      LOCATION
-                      {orderBy === HistoryOrder.location && (desc ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />)}
-                    </button>
-                  </th>
-                  <th className={orderBy === HistoryOrder.spots_free ? `bg-neutral-content` : ""}>
-                    <button onClick={() => handleSortClick(HistoryOrder.spots_free)}>
-                      SPOTS FREE
-                      {orderBy === HistoryOrder.spots_free && (desc ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />)}
-                    </button>
-                  </th>
-                  <th className={orderBy === HistoryOrder.spots_total ? `bg-neutral-content` : ""}>
-                    <button onClick={() => handleSortClick(HistoryOrder.spots_total)}>
-                      SPOTS TOTAL
-                      {orderBy === HistoryOrder.spots_total && (desc ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />)}
-                    </button>
-                  </th>
-                </tr>
-              </thead>
+      <Search
+        activities={activities}
+        setActivities={setActivities}
+        locations={locations}
+        setLocations={setLocations}
+        date={date}
+        setDate={setDate}
+      />
+
+      <Divider my="md" />
+
+      <Skeleton visible={lineIsLoading}>
+        <LineChart data={lineData} />
+      </Skeleton>
+
+      <Divider my="md" />
+
+      {(data && data.length === 0) && <Center>
+        <Title>No data found</Title>
+      </Center>}
+      <Skeleton visible={!data || isLoading}>
+        <ScrollArea type='auto'>
+          <Container sx={{ minHeight: "30rem" }} fluid>
+            {(!data || data.length === 0) && <Overlay color={theme.primaryShade.toString()} blur={2} />}
+            <Table captionSide='bottom' highlightOnHover striped>
+              <thead>{ths}</thead>
               <tbody>
-                {data.slice(page * amount, (page + 1) * amount).map((e, i) => (
+                {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
                   <tr key={page * amount + i}>
                     <th>{page * amount + i + 1}</th>
                     <td>{e.date}</td>
@@ -105,22 +150,21 @@ const History = () => {
                     <td>{e.spots_free}</td>
                     <td>{e.spots_total}</td>
                   </tr>
-                ))}
+                ))
+                }
               </tbody>
-            </table>
+              {data && data.length > 0 && <tfoot>{ths}</tfoot>}
+            </Table>
+          </Container>
+        </ScrollArea>
+        <Center>
+          {data && data.length > amount &&
+            <Pagination siblings={show ? 2 : 1} withControls={show} total={Math.floor(data.length / amount)} onChange={e => { setPage(e); setTimeout(() => scrollTo({ y: 5000 }), 100) }} />
           }
-        </div>
-        {data && data.length > 1 && <div className="btn-group justify-center flex flex-row">
-          <button className="btn" onClick={() => setPage(0)}>1</button>
-          <button className="btn" onClick={() => setPage(1)}>2</button>
-          <button className="btn btn-disabled">...</button>
-          <button className="btn" onClick={() => setPage(Math.floor(data.length / amount) - 1)}>{Math.floor(data.length / amount) - 1}</button>
-          <button className="btn" onClick={() => setPage(Math.floor(data.length / amount))}>{Math.floor(data.length / amount)}</button>
-        </div>}
-      </div>
+        </Center>
+      </Skeleton>
 
-      <Footer />
-    </div>
+    </Container>
   )
 }
 
