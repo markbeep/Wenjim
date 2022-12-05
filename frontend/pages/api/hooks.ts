@@ -152,7 +152,7 @@ export function useHistoryLine(activities: string[], locations: string[], from: 
 }
 
 async function loadWeekly(activities: string[], locations: string[], from: Date, to: Date) {
-  if (activities.length === 0 || from === undefined || to === undefined) return undefined;
+  if (activities.length === 0 || locations.length === 0 || from === undefined || to === undefined) return undefined;
   const body = { activities, locations, from: from.toISOString(), to: to.toISOString() };
 
   const url = "/api/weekly"

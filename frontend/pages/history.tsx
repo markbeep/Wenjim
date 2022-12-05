@@ -20,16 +20,16 @@ const History = () => {
   const { data, isLoading } = useHistory(
     activities,
     locations,
-    date?.[0] ?? new Date("2022-08-01"),
-    date?.[1] ?? new Date("2022-12-31"),
+    date?.[0] ?? new Date("2022-09-19"),
+    date?.[1] ?? new Date("2022-12-24"),
     orderBy,
     desc
   );
   const { data: lineData, isLoading: lineIsLoading } = useHistoryLine(
     activities,
     locations,
-    date?.[0] ?? new Date("2022-08-01"),
-    date?.[1] ?? new Date("2022-12-31"),
+    date?.[0] ?? new Date("2022-09-19"),
+    date?.[1] ?? new Date("2022-12-24"),
   );
   const [scroll, scrollTo] = useWindowScroll();
 

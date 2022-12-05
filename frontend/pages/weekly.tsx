@@ -70,9 +70,10 @@ const Weekly = () => {
   const { data } = useWeekly(
     activity ? [activity] : [],
     location ? [location] : [],
-    date?.[0] ?? new Date("2022-08-01"),
-    date?.[1] ?? new Date("2022-12-31")
+    date?.[0] ?? new Date("2022-09-19"),
+    date?.[1] ?? new Date("2022-12-24"),
   );
+  console.log(data)
 
   return (
     <Container fluid>
@@ -126,7 +127,7 @@ const Weekly = () => {
           </Flex>
         </SimpleGrid>
         <Center>
-          {data && <Text mt={-10}>Hourly average free spots. Click to view in more detail.</Text>}
+          {data && <Text>Hourly average free spots. Click to view in more detail.</Text>}
         </Center>
       </ScrollArea>
     </Container >
