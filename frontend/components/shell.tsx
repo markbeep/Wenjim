@@ -71,7 +71,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
                     style={{ cursor: "pointer" }}
                     gradient={{ from: theme.colors.blue[6], to: theme.colors.blue[0], deg: 45 }}
                   >
-                    Graphs
+                    Wenjim
                   </Title>
                 </Link>
               </Center>
