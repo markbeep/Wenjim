@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useLocations, useMinMaxDate, useSports } from '../pages/api/hooks'
 import { DateRangePicker, DateRangePickerValue } from '@mantine/dates'
 import { Flex, MultiSelect, Container, useMantineTheme, Tooltip, Select, SegmentedControl, Input, FocusTrap } from '@mantine/core'
@@ -23,13 +23,13 @@ const SingleSearch = ({ activity, setActivity, location, setLocation, date, setD
 
     const startLoading = () => { resetNavigationProgress(); startNavigationProgress(); }
 
-    const handleResize = (width: number) => {
+    const handleResize = useCallback((width: number) => {
         if (width < theme.breakpoints.sm) {
             setShow(false);
         } else {
             setShow(true);
         }
-    }
+    }, [theme])
 
     // initially check for window size
     useEffect(() => {
@@ -37,7 +37,7 @@ const SingleSearch = ({ activity, setActivity, location, setLocation, date, setD
             handleResize(window.innerWidth);
         }
 
-    }, [])
+    }, [handleResize])
 
     if (typeof window !== "undefined") {
         window.addEventListener("resize", () => {

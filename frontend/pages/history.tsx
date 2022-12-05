@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Search from '../components/search'
 import { useHistory, useHistoryLine } from './api/hooks'
 import { HistoryOrder } from './api/interfaces'
@@ -35,20 +35,20 @@ const History = () => {
 
   const [show, setShow] = useState(false);
 
-  const handleResize = (width: number) => {
+  const handleResize = useCallback((width: number) => {
     if (width < theme.breakpoints.sm) {
       setShow(false);
     } else {
       setShow(true);
     }
-  }
+  }, [theme])
   // initially check for window size
   useEffect(() => {
     if (typeof window !== "undefined") {
       handleResize(window.innerWidth);
     }
 
-  }, [])
+  }, [handleResize])
 
   if (typeof window !== "undefined") {
     window.addEventListener("resize", () => {

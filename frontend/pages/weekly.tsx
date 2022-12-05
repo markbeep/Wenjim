@@ -1,7 +1,6 @@
-import { AspectRatio, Container, Divider, Flex, ScrollArea, SimpleGrid, Title, Text, Paper, useMantineTheme, useMantineColorScheme, Center, Table, MantineTheme, Button, Modal } from '@mantine/core'
+import { Container, Divider, Flex, ScrollArea, SimpleGrid, Text, useMantineTheme, Center, Modal } from '@mantine/core'
 import { DateRangePickerValue } from '@mantine/dates'
 import React, { useState } from 'react'
-import Search from '../components/search'
 import SingleSearch from '../components/singleSearch'
 import { useWeekly } from './api/hooks'
 import { WeeklyTimeData } from './api/interfaces'
@@ -11,7 +10,7 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
   const [opened, setOpened] = useState(false);
   const { data } = props;
 
-  if (!data || !data.details)
+  if (!data || !data.details || data.details.length === 0)
     return (
       <Container
         mt="sm"
@@ -19,32 +18,42 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
         mih={30}
         w="100%"
       />)
+  const avgFree = data.details.reduce((a, b) => a + b.avgFree, 0) / data.details.length;
+  const maxAvg = data.details.reduce((a, b) => a + b.maxAvg, 0) / data.details.length;
   const c = theme.colors
   const colors = [c.red, c.orange, c.yellow, c.lime, c.teal, c.lime]
-  const ind = Math.floor(data.details.avgFree / data.details.maxAvg * (colors.length - 1))
+  const ind = Math.floor(avgFree / maxAvg * (colors.length - 1))
 
   return (
     <>
       <Modal
         opened={opened}
         onClose={() => setOpened(false)}
-        title={`${data.details.sport}`}
         overlayBlur={2}
       >
-        <Flex w="100%" direction="row" align="center" justify="center">
-          <Flex w="100%" direction="column" align="flex-start" justify="flex-start" mr="sm">
-            <Text>Time</Text>
-            <Text>Weekday</Text>
-            <Text>Average Free Spots</Text>
-            <Text>Subtitle</Text>
-          </Flex>
-          <Flex w="100%" direction="column" align="flex-end" justify="flex-start">
-            <Text>{data.details.time} - {data.details.timeTo}</Text>
-            <Text>{data.details.weekday.slice(0, 1).toUpperCase() + data.details.weekday.slice(1)}</Text>
-            <Text>{Math.round(data.details.avgFree)}</Text>
-            <Text>{data.details.title}</Text>
-          </Flex>
-        </Flex>
+        {data.details.map((d, i) => (
+          <>
+            {i > 0 && <Divider size="sm" />}
+            <Flex key={i} w="100%" direction="row" align="center" justify="center" my="sm">
+              <Flex w="100%" direction="column" align="flex-start" justify="flex-start" mr="sm">
+                <Text>Sport</Text>
+                <Text>Subtitle</Text>
+                <Text>Time</Text>
+                <Text>Weekday</Text>
+                <Text>Average Free Spots</Text>
+                <Text>Average Total Spots</Text>
+              </Flex>
+              <Flex w="100%" direction="column" align="flex-end" justify="flex-start">
+                <Text>{d.sport.slice(0, 1).toUpperCase() + d.sport.slice(1)}</Text>
+                <Text>{d.title}</Text>
+                <Text>{d.time} - {d.timeTo}</Text>
+                <Text>{d.weekday.slice(0, 1).toUpperCase() + d.weekday.slice(1)}</Text>
+                <Text>{Math.round(d.avgFree)}</Text>
+                <Text>{Math.round(d.maxAvg)}</Text>
+              </Flex>
+            </Flex>
+          </>
+        ))}
       </Modal>
 
       <button style={{ width: "100%", height: "100%" }} onClick={() => setOpened(true)}>
@@ -56,7 +65,7 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
           pt={6}
           c={c.dark[4]}
         >
-          {Math.round(data.details.avgFree)}
+          {Math.round(avgFree)}
         </Container>
       </button>
     </>
@@ -88,7 +97,7 @@ const Weekly = () => {
 
       <Divider my="sm" />
 
-      <ScrollArea type='auto'>
+      {data && <ScrollArea type='auto'>
         <SimpleGrid cols={8} miw={1300} >
           <Center>Time</Center>
           <Center>Monday</Center>
@@ -102,34 +111,34 @@ const Weekly = () => {
         <Divider />
         <SimpleGrid cols={8} miw={1300} >
           <Flex direction="column" align="center">
-            {data && data.monday.map((e, i) => <Container key={i} mt="sm" w="100%" h={30}><Center>{e.time}</Center></Container>)}
+            {data.monday.map((e, i) => <Container key={i} mt="sm" w="100%" h={30}><Center>{e.time}</Center></Container>)}
           </Flex>
           <Flex direction="column" align="center">
-            {data && data.monday.map((e, i) => <Hour key={"monday" + i} data={e} />)}
+            {data.monday.map((e, i) => <Hour key={"monday" + i} data={e} />)}
           </Flex>
           <Flex direction="column" align="center">
-            {data && data.tuesday.map((e, i) => <Hour key={"tuesday" + i} data={e} />)}
+            {data.tuesday.map((e, i) => <Hour key={"tuesday" + i} data={e} />)}
           </Flex>
           <Flex direction="column" align="center">
-            {data && data.wednesday.map((e, i) => <Hour key={"wednesday" + i} data={e} />)}
+            {data.wednesday.map((e, i) => <Hour key={"wednesday" + i} data={e} />)}
           </Flex>
           <Flex direction="column" align="center">
-            {data && data.thursday.map((e, i) => <Hour key={"thursday" + i} data={e} />)}
+            {data.thursday.map((e, i) => <Hour key={"thursday" + i} data={e} />)}
           </Flex>
           <Flex direction="column" align="center">
-            {data && data.friday.map((e, i) => <Hour key={"friday" + i} data={e} />)}
+            {data.friday.map((e, i) => <Hour key={"friday" + i} data={e} />)}
           </Flex>
           <Flex direction="column" align="center">
-            {data && data.saturday.map((e, i) => <Hour key={"saturday" + i} data={e} />)}
+            {data.saturday.map((e, i) => <Hour key={"saturday" + i} data={e} />)}
           </Flex>
           <Flex direction="column" align="center">
-            {data && data.sunday.map((e, i) => <Hour key={"sunday" + i} data={e} />)}
+            {data.sunday.map((e, i) => <Hour key={"sunday" + i} data={e} />)}
           </Flex>
         </SimpleGrid>
         <Center>
-          {data && <Text>Hourly average free spots. Click to view in more detail.</Text>}
+          {<Text>Hourly average free spots. Click to view in more detail.</Text>}
         </Center>
-      </ScrollArea>
+      </ScrollArea>}
     </Container >
   )
 }

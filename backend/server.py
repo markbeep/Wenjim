@@ -232,7 +232,7 @@ def weekly():
         data[wd] = {}
         details[wd] = []
         for rt in time_slots:
-            data[wd][rt] = None
+            data[wd][rt] = []
 
 
     # rounds the time to nearest hour
@@ -246,7 +246,7 @@ def weekly():
     for time, time_to, weekday, avg, sport, title, maxAvg, _ in res:
         rt = round_time(time)
         wd = weekdays[int(weekday)]
-        data[wd][rt] = {"sport": sport, "time": time, "weekday": wd, "timeTo": time_to, "avgFree": avg, "maxAvg": maxAvg, "title": title}
+        data[wd][rt].append({"sport": sport, "time": time, "weekday": wd, "timeTo": time_to, "avgFree": avg, "maxAvg": maxAvg, "title": title})
     
     
     formatted = {}

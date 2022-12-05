@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { Affix, AppShell, Button, Center, Flex, Navbar, NavLink, Text, Transition, useMantineTheme } from '@mantine/core'
-import { ReactNode, useEffect, useState } from 'react'
-import { IconArrowUp, IconBook, IconBrandGithub, IconCalendar, IconHome } from '@tabler/icons'
+import { Affix, AppShell, Box, Button, Center, Container, Flex, Navbar, NavLink, Text, ThemeIcon, Transition, useMantineTheme } from '@mantine/core'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { IconArrowUp, IconBook, IconBrandGithub, IconBug, IconCalendar, IconHome } from '@tabler/icons'
 import { useWindowScroll } from '@mantine/hooks'
 
 const Shell = ({ children }: { children: ReactNode }) => {
@@ -9,13 +9,13 @@ const Shell = ({ children }: { children: ReactNode }) => {
   const [show, setShow] = useState(false);
   const [scroll, scrollTo] = useWindowScroll();
 
-  const handleResize = (width: number) => {
+  const handleResize = useCallback((width: number) => {
     if (width < theme.breakpoints.sm) {
       setShow(false);
     } else {
       setShow(true);
     }
-  }
+  }, [theme])
 
   // initially check for window size
   useEffect(() => {
@@ -23,7 +23,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
       handleResize(window.innerWidth);
     }
 
-  }, [])
+  }, [handleResize])
 
   if (typeof window !== "undefined") {
     window.addEventListener("resize", () => {
@@ -31,61 +31,53 @@ const Shell = ({ children }: { children: ReactNode }) => {
     })
   }
 
+  const menus = [
+    {
+      name: "Home",
+      icon: <IconHome />,
+      href: "/"
+    },
+    {
+      name: "History",
+      icon: <IconBook />,
+      href: "/history"
+    },
+    {
+      name: "Weekly",
+      icon: <IconCalendar />,
+      href: "/weekly"
+    },
+    {
+      name: "Report Bug",
+      icon: <IconBug />,
+      href: "https://github.com/markbeep/ASVZ-Graph-Website/issues"
+    }
+  ]
+
   return (
     <AppShell
       navbar={
-        <Navbar p="md" width={{ base: 50, sm: 150 }}>
+        <Navbar
+          width={{ base: 50, sm: 150 }}>
 
-          <Navbar.Section mt="lg">
-            <Center>
-              <Link href="/">
-                <Button variant='light'>
-                  <Flex direction="row" justify="start" align="center">
-                    <IconHome size={32} />
-                    {show && <Text ml={20}>Home</Text>}
-                  </Flex>
-                </Button>
-              </Link>
-            </Center>
-          </Navbar.Section>
-
-          <Navbar.Section mt="lg">
-            <Center>
-              <Link href="/history">
-                <Button variant='light'>
-                  <Flex direction="row" justify="start" align="center">
-                    <IconBook size={32} />
-                    {show && <Text ml={20}>History</Text>}
-                  </Flex>
-                </Button>
-              </Link>
-            </Center>
-          </Navbar.Section>
-
-          <Navbar.Section mt="lg" grow>
-            <Center>
-              <Link href="/weekly">
-                <Button variant='light'>
-                  <Flex direction="row" justify="start" align="center">
-                    <IconCalendar size={32} />
-                    {show && <Text ml={20}>Weekly</Text>}
-                  </Flex>
-                </Button>
-              </Link>
-            </Center>
-          </Navbar.Section>
-
-          <Navbar.Section mt="lg">
-            <Center>
-              <Link href="https://github.com/markbeep/ASVZ-Graph-Website/issues">
-                <Button variant='light'>
-                  <Flex direction="row" justify="start" align="center">
-                    <IconBrandGithub size={32} />
-                    {show && <Text ml={10}>Report bug</Text>}
-                  </Flex>
-                </Button>
-              </Link>
-            </Center>
+          <Navbar.Section grow mt="lg">
+            {menus.map(e => (
+              <Box key={e.name} my="sm">
+                <Link href={e.href}>
+                  <Button
+                    variant='light'
+                    leftIcon={<ThemeIcon>{e.icon}</ThemeIcon>}
+                    fullWidth
+                    h={40}
+                    sx={{
+                      "& > .mantine-Button-inner": { justifyContent: "flex-start" },
+                    }}
+                  >
+                    {e.name}
+                  </Button>
+                </Link>
+              </Box>
+            ))}
           </Navbar.Section>
         </Navbar>
       }

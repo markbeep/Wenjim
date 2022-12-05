@@ -44,7 +44,7 @@ export interface WeeklyDetails {
 
 export interface WeeklyTimeData {
   time: string;
-  details: WeeklyDetails | null;
+  details: WeeklyDetails[];
 }
 
 export interface WeeklyData {
