@@ -50,7 +50,7 @@ const Search = ({ activities, setActivities, locations, setLocations, date, setD
       <Flex direction={show ? "row" : "column"} align="center" justify="center" gap="sm">
         <FocusTrap active>
           <MultiSelect
-            data-autoFocus
+            data-autofocus
             label="Pick your activities"
             w="100%"
             placeholder='Fitness'

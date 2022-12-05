@@ -13,10 +13,11 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
   if (!data || !data.details || data.details.length === 0)
     return (
       <Container
-        mt="sm"
+        mt={5}
         bg={theme.colors.dark[7]}
-        mih={30}
+        mih={25}
         w="100%"
+        sx={{ borderRadius: "5%" }}
       />)
   const avgFree = data.details.reduce((a, b) => a + b.avgFree, 0) / data.details.length;
   const maxAvg = data.details.reduce((a, b) => a + b.maxAvg, 0) / data.details.length;
@@ -32,9 +33,9 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
         overlayBlur={2}
       >
         {data.details.map((d, i) => (
-          <>
+          <Container key={i}>
             {i > 0 && <Divider size="sm" />}
-            <Flex key={i} w="100%" direction="row" align="center" justify="center" my="sm">
+            <Flex w="100%" direction="row" align="center" justify="center" my="sm">
               <Flex w="100%" direction="column" align="flex-start" justify="flex-start" mr="sm">
                 <Text>Sport</Text>
                 <Text>Subtitle</Text>
@@ -52,18 +53,19 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
                 <Text>{Math.round(d.maxAvg)}</Text>
               </Flex>
             </Flex>
-          </>
+          </Container>
         ))}
       </Modal>
 
       <button style={{ width: "100%", height: "100%" }} onClick={() => setOpened(true)}>
         <Container
-          mt="sm"
+          mt={5}
           bg={colors[ind][4] ?? c.dark[6]}
-          h={30}
+          mih={25}
           w="100%"
-          pt={6}
+          pt={4}
           c={c.dark[4]}
+          sx={{ borderRadius: "5%" }}
         >
           {Math.round(avgFree)}
         </Container>
@@ -97,48 +99,51 @@ const Weekly = () => {
 
       <Divider my="sm" />
 
-      {data && <ScrollArea type='auto'>
-        <SimpleGrid cols={8} miw={1300} >
-          <Center>Time</Center>
-          <Center>Monday</Center>
-          <Center>Tuesday</Center>
-          <Center>Wednesday</Center>
-          <Center>Thursday</Center>
-          <Center>Friday</Center>
-          <Center>Saturday</Center>
-          <Center>Sunday</Center>
-        </SimpleGrid>
-        <Divider />
-        <SimpleGrid cols={8} miw={1300} >
-          <Flex direction="column" align="center">
-            {data.monday.map((e, i) => <Container key={i} mt="sm" w="100%" h={30}><Center>{e.time}</Center></Container>)}
-          </Flex>
-          <Flex direction="column" align="center">
-            {data.monday.map((e, i) => <Hour key={"monday" + i} data={e} />)}
-          </Flex>
-          <Flex direction="column" align="center">
-            {data.tuesday.map((e, i) => <Hour key={"tuesday" + i} data={e} />)}
-          </Flex>
-          <Flex direction="column" align="center">
-            {data.wednesday.map((e, i) => <Hour key={"wednesday" + i} data={e} />)}
-          </Flex>
-          <Flex direction="column" align="center">
-            {data.thursday.map((e, i) => <Hour key={"thursday" + i} data={e} />)}
-          </Flex>
-          <Flex direction="column" align="center">
-            {data.friday.map((e, i) => <Hour key={"friday" + i} data={e} />)}
-          </Flex>
-          <Flex direction="column" align="center">
-            {data.saturday.map((e, i) => <Hour key={"saturday" + i} data={e} />)}
-          </Flex>
-          <Flex direction="column" align="center">
-            {data.sunday.map((e, i) => <Hour key={"sunday" + i} data={e} />)}
-          </Flex>
-        </SimpleGrid>
+      {data &&
         <Center>
-          {<Text>Hourly average free spots. Click to view in more detail.</Text>}
-        </Center>
-      </ScrollArea>}
+          <ScrollArea type='auto'>
+            <SimpleGrid cols={8} w={800}>
+              <Center>Time</Center>
+              <Center>Monday</Center>
+              <Center>Tuesday</Center>
+              <Center>Wednesday</Center>
+              <Center>Thursday</Center>
+              <Center>Friday</Center>
+              <Center>Saturday</Center>
+              <Center>Sunday</Center>
+            </SimpleGrid>
+            <Divider />
+            <SimpleGrid cols={8} w={800}>
+              <Flex direction="column" align="center">
+                {data.monday.map((e, i) => <Container key={i} mt={5} w="100%" mih={25}><Center>{e.time}</Center></Container>)}
+              </Flex>
+              <Flex direction="column" align="center">
+                {data.monday.map((e, i) => <Hour key={"monday" + i} data={e} />)}
+              </Flex>
+              <Flex direction="column" align="center">
+                {data.tuesday.map((e, i) => <Hour key={"tuesday" + i} data={e} />)}
+              </Flex>
+              <Flex direction="column" align="center">
+                {data.wednesday.map((e, i) => <Hour key={"wednesday" + i} data={e} />)}
+              </Flex>
+              <Flex direction="column" align="center">
+                {data.thursday.map((e, i) => <Hour key={"thursday" + i} data={e} />)}
+              </Flex>
+              <Flex direction="column" align="center">
+                {data.friday.map((e, i) => <Hour key={"friday" + i} data={e} />)}
+              </Flex>
+              <Flex direction="column" align="center">
+                {data.saturday.map((e, i) => <Hour key={"saturday" + i} data={e} />)}
+              </Flex>
+              <Flex direction="column" align="center">
+                {data.sunday.map((e, i) => <Hour key={"sunday" + i} data={e} />)}
+              </Flex>
+            </SimpleGrid>
+            <Center>
+              {<Text>Hourly average free spots. Click to view in more detail.</Text>}
+            </Center>
+          </ScrollArea>
+        </Center>}
     </Container >
   )
 }

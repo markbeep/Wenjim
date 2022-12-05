@@ -1,9 +1,8 @@
 import { CalendarDatum } from '@nivo/calendar'
 import axios from "axios"
 import { Serie } from '@nivo/line';
-import { HistoryData, HistoryOrder, StringDatum, StringExtraProps, WeeklyData } from "./interfaces";
+import { HistoryData, HistoryOrder, WeeklyData } from "./interfaces";
 import { useQuery } from 'react-query';
-import { HeatMapSerie } from '@nivo/heatmap';
 import { showNotification } from '@mantine/notifications';
 import { completeNavigationProgress } from '@mantine/nprogress';
 

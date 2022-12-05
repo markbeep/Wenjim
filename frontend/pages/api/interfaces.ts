@@ -22,16 +22,6 @@ export enum HistoryOrder {
   spots_free,
 }
 
-export interface StringDatum extends HeatMapDatum {
-  x: string;
-  y: number;
-};
-
-export interface StringExtraProps {
-  id: string;
-  data: StringDatum[];
-};
-
 export interface WeeklyDetails {
   sport: string;
   time: string;

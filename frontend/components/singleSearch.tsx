@@ -48,9 +48,9 @@ const SingleSearch = ({ activity, setActivity, location, setLocation, date, setD
     return (
         <Container fluid>
             <Flex direction={show ? "row" : "column"} align="center" justify="center" gap="sm">
-                <FocusTrap active>
+                <FocusTrap active={d1?.length !== 0 && !l1 && !e1}>
                     <Select
-                        data-autoFocus
+                        data-autofocus
                         label="Pick an activity"
                         w="100%"
                         placeholder='Fitness'
@@ -68,7 +68,7 @@ const SingleSearch = ({ activity, setActivity, location, setLocation, date, setD
                 <FocusTrap active={!(l2 || e2 || d2?.length === 0)}>
                     <Tooltip label="Pick an activity first" position='bottom' events={{ hover: l2 || e2 || d2?.length === 0, focus: l2 || e2 || d2?.length === 0, touch: l2 || e2 || d2?.length === 0 }}>
                         <Select
-                            data-autoFocus
+                            data-autofocus
                             label="Pick a location"
                             w="100%"
                             placeholder='Sport Center Polyterasse'
@@ -85,7 +85,7 @@ const SingleSearch = ({ activity, setActivity, location, setLocation, date, setD
                     </Tooltip>
                 </FocusTrap>
 
-                <Input.Wrapper label="Date Range" required>
+                <Input.Wrapper label="Date Range" required w="100%">
                     <SegmentedControl
                         w="100%"
                         onChange={v => {

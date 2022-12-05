@@ -13,4 +13,4 @@ COPY backend/ .
 
 EXPOSE 5000
 
-ENTRYPOINT ["gunicorn", "--config", "gunicorn_config.py", "wsgi:app"]
+ENTRYPOINT ["gunicorn", "--config", "gunicorn_config.py", "wsgi:app", "--access-logfile -"]
