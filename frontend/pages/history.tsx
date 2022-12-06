@@ -3,7 +3,7 @@ import Search from '../components/search'
 import { useHistory, useHistoryLine } from './api/hooks'
 import { HistoryOrder } from './api/interfaces'
 import LineChart from '../components/lineChart'
-import { Center, Container, Divider, Flex, Overlay, Pagination, ScrollArea, Skeleton, Table, Title, useMantineTheme, Text } from '@mantine/core'
+import { Center, Container, Divider, Flex, Overlay, Pagination, ScrollArea, Skeleton, Table, Title, useMantineTheme, Text, createStyles } from '@mantine/core'
 import { IconChevronUp, IconChevronDown } from '@tabler/icons'
 import { DateRangePickerValue } from '@mantine/dates'
 import { useWindowScroll } from '@mantine/hooks'
@@ -31,7 +31,8 @@ const History = () => {
     date?.[0] ?? new Date("2022-09-19"),
     date?.[1] ?? new Date("2022-12-24"),
   );
-  const [scroll, scrollTo] = useWindowScroll();
+
+  const [_, scrollTo] = useWindowScroll();
 
   const [show, setShow] = useState(false);
 
@@ -137,12 +138,13 @@ const History = () => {
       {(data && data.length === 0) && <Center>
         <Title>No data found</Title>
       </Center>}
+
       <Skeleton visible={!data || isLoading}>
-        <ScrollArea type='auto'>
+        <ScrollArea h={500} type='auto'>
           <Container sx={{ minHeight: "30rem" }} fluid>
             {(!data || data.length === 0) && <Overlay color={theme.primaryShade.toString()} blur={2} />}
             <Table captionSide='bottom' highlightOnHover striped>
-              <thead>{ths}</thead>
+              <thead style={{ top: 0, position: "sticky", backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white }}>{ths}</thead>
               <tbody>
                 {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
                   <tr key={page * amount + i}>
@@ -156,7 +158,6 @@ const History = () => {
                 ))
                 }
               </tbody>
-              {data && data.length > 0 && <tfoot>{ths}</tfoot>}
             </Table>
           </Container>
         </ScrollArea>
