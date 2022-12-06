@@ -120,21 +120,6 @@ const Shell = ({ children }: { children: ReactNode }) => {
       })}
     >
       {children}
-
-      <Affix position={{ bottom: 20, right: 20 }}>
-        <Transition transition="slide-up" mounted={scroll.y > 0}>
-          {(transitionStyles) => (
-            <Button
-              leftIcon={<IconArrowUp size={16} />}
-              onClick={() => scrollTo({ y: 0 })}
-              style={transitionStyles}
-              variant="outline"
-            >
-              Scroll to the top
-            </Button>
-          )}
-        </Transition>
-      </Affix>
     </AppShell>
   )
 }
