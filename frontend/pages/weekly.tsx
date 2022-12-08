@@ -98,7 +98,6 @@ const Weekly = () => {
       />
 
       <Divider my="sm" />
-
       {data &&
         <Center>
           <ScrollArea type='auto'>

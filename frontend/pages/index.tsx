@@ -27,7 +27,6 @@ const Home = () => {
         </Container>
       </Center>
 
-
       <Center mt="md">
         <Skeleton visible={isLoading}>
           {<CalendarChart data={data} />}

@@ -46,12 +46,6 @@ const Shell = ({ children }: { children: ReactNode }) => {
       name: "Weekly",
       icon: <IconCalendar />,
       href: "/weekly"
-    },
-    {
-      name: "Report Bug",
-      icon: <IconBug />,
-      href: "https://github.com/markbeep/ASVZ-Graph-Website/issues",
-      target: "_blank",
     }
   ]
 
@@ -70,6 +64,9 @@ const Shell = ({ children }: { children: ReactNode }) => {
                     variant="gradient"
                     style={{ cursor: "pointer" }}
                     gradient={{ from: theme.colors.blue[6], to: theme.colors.blue[0], deg: 45 }}
+                    sx={{
+                      fontFamily: 'HighlandGothic, sans-serif',
+                    }}
                   >
                     Wenjim
                   </Title>
@@ -88,31 +85,54 @@ const Shell = ({ children }: { children: ReactNode }) => {
           <Navbar.Section grow>
             {menus.map(e => (
               <Box key={e.name} my="sm">
-                <Link href={e.href} passHref>
-                  <a target={e.target} rel="noopener noreferrer">
-                    <Button
-                      variant='light'
-                      leftIcon={
-                        <ThemeIcon
-                          variant='gradient'
-                          gradient={{ from: theme.colors.blue[6], to: theme.colors.blue[2], deg: 45 }}
-                        >
-                          {e.icon}
-                        </ThemeIcon>}
-                      fullWidth
-                      h={40}
-                      sx={{
-                        "& > .mantine-Button-inner": { justifyContent: "flex-start" },
-                      }}
-                    >
-                      {e.name}
-                    </Button>
-                  </a>
+                <Link href={e.href}>
+                  <Button
+                    variant='light'
+                    leftIcon={
+                      <ThemeIcon
+                        variant='gradient'
+                        gradient={{ from: theme.colors.blue[6], to: theme.colors.blue[2], deg: 45 }}
+                      >
+                        {e.icon}
+                      </ThemeIcon>}
+                    fullWidth
+                    h={40}
+                    sx={{
+                      "& > .mantine-Button-inner": { justifyContent: "flex-start" },
+                    }}
+                  >
+                    {e.name}
+                  </Button>
                 </Link>
               </Box>
             ))}
           </Navbar.Section>
-        </Navbar>
+          <Navbar.Section>
+            <Box my="sm">
+              <Link href="https://github.com/markbeep/ASVZ-Graph-Website/issues" passHref>
+                <a target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variant='light'
+                    leftIcon={
+                      <ThemeIcon
+                        variant='gradient'
+                        gradient={{ from: theme.colors.blue[6], to: theme.colors.blue[2], deg: 45 }}
+                      >
+                        <IconBug />
+                      </ThemeIcon>}
+                    fullWidth
+                    h={40}
+                    sx={{
+                      "& > .mantine-Button-inner": { justifyContent: "flex-start" },
+                    }}
+                  >
+                    Issues
+                  </Button>
+                </a>
+              </Link>
+            </Box>
+          </Navbar.Section>
+        </Navbar >
       }
       padding="md"
       styles={(theme) => ({
@@ -120,7 +140,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
       })}
     >
       {children}
-    </AppShell>
+    </AppShell >
   )
 }
 
