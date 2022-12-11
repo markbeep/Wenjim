@@ -1,5 +1,5 @@
 services:
-  bot:
+  flask:
     build: .
     restart: "no"
     volumes:

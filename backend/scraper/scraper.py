@@ -4,7 +4,8 @@ from datetime import datetime
 import dateutil.parser
 from pytz import timezone
 import time
-from models import Entries, Timestamps, fn, Expression
+from models import Entries, Timestamps, create_all_tables
+import os
 
 
 tz = timezone("Europe/Zurich")
@@ -56,7 +57,7 @@ def scrape(FETCH, hours_to_scrape=24):
 
         print(f"Entries: {len(entries)}")
 
-        with open("entries.json", "w") as f:
+        with open("data/entries.json", "w") as f:
             json.dump(entries, f, indent=4)
 
         # updates the sports.json file with all the current sport types
@@ -69,7 +70,7 @@ def scrape(FETCH, hours_to_scrape=24):
         with open("sports.json", "w") as f:
             json.dump(sports, f, indent=4)
     else:
-        with open("entries.json", "r") as f:
+        with open("data/entries.json", "r") as f:
             entries: list = json.load(f)
 
     # converts datetime to datetime objects for ease of use
@@ -110,7 +111,7 @@ def add_to_db(entries: list):
             add_timestamps.append(ts)
     
     # save the values
-    Timestamps.bulk_create(add_entries)
+    Entries.bulk_create(add_entries)
     Timestamps.bulk_create(add_timestamps)
     Timestamps.bulk_update(update_timestamps, fields=[Timestamps.last_space_date, Timestamps.track_date, Timestamps.places_taken])
     
@@ -119,5 +120,7 @@ def add_to_db(entries: list):
     
 
 if __name__ == "__main__":
+    if not os.path.exists("data/entries.db"):
+        create_all_tables()
     entries = scrape(True, 24)  # scrape x hours in advance
     add_to_db(entries)

@@ -9,7 +9,7 @@ COPY public/ public/
 COPY tsconfig.json .
 COPY tailwind.config.js .
 
-ENV BACKEND_PROXY=http://wenjim-backend-staging:5000
+ENV BACKEND_PROXY=http://wenjim-backend-prod:5000
 
 RUN npm run build
 
