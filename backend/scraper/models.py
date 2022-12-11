@@ -43,3 +43,6 @@ class SqliteSequence(BaseModel):
         table_name = 'sqlite_sequence'
         primary_key = False
 
+
+def create_all_tables():
+    database.create_tables([Entries, Timestamps])
