@@ -8,10 +8,8 @@ RUN python3 -m ensurepip
 RUN pip3 install --no-cache --upgrade pip
 
 COPY requirements.txt .
-RUN pip3 install --no-cache -r requirements.txt
+RUN pip3 install -r requirements.txt
+COPY models.py .
+COPY scraper.py .
 
-COPY . .
-
-EXPOSE 5000
-
-CMD python3 server.py
+CMD python3 scraper.py

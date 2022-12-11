@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import React from 'react';
 import { MantineProvider } from '@mantine/core';
+import { Global } from '@emotion/react';
 
 
 export enum Pages {
@@ -13,7 +14,31 @@ interface Children {
 
 export default function ThemeProvider({ children }: Children) {
   return (
-    <MantineProvider withGlobalStyles withNormalizeCSS theme={{ colorScheme: "dark" }}>
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{
+        colorScheme: "dark",
+        fontFamily: "OpenSans, sans-serif",
+      }}
+    >
+      <Global
+        styles={[
+          {
+            "@font-face": {
+              fontFamily: "OpenSans",
+              src: "local('OpenSans'), url('OpenSans-Regular.ttf') format('truetype')",
+            }
+          },
+          {
+            "@font-face": {
+              fontFamily: "HighlandGothic",
+              src: "local('HighlandGothic'), url('HighlandGothicFLF.ttf') format('truetype')",
+            }
+          },
+        ]}
+
+      />
       {children}
     </MantineProvider>
   )
