@@ -1,0 +1,7 @@
+services:
+  bot:
+    build: .
+    restart: "no"
+    volumes:
+      - ./data:/app/data
+      - ./migrations:/app/migrations

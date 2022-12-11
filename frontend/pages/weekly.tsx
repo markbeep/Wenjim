@@ -10,7 +10,7 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
   const [opened, setOpened] = useState(false);
   const { data } = props;
 
-  if (!data || !data.details || data.details.length === 0)
+  if (!data || !data.details || data.details.length === 0) {
     return (
       <Container
         mt={5}
@@ -19,6 +19,7 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
         w="100%"
         sx={{ borderRadius: "5%" }}
       />)
+  }
   const avgFree = data.details.reduce((a, b) => a + b.avgFree, 0) / data.details.length;
   const maxAvg = data.details.reduce((a, b) => a + b.maxAvg, 0) / data.details.length;
   const c = theme.colors
@@ -60,7 +61,7 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
       <button style={{ width: "100%", height: "100%" }} onClick={() => setOpened(true)}>
         <Container
           mt={5}
-          bg={colors[ind][4] ?? c.dark[6]}
+          bg={colors[ind] ? colors[ind][4] : c.dark[6]}
           mih={25}
           w="100%"
           pt={4}
