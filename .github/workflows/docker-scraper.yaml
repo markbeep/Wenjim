@@ -28,7 +28,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: ./
+          context: ./backend/scraper
           file: ./backend/scraper/Dockerfile
           platforms: linux/amd64
           push: true
