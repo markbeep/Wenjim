@@ -13,7 +13,7 @@ def count_day():
              .group_by(fn.STRFTIME("%Y-%m-%d", Timestamps.start_date, "unixepoch")))
     res = [
         {
-            "day": x.track_date.strftime("%Y-%m-%d"),
+            "day": x.start_date.strftime("%Y-%m-%d"),
             "value": x.sum,
         } for x in query
     ]
