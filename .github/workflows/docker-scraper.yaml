@@ -2,7 +2,7 @@ name: Build Release Scraper
 
 on:
   push:
-    branches: ["master"]
+    branches: ["master", "staging"]
 
 jobs:
   build:

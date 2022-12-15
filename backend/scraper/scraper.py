@@ -76,9 +76,9 @@ def scrape(FETCH, hours_to_scrape=24):
     # converts datetime to datetime objects for ease of use
     for e in entries:
         e["from_date"] = dateutil.parser.isoparse(
-            e['from_date']).astimezone(tz).strftime("%H:%M")
+            e['from_date']).astimezone(tz)
         e["to_date"] = dateutil.parser.isoparse(
-            e['to_date']).astimezone(tz).strftime("%H:%M")
+            e['to_date']).astimezone(tz)
 
     return entries
 
@@ -89,7 +89,7 @@ def add_to_db(entries: list):
     add_timestamps = []
     update_timestamps = []
     for e in entries:
-        entry, created = Entries.get_or_create(location=e["location"], sport=e["sport"], from_date=e["from_date"], to_date=e["to_date"], defaults={"title":e["title"]})
+        entry, created = Entries.get_or_create(location=e["location"], sport=e["sport"], from_date=e["from_date"].strftime("%H:%M"), to_date=e["to_date"].strftime("%H:%M"), defaults={"title":e["title"]})
         if created:
             add_entries.append(entry)
         ts, created = Timestamps.get_or_create(
@@ -100,6 +100,7 @@ def add_to_db(entries: list):
                 "places_max": e["places_max"],
                 "places_taken": e["places_taken"],
                 "track_date": secs,
+                "start_date": int(e["from_date"].timestamp())
             }
         )
         if not created:

@@ -30,6 +30,7 @@ class Timestamps(BaseModel):
     track_date = TimestampField(utc=True)
     places_max = IntegerField()
     places_taken = IntegerField()
+    start_date = TimestampField(utc=True)
 
     class Meta:
         table_name = 'Timestamps'
