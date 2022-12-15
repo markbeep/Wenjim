@@ -1,12 +1,26 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import Search from '../components/search'
-import { useHistory, useHistoryLine } from './api/hooks'
-import { HistoryOrder } from './api/interfaces'
-import LineChart from '../components/lineChart'
-import { Center, Container, Divider, Flex, Overlay, Pagination, ScrollArea, Skeleton, Table, Title, useMantineTheme, Text, createStyles } from '@mantine/core'
-import { IconChevronUp, IconChevronDown } from '@tabler/icons'
-import { DateRangePickerValue } from '@mantine/dates'
-import { useWindowScroll } from '@mantine/hooks'
+import React, { useCallback, useEffect, useState } from "react";
+import Search from "../components/search";
+import { useHistory, useHistoryLine } from "./api/hooks";
+import { HistoryOrder } from "./api/interfaces";
+import LineChart from "../components/lineChart";
+import {
+  Center,
+  Container,
+  Divider,
+  Flex,
+  Overlay,
+  Pagination,
+  ScrollArea,
+  Skeleton,
+  Table,
+  Title,
+  useMantineTheme,
+  Text,
+  createStyles,
+} from "@mantine/core";
+import { IconChevronUp, IconChevronDown } from "@tabler/icons";
+import { DateRangePickerValue } from "@mantine/dates";
+import { useWindowScroll } from "@mantine/hooks";
 
 const History = () => {
   const theme = useMantineTheme();
@@ -23,7 +37,7 @@ const History = () => {
     date?.[0] ?? new Date("2022-09-19"),
     date?.[1] ?? new Date("2022-12-24"),
     orderBy,
-    desc
+    desc,
   );
   const { data: lineData, isLoading: lineIsLoading } = useHistoryLine(
     activities,
@@ -36,25 +50,27 @@ const History = () => {
 
   const [show, setShow] = useState(false);
 
-  const handleResize = useCallback((width: number) => {
-    if (width < theme.breakpoints.sm) {
-      setShow(false);
-    } else {
-      setShow(true);
-    }
-  }, [theme])
+  const handleResize = useCallback(
+    (width: number) => {
+      if (width < theme.breakpoints.sm) {
+        setShow(false);
+      } else {
+        setShow(true);
+      }
+    },
+    [theme],
+  );
   // initially check for window size
   useEffect(() => {
     if (typeof window !== "undefined") {
       handleResize(window.innerWidth);
     }
-
-  }, [handleResize])
+  }, [handleResize]);
 
   if (typeof window !== "undefined") {
     window.addEventListener("resize", () => {
       handleResize(window.innerWidth);
-    })
+    });
   }
 
   const handleSortClick = (d: HistoryOrder) => {
@@ -73,48 +89,68 @@ const History = () => {
         <button onClick={() => handleSortClick(HistoryOrder.date)}>
           <Flex justify="center" direction="row" align="center">
             DATE
-            {orderBy === HistoryOrder.date && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+            {orderBy === HistoryOrder.date &&
+              (desc ? <IconChevronUp /> : <IconChevronDown />)}
           </Flex>
         </button>
       </th>
-      <th className={orderBy === HistoryOrder.activity ? `bg-neutral-content` : ""}>
+      <th
+        className={
+          orderBy === HistoryOrder.activity ? `bg-neutral-content` : ""
+        }
+      >
         <button onClick={() => handleSortClick(HistoryOrder.activity)}>
           <Flex justify="center" direction="row" align="center">
             ACTIVITY
-            {orderBy === HistoryOrder.activity && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+            {orderBy === HistoryOrder.activity &&
+              (desc ? <IconChevronUp /> : <IconChevronDown />)}
           </Flex>
         </button>
       </th>
-      <th className={orderBy === HistoryOrder.location ? `bg-neutral-content` : ""}>
+      <th
+        className={
+          orderBy === HistoryOrder.location ? `bg-neutral-content` : ""
+        }
+      >
         <button onClick={() => handleSortClick(HistoryOrder.location)}>
           <Flex justify="center" direction="row" align="center">
             LOCATION
-            {orderBy === HistoryOrder.location && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+            {orderBy === HistoryOrder.location &&
+              (desc ? <IconChevronUp /> : <IconChevronDown />)}
           </Flex>
         </button>
       </th>
-      <th className={orderBy === HistoryOrder.spots_free ? `bg-neutral-content` : ""}>
+      <th
+        className={
+          orderBy === HistoryOrder.spots_free ? `bg-neutral-content` : ""
+        }
+      >
         <button onClick={() => handleSortClick(HistoryOrder.spots_free)}>
           <Flex justify="center" direction="row" align="center">
             SPOTS FREE
-            {orderBy === HistoryOrder.spots_free && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+            {orderBy === HistoryOrder.spots_free &&
+              (desc ? <IconChevronUp /> : <IconChevronDown />)}
           </Flex>
         </button>
       </th>
-      <th className={orderBy === HistoryOrder.spots_total ? `bg-neutral-content` : ""}>
+      <th
+        className={
+          orderBy === HistoryOrder.spots_total ? `bg-neutral-content` : ""
+        }
+      >
         <button onClick={() => handleSortClick(HistoryOrder.spots_total)}>
           <Flex justify="center" direction="row" align="center">
             SPOTS TOTAL
-            {orderBy === HistoryOrder.spots_total && (desc ? <IconChevronUp /> : <IconChevronDown />)}
+            {orderBy === HistoryOrder.spots_total &&
+              (desc ? <IconChevronUp /> : <IconChevronDown />)}
           </Flex>
         </button>
       </th>
     </tr>
-  )
+  );
 
   return (
     <Container fluid>
-
       <Search
         activities={activities}
         setActivities={setActivities}
@@ -135,16 +171,31 @@ const History = () => {
 
       <Divider my="md" />
 
-      {(data && data.length === 0) && <Center>
-        <Title>No data found</Title>
-      </Center>}
+      {data && data.length === 0 && (
+        <Center>
+          <Title>No activity/location selected</Title>
+        </Center>
+      )}
 
       <Skeleton visible={!data || isLoading}>
-        <ScrollArea h={500} type='auto'>
+        <ScrollArea h={500} type="auto">
           <Container sx={{ minHeight: "30rem" }} fluid>
-            {(!data || data.length === 0) && <Overlay color={theme.primaryShade.toString()} blur={2} />}
-            <Table captionSide='bottom' highlightOnHover striped>
-              <thead style={{ top: 0, position: "sticky", backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white }}>{ths}</thead>
+            {(!data || data.length === 0) && (
+              <Overlay color={theme.primaryShade.toString()} blur={2} />
+            )}
+            <Table captionSide="bottom" highlightOnHover striped>
+              <thead
+                style={{
+                  top: 0,
+                  position: "sticky",
+                  backgroundColor:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[7]
+                      : theme.white,
+                }}
+              >
+                {ths}
+              </thead>
               <tbody>
                 {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
                   <tr key={page * amount + i}>
@@ -155,21 +206,27 @@ const History = () => {
                     <td>{e.spots_free}</td>
                     <td>{e.spots_total}</td>
                   </tr>
-                ))
-                }
+                ))}
               </tbody>
             </Table>
           </Container>
         </ScrollArea>
         <Center>
-          {data && data.length > amount &&
-            <Pagination siblings={show ? 2 : 1} withControls={show} total={Math.floor(data.length / amount)} onChange={e => { setPage(e); setTimeout(() => scrollTo({ y: 5000 }), 100) }} />
-          }
+          {data && data.length > amount && (
+            <Pagination
+              siblings={show ? 2 : 1}
+              withControls={show}
+              total={Math.floor(data.length / amount)}
+              onChange={e => {
+                setPage(e);
+                setTimeout(() => scrollTo({ y: 5000 }), 100);
+              }}
+            />
+          )}
         </Center>
       </Skeleton>
-
     </Container>
-  )
-}
+  );
+};
 
-export default History
+export default History;

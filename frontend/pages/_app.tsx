@@ -1,13 +1,13 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
-import ThemeProvider from '../context/themeProvider'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import { ReactQueryDevtools } from 'react-query/devtools'
-import { NotificationsProvider } from '@mantine/notifications'
-import Shell from '../components/shell'
-import { NavigationProgress } from '@mantine/nprogress'
-import { useState } from 'react'
-import { Global } from '@mantine/core'
+import "../styles/globals.css";
+import type { AppProps } from "next/app";
+import ThemeProvider from "../context/themeProvider";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
+import { NotificationsProvider } from "@mantine/notifications";
+import Shell from "../components/shell";
+import { NavigationProgress } from "@mantine/nprogress";
+import { useState } from "react";
+import { Global } from "@mantine/core";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
@@ -15,15 +15,16 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <NotificationsProvider position='top-right' autoClose={8_000}>
+        <NotificationsProvider position="top-right" autoClose={8_000}>
           <Global
             styles={[
               {
                 "@font-face": {
-                  fontFamily: ""
-                }
-              }
-            ]} />
+                  fontFamily: "",
+                },
+              },
+            ]}
+          />
           <NavigationProgress />
           <Shell>
             <Component {...pageProps} />
@@ -32,7 +33,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         </NotificationsProvider>
       </QueryClientProvider>
     </ThemeProvider>
-  )
+  );
 }
 
-export default MyApp
+export default MyApp;
