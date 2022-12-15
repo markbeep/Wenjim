@@ -9,8 +9,8 @@ app = Flask(__name__)
 @app.route("/api/countday")
 def count_day():
     query = (Timestamps
-             .select(Timestamps.track_date, fn.SUM(Timestamps.places_taken).alias("sum"))
-             .group_by(fn.STRFTIME("%Y-%m-%d", Timestamps.track_date, "unixepoch")))
+             .select(Timestamps.start_date, fn.SUM(Timestamps.places_taken).alias("sum"))
+             .group_by(fn.STRFTIME("%Y-%m-%d", Timestamps.start_date, "unixepoch")))
     res = [
         {
             "day": x.track_date.strftime("%Y-%m-%d"),
