@@ -6,22 +6,13 @@ export default function Document() {
       <Head>
         <link
           rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicon-32x32.png"
+          type="image/svg+xml"
+          href="/assets/favicon.svg"
         />
         <link
           rel="icon"
           type="image/png"
-          sizes="16x16"
-          href="/favicon-16x16.png"
-        />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="192x192"
-          href="/android-chrome-192x192.png"
+          href="/assets/favicon.png"
         />
       </Head>
       <body>

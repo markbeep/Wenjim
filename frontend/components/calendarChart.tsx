@@ -19,7 +19,7 @@ export function CalendarChart({ data }: Data) {
             to="2022-12-12"
             emptyColor="#555555"
             colors={["#61cdbb", "#97e3d5", "#e8c1a0", "#f47560"]}
-            margin={{ right: 40, left: 40 }}
+            margin={{ right: 40, left: 40, bottom: 10 }}
             yearSpacing={40}
             monthBorderColor="#000000"
             dayBorderWidth={2}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  ActionIcon,
   Affix,
   AppShell,
   Box,
@@ -7,6 +8,7 @@ import {
   Button,
   Center,
   Container,
+  Drawer,
   Flex,
   Header,
   Navbar,
@@ -27,55 +29,27 @@ import {
   IconHome,
 } from "@tabler/icons";
 import { useWindowScroll } from "@mantine/hooks";
+import Image from "next/image";
 
 const Shell = ({ children }: { children: ReactNode }) => {
   const theme = useMantineTheme();
   const [show, setShow] = useState(false);
-  const [scroll, scrollTo] = useWindowScroll();
-
-  const handleResize = useCallback(
-    (width: number) => {
-      if (width < theme.breakpoints.sm) {
-        setShow(false);
-      } else {
-        setShow(true);
-      }
-    },
-    [theme],
-  );
-
-  // initially check for window size
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      handleResize(window.innerWidth);
-    }
-  }, [handleResize]);
-
-  if (typeof window !== "undefined") {
-    window.addEventListener("resize", () => {
-      handleResize(window.innerWidth);
-    });
-  }
 
   const menus = [
     {
       name: "Home",
-      icon: <IconHome />,
       href: "/",
     },
     {
       name: "History",
-      icon: <IconBook />,
       href: "/history",
     },
     {
       name: "Weekly",
-      icon: <IconCalendar />,
       href: "/weekly",
     },
     {
-      name: "Issues",
-      icon: <IconBug />,
+      name: "Report an Issue",
       href: "https://github.com/markbeep/ASVZ-Graph-Website/issues",
     },
   ];
@@ -89,35 +63,24 @@ const Shell = ({ children }: { children: ReactNode }) => {
           className="backdrop-blur-sm"
         >
           <Container fluid h="100%">
-            <Center inline w="100%" h="100%">
-              <Flex w="100%" direction="row">
-                {menus.map(e => (
-                  <Link key={e.name} href={e.href}>
-                    <Title
-                      mx="md"
-                      order={1}
-                      variant="gradient"
-                      size={20}
-                      style={{ cursor: "pointer" }}
-                      gradient={{
-                        from: theme.colors.blue[1],
-                        to: theme.colors.blue[2],
-                        deg: 45,
-                      }}
-                      sx={{
-                        fontFamily: "HighlandGothic, sans-serif",
-                      }}
-                    >
-                      {e.name}
-                    </Title>
-                  </Link>
-                ))}
-              </Flex>
+            <Center inline h="100%">
+              <Burger opened={show} onClick={() => setShow(e => !e)} />
+              <Container fluid>
+                <ActionIcon component="a" href="/" variant="transparent">
+                  <Image
+                    src="/assets/wenjim_dark.svg"
+                    height={30}
+                    width={30}
+                    placeholder="blur"
+                    blurDataURL="/assets/favicon.png"
+                  />
+                </ActionIcon>
+              </Container>
             </Center>
           </Container>
         </Header>
       }
-      padding="md"
+      padding="sm"
       styles={theme => ({
         main: {
           backgroundColor:
@@ -126,6 +89,39 @@ const Shell = ({ children }: { children: ReactNode }) => {
               : theme.colors.gray[0],
         },
       })}
+      navbar={
+        <Drawer
+          withCloseButton={false}
+          padding="sm"
+          opened={show}
+          onClose={() => setShow(false)}
+          overlayOpacity={0.2}
+          overlayBlur={2}
+          size="sm"
+          transitionDuration={200}
+          transition="rotate-right"
+        >
+          <Burger opened={show} onClick={() => setShow(e => !e)} />
+          <Flex direction="column">
+            {menus.map(e => (
+              <Button
+                key={e.name}
+                mt="sm"
+                variant="light"
+                fullWidth
+                h={40}
+                component="a"
+                href={e.href}
+                sx={{
+                  "& > .mantine-Button-inner": { justifyContent: "flex-start" },
+                }}
+              >
+                <Text color={theme.colors.gray[3]}>{e.name}</Text>
+              </Button>
+            ))}
+          </Flex>
+        </Drawer>
+      }
     >
       {children}
     </AppShell>

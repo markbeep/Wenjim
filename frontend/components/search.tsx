@@ -83,52 +83,55 @@ const Search = ({
         justify="center"
         gap="sm"
       >
-        <FocusTrap active>
-          <MultiSelect
-            data-autofocus
-            label="Pick your activities"
-            w="100%"
-            placeholder="Fitness"
-            searchable
-            required
-            value={activities}
-            disabled={l1 || e1}
-            nothingFound="Nothing found"
-            data={d1?.map(v => ({ label: v, value: v })) ?? []}
-            onChange={e => {
-              setActivities(_ => [...e]);
-              startLoading();
+        <Flex direction="row" align="center" justify="center" w="100%">
+          <FocusTrap active>
+            <MultiSelect
+              data-autofocus
+              label="Pick your activities"
+              w="100%"
+              placeholder="Fitness"
+              searchable
+              mr="sm"
+              required
+              value={activities}
+              disabled={l1 || e1}
+              nothingFound="Nothing found"
+              data={d1?.map(v => ({ label: v, value: v })) ?? []}
+              onChange={e => {
+                setActivities(_ => [...e]);
+                startLoading();
+              }}
+              clearButtonLabel="Clear Activities"
+              clearable
+            />
+          </FocusTrap>
+          <Tooltip
+            label="Pick an activity first"
+            position="bottom"
+            events={{
+              hover: l2 || e2 || d2?.length === 0,
+              focus: l2 || e2 || d2?.length === 0,
+              touch: l2 || e2 || d2?.length === 0,
             }}
-            clearButtonLabel="Clear Activities"
-            clearable
-          />
-        </FocusTrap>
-        <Tooltip
-          label="Pick an activity first"
-          position="bottom"
-          events={{
-            hover: l2 || e2 || d2?.length === 0,
-            focus: l2 || e2 || d2?.length === 0,
-            touch: l2 || e2 || d2?.length === 0,
-          }}
-        >
-          <MultiSelect
-            label="Pick your locations"
-            w="100%"
-            placeholder="Sport Center Polyterasse"
-            searchable
-            required
-            disabled={l2 || e2 || d2?.length === 0}
-            value={locations}
-            nothingFound="Nothing found"
-            data={d2?.map(v => ({ label: v, value: v })) ?? []}
-            onChange={e => {
-              setLocations(_ => [...e]);
-            }}
-            clearButtonLabel="Clear Locations"
-            clearable
-          />
-        </Tooltip>
+          >
+            <MultiSelect
+              label="Pick your locations"
+              w="100%"
+              placeholder="Sport Center Polyterasse"
+              searchable
+              required
+              disabled={l2 || e2 || d2?.length === 0}
+              value={locations}
+              nothingFound="Nothing found"
+              data={d2?.map(v => ({ label: v, value: v })) ?? []}
+              onChange={e => {
+                setLocations(_ => [...e]);
+              }}
+              clearButtonLabel="Clear Locations"
+              clearable
+            />
+          </Tooltip>
+        </Flex>
 
         <Input.Wrapper label="Date Range" required w="100%">
           <SegmentedControl
