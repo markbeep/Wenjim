@@ -33,8 +33,8 @@ const Shell = ({ children }: { children: ReactNode }) => {
       href: "/weekly",
     },
     {
-      name: "Report an Issue",
-      href: "https://github.com/markbeep/ASVZ-Graph-Website/issues",
+      name: "Report Issues",
+      href: "https://github.com/markbeep/Wenjim/issues",
       icon: <IconExternalLink color={theme.colors.gray[3]} />,
     },
   ];
@@ -127,7 +127,6 @@ const Shell = ({ children }: { children: ReactNode }) => {
                   onClick={() => {
                     if (router.pathname !== e.href) {
                       setShow(false);
-                      return;
                     }
                   }}
                 >
