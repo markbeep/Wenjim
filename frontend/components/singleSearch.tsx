@@ -3,7 +3,6 @@ import { useLocations, useMinMaxDate, useSports } from "../pages/api/hooks";
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates";
 import {
   Flex,
-  MultiSelect,
   Container,
   useMantineTheme,
   Tooltip,
@@ -84,27 +83,24 @@ const SingleSearch = ({
         justify="center"
         gap="sm"
       >
-        <FocusTrap active={d1?.length !== 0 && !l1 && !e1}>
-          <Select
-            data-autofocus
-            label="Pick an activity"
-            w="100%"
-            placeholder="Fitness"
-            searchable
-            required
-            value={activity}
-            disabled={l1 || e1}
-            nothingFound="Nothing found"
-            data={d1?.map(v => ({ label: v, value: v })) ?? []}
-            onChange={e => {
-              setActivity(_ => e);
-              setLocation(null);
-              startLoading();
-            }}
-            clearButtonLabel="Clear Activities"
-            clearable
-          />
-        </FocusTrap>
+        <Select
+          label="Pick an activity"
+          w="100%"
+          placeholder="Fitness"
+          searchable
+          required
+          value={activity}
+          disabled={l1 || e1}
+          nothingFound="Nothing found"
+          data={d1?.map(v => ({ label: v, value: v })) ?? []}
+          onChange={e => {
+            setActivity(_ => e);
+            setLocation(null);
+            startLoading();
+          }}
+          clearButtonLabel="Clear Activities"
+          clearable
+        />
         <FocusTrap active={!(l2 || e2 || d2?.length === 0)}>
           <Tooltip
             label="Pick an activity first"

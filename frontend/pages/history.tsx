@@ -16,7 +16,6 @@ import {
   Title,
   useMantineTheme,
   Text,
-  createStyles,
 } from "@mantine/core";
 import { IconChevronUp, IconChevronDown } from "@tabler/icons";
 import { DateRangePickerValue } from "@mantine/dates";
@@ -216,9 +215,9 @@ const History = () => {
             <Pagination
               siblings={show ? 2 : 1}
               withControls={show}
-              total={Math.floor(data.length / amount)}
+              total={Math.ceil(data.length / amount)}
               onChange={e => {
-                setPage(e);
+                setPage(e - 1);
                 setTimeout(() => scrollTo({ y: 5000 }), 100);
               }}
             />

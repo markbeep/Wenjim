@@ -2,20 +2,15 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useLocations, useMinMaxDate, useSports } from "../pages/api/hooks";
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates";
 import {
-  Button,
   Flex,
   MultiSelect,
-  Skeleton,
   Container,
   useMantineTheme,
   Tooltip,
-  FocusTrap,
   Input,
   SegmentedControl,
 } from "@mantine/core";
 import {
-  completeNavigationProgress,
-  NavigationProgress,
   resetNavigationProgress,
   startNavigationProgress,
 } from "@mantine/nprogress";
@@ -84,27 +79,24 @@ const Search = ({
         gap="sm"
       >
         <Flex direction="row" align="center" justify="center" w="100%">
-          <FocusTrap active>
-            <MultiSelect
-              data-autofocus
-              label="Pick your activities"
-              w="100%"
-              placeholder="Fitness"
-              searchable
-              mr="sm"
-              required
-              value={activities}
-              disabled={l1 || e1}
-              nothingFound="Nothing found"
-              data={d1?.map(v => ({ label: v, value: v })) ?? []}
-              onChange={e => {
-                setActivities(_ => [...e]);
-                startLoading();
-              }}
-              clearButtonLabel="Clear Activities"
-              clearable
-            />
-          </FocusTrap>
+          <MultiSelect
+            label="Pick your activities"
+            w="100%"
+            placeholder="Fitness"
+            searchable
+            mr="sm"
+            required
+            value={activities}
+            disabled={l1 || e1}
+            nothingFound="Nothing found"
+            data={d1?.map(v => ({ label: v, value: v })) ?? []}
+            onChange={e => {
+              setActivities(_ => [...e]);
+              startLoading();
+            }}
+            clearButtonLabel="Clear Activities"
+            clearable
+          />
           <Tooltip
             label="Pick an activity first"
             position="bottom"

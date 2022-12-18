@@ -1,4 +1,3 @@
-import { BarDatum, ResponsiveBar } from "@nivo/bar";
 import { ResponsiveLine, Serie } from "@nivo/line";
 
 export function BarChart(data: Serie[]) {

@@ -7,7 +7,6 @@ import { NotificationsProvider } from "@mantine/notifications";
 import Shell from "../components/shell";
 import { NavigationProgress } from "@mantine/nprogress";
 import { useState } from "react";
-import { Global } from "@mantine/core";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
@@ -16,15 +15,6 @@ function MyApp({ Component, pageProps }: AppProps) {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <NotificationsProvider position="top-right" autoClose={8_000}>
-          <Global
-            styles={[
-              {
-                "@font-face": {
-                  fontFamily: "",
-                },
-              },
-            ]}
-          />
           <NavigationProgress />
           <Shell>
             <Component {...pageProps} />

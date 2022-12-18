@@ -27,12 +27,7 @@ export default function ThemeProvider({ children }: Children) {
             "@font-face": {
               fontFamily: "OpenSans",
               src: "local('OpenSans'), url('OpenSans-Regular.ttf') format('truetype')",
-            },
-          },
-          {
-            "@font-face": {
-              fontFamily: "HighlandGothic",
-              src: "local('HighlandGothic'), url('HighlandGothicFLF.ttf') format('truetype')",
+              fontDisplay: "swap",
             },
           },
         ]}

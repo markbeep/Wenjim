@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { useCountDay } from "./api/hooks";
 import { CalendarChart } from "../components/calendarChart";
@@ -17,6 +16,7 @@ const Home = () => {
             width={80}
             placeholder="blur"
             blurDataURL="/assets/favicon.png"
+            alt="Logo"
           />
           <Text my="xl">
             Welcome to Wenjim, the ultimate destination for ASVZ enthusiasts

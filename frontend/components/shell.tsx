@@ -1,9 +1,6 @@
-import Link from "next/link";
 import {
   ActionIcon,
-  Affix,
   AppShell,
-  Box,
   Burger,
   Button,
   Center,
@@ -11,35 +8,22 @@ import {
   Drawer,
   Flex,
   Header,
-  Navbar,
-  NavLink,
   Text,
-  ThemeIcon,
-  Title,
-  Transition,
   useMantineTheme,
 } from "@mantine/core";
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import {
-  IconArrowUp,
-  IconBook,
-  IconBrandGithub,
-  IconBug,
-  IconCalendar,
-  IconHome,
-} from "@tabler/icons";
-import { useWindowScroll } from "@mantine/hooks";
+import { ReactNode, useState } from "react";
+import { IconExternalLink } from "@tabler/icons";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 const Shell = ({ children }: { children: ReactNode }) => {
   const theme = useMantineTheme();
   const [show, setShow] = useState(false);
+  const [count, setCount] = useState(0);
+  const router = useRouter();
 
   const menus = [
-    {
-      name: "Home",
-      href: "/",
-    },
     {
       name: "History",
       href: "/history",
@@ -51,6 +35,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
     {
       name: "Report an Issue",
       href: "https://github.com/markbeep/ASVZ-Graph-Website/issues",
+      icon: <IconExternalLink color={theme.colors.gray[3]} />,
     },
   ];
 
@@ -59,22 +44,43 @@ const Shell = ({ children }: { children: ReactNode }) => {
       header={
         <Header
           height={60}
-          style={{ backgroundColor: "rgba(0,0,0,0)", border: 0 }}
-          className="backdrop-blur-sm"
+          style={{
+            backgroundColor: "rgba(0,0,0,0)",
+            border: 0,
+            transition: "250ms ease",
+          }}
+          className={show ? "" : "backdrop-blur-sm"}
+          zIndex={100}
         >
           <Container fluid h="100%">
             <Center inline h="100%">
               <Burger opened={show} onClick={() => setShow(e => !e)} />
               <Container fluid>
-                <ActionIcon component="a" href="/" variant="transparent">
-                  <Image
-                    src="/assets/wenjim_dark.svg"
-                    height={30}
-                    width={30}
-                    placeholder="blur"
-                    blurDataURL="/assets/favicon.png"
-                  />
-                </ActionIcon>
+                <Link href="/" passHref>
+                  <ActionIcon
+                    variant="transparent"
+                    onClick={() => {
+                      if (router.pathname !== "/") {
+                        setShow(false);
+                        return;
+                      }
+                      setCount(c => (c += 1));
+                    }}
+                  >
+                    <Image
+                      src="/assets/wenjim_dark.svg"
+                      height={30}
+                      width={30}
+                      placeholder="blur"
+                      blurDataURL="/assets/favicon.png"
+                      alt="Logo"
+                      style={{
+                        transform: count % 20 >= 10 ? "rotate(180deg)" : "",
+                        transition: "transform 250ms ease",
+                      }}
+                    />
+                  </ActionIcon>
+                </Link>
               </Container>
             </Center>
           </Container>
@@ -100,24 +106,34 @@ const Shell = ({ children }: { children: ReactNode }) => {
           size="sm"
           transitionDuration={200}
           transition="rotate-right"
+          zIndex={50}
+          className="shadow-md shadow-black"
         >
-          <Burger opened={show} onClick={() => setShow(e => !e)} />
-          <Flex direction="column">
+          {/* <Burger opened={show} onClick={() => setShow(e => !e)} /> */}
+          <Flex direction="column" pt={40}>
             {menus.map(e => (
-              <Button
-                key={e.name}
-                mt="sm"
-                variant="light"
-                fullWidth
-                h={40}
-                component="a"
-                href={e.href}
-                sx={{
-                  "& > .mantine-Button-inner": { justifyContent: "flex-start" },
-                }}
-              >
-                <Text color={theme.colors.gray[3]}>{e.name}</Text>
-              </Button>
+              <Link key={e.name} href={e.href}>
+                <Button
+                  mt="sm"
+                  variant="light"
+                  fullWidth
+                  h={40}
+                  sx={{
+                    "& > .mantine-Button-inner": {
+                      justifyContent: "flex-start",
+                    },
+                  }}
+                  rightIcon={e.icon}
+                  onClick={() => {
+                    if (router.pathname !== e.href) {
+                      setShow(false);
+                      return;
+                    }
+                  }}
+                >
+                  <Text color={theme.colors.gray[3]}>{e.name}</Text>
+                </Button>
+              </Link>
             ))}
           </Flex>
         </Drawer>
