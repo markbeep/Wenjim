@@ -1,9 +1,11 @@
 import os
 from flask import Flask, request, abort, jsonify
+from flask_compress import Compress
 from scraper.models import Timestamps, Entries, fn
 from dateutil.parser import parse
 
 app = Flask(__name__)
+Compress(app)
 
 
 @app.route("/api/countday")

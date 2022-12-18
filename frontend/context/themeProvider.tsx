@@ -1,15 +1,14 @@
-import { ReactNode } from 'react';
-import React from 'react';
-import { MantineProvider } from '@mantine/core';
-import { Global } from '@emotion/react';
-
+import { ReactNode } from "react";
+import React from "react";
+import { MantineProvider } from "@mantine/core";
+import { Global } from "@emotion/react";
 
 export enum Pages {
   home,
 }
 
 interface Children {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export default function ThemeProvider({ children }: Children) {
@@ -28,18 +27,12 @@ export default function ThemeProvider({ children }: Children) {
             "@font-face": {
               fontFamily: "OpenSans",
               src: "local('OpenSans'), url('OpenSans-Regular.ttf') format('truetype')",
-            }
-          },
-          {
-            "@font-face": {
-              fontFamily: "HighlandGothic",
-              src: "local('HighlandGothic'), url('HighlandGothicFLF.ttf') format('truetype')",
-            }
+              fontDisplay: "swap",
+            },
           },
         ]}
-
       />
       {children}
     </MantineProvider>
-  )
+  );
 }
