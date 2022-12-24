@@ -4,6 +4,8 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+RUN apk add --no-cache libpq-dev gcc libc-dev
+
 RUN python3 -m ensurepip
 RUN pip3 install --no-cache --upgrade pip
 

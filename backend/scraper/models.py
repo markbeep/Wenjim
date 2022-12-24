@@ -1,49 +1,51 @@
 from peewee import *
 from peewee import Expression
+import os
 
-database = SqliteDatabase('data/entries.db')
-
-class UnknownField(object):
-    def __init__(self, *_, **__): pass
+database = PostgresqlDatabase(os.getenv("POSTGRES_DB"), user=os.getenv("POSTGRES_USER"),  host=os.getenv("POSTGRES_HOST"), password=os.getenv("POSTGRES_PASSWORD"))
 
 class BaseModel(Model):
     class Meta:
         database = database
 
-class Entries(BaseModel):
-    entry_id = AutoField(null=True)
+class Activities(BaseModel):
+    """
+    Corresponds to the unique activities taking place on a
+    daily basis
+    """
     sport = TextField()
     title = TextField()
     location = TextField()
-    from_date = TimeField(formats="%H:%M")
-    to_date = TimeField(formats="%H:%M")
-
+    niveau = TextField()
+    
     class Meta:
-        table_name = 'Entries'
         indexes = (
-            (('sport', 'location', 'from_date', 'to_date'), True),
+            ("sport", "title", "location", "niveau", True)
         )
 
-class Timestamps(BaseModel):
-    entry = ForeignKeyField(column_name='entry_id', field='entry_id', model=Entries, backref="timestamps")
-    last_space_date = TimestampField(null=True, utc=True)
-    track_date = TimestampField(utc=True)
+class Entries(BaseModel):
+    """
+    The specific activities taking place at a specific time
+    on a given day
+    """
+    activity = ForeignKeyField(Activities, backref="entries")
+    nid = IntegerField(unique=True)
     places_max = IntegerField()
+    is_cancelled = BooleanField()
+    has_livestream = BooleanField()
+    from_date = TimestampField(utc=True)
+    to_date = TimestampField(utc=True)
+
+class Trackings(BaseModel):
+    """
+    The amount of places free and taken at a given track time.
+    places_free / places_taken are not necessarily consistent with
+    places_max.
+    """
+    entry = ForeignKeyField(Entries, backref="trackings")
+    track_date = TimestampField(utc=True)
+    places_free = IntegerField()
     places_taken = IntegerField()
-    start_date = TimestampField(utc=True)
-
-    class Meta:
-        table_name = 'Timestamps'
-
-
-class SqliteSequence(BaseModel):
-    name = BareField(null=True)
-    seq = BareField(null=True)
-
-    class Meta:
-        table_name = 'sqlite_sequence'
-        primary_key = False
-
 
 def create_all_tables():
-    database.create_tables([Entries, Timestamps])
+    database.create_tables([Activities, Entries, Trackings])

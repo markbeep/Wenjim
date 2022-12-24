@@ -7,7 +7,18 @@ services:
     ports:
       - "5000:5000"
     expose: [ 5000 ]
-    volumes:
-      - ./data:/data
-    environment:
-      - FLASK_DEBUG=true
+    env_file:
+      - .env.dev
+
+  postgres:
+      image: postgres
+      env_file:
+        - .env.dev
+      ports:
+        - "5432:5432"
+      volumes:
+        - ./data/sql:/var/lib/postgresql/data
+
+networks:
+  default:
+    name: wenjim
