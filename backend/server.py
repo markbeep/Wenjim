@@ -8,6 +8,9 @@ app = Flask(__name__)
 Compress(app)
 
 
+class TotalDay():
+    ...
+
 @app.route("/api/countday")
 def count_day():
     query = (Timestamps

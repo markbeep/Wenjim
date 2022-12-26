@@ -1,0 +1,6 @@
+service TotalDay () returns (TotalDayReply) {}
+
+message TotalDayReply {
+    string day = 1;
+    int value = 2;
+}
