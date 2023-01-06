@@ -2,7 +2,8 @@ from peewee import *
 from peewee import Expression
 import os
 
-database = PostgresqlDatabase(os.getenv("POSTGRES_DB"), user=os.getenv("POSTGRES_USER"),  host=os.getenv("POSTGRES_HOST"), password=os.getenv("POSTGRES_PASSWORD"))
+# database = PostgresqlDatabase(os.getenv("POSTGRES_DB"), user=os.getenv("POSTGRES_USER"),  host=os.getenv("POSTGRES_HOST"), password=os.getenv("POSTGRES_PASSWORD"))
+database = SqliteDatabase("data/entries.db")
 
 class BaseModel(Model):
     class Meta:

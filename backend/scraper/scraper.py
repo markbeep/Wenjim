@@ -4,7 +4,7 @@ from datetime import datetime
 import dateutil.parser
 from pytz import timezone
 import time
-from models import Entries, Timestamps, create_all_tables
+from models import Activities, Entries, Trackings, create_all_tables
 import os
 
 
@@ -89,9 +89,16 @@ def add_to_db(entries: list):
     add_timestamps = []
     update_timestamps = []
     for e in entries:
-        entry, created = Entries.get_or_create(location=e["location"], sport=e["sport"], from_date=e["from_date"].strftime("%H:%M"), to_date=e["to_date"].strftime("%H:%M"), defaults={"title":e["title"]})
+        # create new activity
+        entry, created = Activities.get_or_create(
+            sport=e["sport"],
+            time=e["title"],
+            location=e["location"],
+            niveau = e["niveau"],
+        )
         if created:
             add_entries.append(entry)
+            
         ts, created = Timestamps.get_or_create(
             id=e["nid"], 
             defaults={
