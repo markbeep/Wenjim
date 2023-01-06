@@ -4,7 +4,7 @@ from datetime import datetime
 import dateutil.parser
 from pytz import timezone
 import time
-from models import Activities, Entries, Trackings, create_all_tables
+from models import Events, Lessons, Trackings, create_all_tables
 import os
 
 
@@ -28,7 +28,7 @@ def scrape(FETCH, hours_to_scrape=24):
         all_scraped = 0
         i = 0
         while not all_scraped:
-            js: dict = fetch(120, i * 120)
+            js: dict = fetch(360, i * 360)
             for e in js["results"]:
                 if e["cancelled"]:
                     continue
@@ -44,13 +44,16 @@ def scrape(FETCH, hours_to_scrape=24):
                         "title": e["title"],
                         "location": e["location"],
                         "places_free": e.get("places_free", 0),
-                        "places_max": e["places_max"],
-                        "places_taken": e.get("places_taken", e["places_max"]),
+                        "places_max": e.get("places_max", 0),
+                        "places_taken": e.get("places_taken", e.get("places_max", 0)),
                         "from_date": e['from_date'],
-                        "to_date": e['to_date']
+                        "to_date": e['to_date'],
+                        "niveau_name": e["niveau_name"],
+                        "cancelled": e["cancelled"],
+                        "livestream": e["livestream"],
                     }
                 except KeyError:
-                    continue
+                    print(f"Wasn't able to parse {e}")
                 entries.append(t)
             i += 1
             print(f"Fetching iteration: {i}")
@@ -84,44 +87,55 @@ def scrape(FETCH, hours_to_scrape=24):
 
 
 def add_to_db(entries: list):
-    secs = int(time.time())
-    add_entries = []
-    add_timestamps = []
-    update_timestamps = []
+    current_time = int(time.time())
+    add_events = []
+    add_lessons = []
+    update_lessons = []
+    add_trackings = []
+    ids = []
     for e in entries:
         # create new activity
-        entry, created = Activities.get_or_create(
+        event, created_event = Events.get_or_create(
             sport=e["sport"],
-            time=e["title"],
+            title=e["title"],
             location=e["location"],
-            niveau = e["niveau"],
+            niveau = e["niveau_name"],
         )
-        if created:
-            add_entries.append(entry)
-            
-        ts, created = Timestamps.get_or_create(
-            id=e["nid"], 
-            defaults={
-                "entry": entry, 
-                "last_space_date": None, 
-                "places_max": e["places_max"],
-                "places_taken": e["places_taken"],
-                "track_date": secs,
-                "start_date": int(e["from_date"].timestamp())
-            }
-        )
-        if not created:
-            ts.last_space_date = secs if e["places_max"]-e["places_taken"]>0 else ts.last_space_date
-            ts.track_date = secs
-            ts.places_taken = e["places_taken"]
-            update_timestamps.append(ts)
+        if created_event:
+            add_events.append(event)
+        
+        # Case 1: Same event ID, but from/toDate/places_max might've been modified
+        lesson = Lessons.get_or_none(nid=e["nid"])
+
+        # Case 2: event ID not stored yet. Either ID was changed or new lesson, but event & time overlap (so same event)
+        if not lesson:
+            lesson, created_lesson = Lessons.get_or_create(
+                event=event,
+                from_date=int(e["from_date"].timestamp()),
+                to_date=int(e["to_date"].timestamp()),
+                defaults={"nid": e["nid"], "places_max":0, "cancelled": False, "livestream": False, "from_date": 0, "to_date": 0},
+            )
+            if created_lesson:
+                add_lessons.append(lesson)
         else:
-            add_timestamps.append(ts)
+            lesson.from_date = int(e["from_date"].timestamp())
+            lesson.to_date = int(e["to_date"].timestamp())
+        
+        # always update lessons to make sure values are up to date (they might change)
+        lesson.places_max = e["places_max"]
+        lesson.cancelled = e["cancelled"]
+        lesson.livestream = e["livestream"]
+        update_lessons.append(lesson)
+        
+        # check free/taken spots
+        tracking = Trackings.create(lesson=lesson, track_date=current_time, places_free=e["places_free"], places_taken=e["places_taken"])
+        add_trackings.append(tracking)
     
     # save the values
-    Entries.bulk_create(add_entries)
-    Timestamps.bulk_create(add_timestamps)
-    Timestamps.bulk_update(update_timestamps, fields=[Timestamps.last_space_date, Timestamps.track_date, Timestamps.places_taken])
+    Events.bulk_create(add_events)
+    Lessons.bulk_create(add_lessons)
+    Lessons.bulk_update(update_lessons, fields=[Lessons.from_date, Lessons.to_date, Lessons.places_max, Lessons.cancelled, Lessons.livestream])
+    Trackings.bulk_create(add_trackings)
     
     print(
         f"Successfully inserted/updated {len(entries)} entries into the db")
@@ -130,5 +144,5 @@ def add_to_db(entries: list):
 if __name__ == "__main__":
     if not os.path.exists("data/entries.db"):
         create_all_tables()
-    entries = scrape(True, 24)  # scrape x hours in advance
+    entries = scrape(False, 24)  # scrape x hours in advance
     add_to_db(entries)

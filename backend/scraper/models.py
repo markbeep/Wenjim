@@ -9,7 +9,7 @@ class BaseModel(Model):
     class Meta:
         database = database
 
-class Activities(BaseModel):
+class Events(BaseModel):
     """
     Corresponds to the unique activities taking place on a
     daily basis
@@ -24,16 +24,17 @@ class Activities(BaseModel):
             ("sport", "title", "location", "niveau", True)
         )
 
-class Entries(BaseModel):
+class Lessons(BaseModel):
     """
-    The specific activities taking place at a specific time
+    The specific lessons
+    taking place at a specific time
     on a given day
     """
-    activity = ForeignKeyField(Activities, backref="entries")
+    event = ForeignKeyField(Events, backref="lessons")
     nid = IntegerField(unique=True)
     places_max = IntegerField()
-    is_cancelled = BooleanField()
-    has_livestream = BooleanField()
+    cancelled = BooleanField()
+    livestream = BooleanField()
     from_date = TimestampField(utc=True)
     to_date = TimestampField(utc=True)
 
@@ -43,10 +44,10 @@ class Trackings(BaseModel):
     places_free / places_taken are not necessarily consistent with
     places_max.
     """
-    entry = ForeignKeyField(Entries, backref="trackings")
+    lesson = ForeignKeyField(Lessons, backref="trackings")
     track_date = TimestampField(utc=True)
     places_free = IntegerField()
     places_taken = IntegerField()
 
 def create_all_tables():
-    database.create_tables([Activities, Entries, Trackings])
+    database.create_tables([Events, Lessons, Trackings])
