@@ -144,5 +144,5 @@ def add_to_db(entries: list):
 if __name__ == "__main__":
     if not os.path.exists("data/entries.db"):
         create_all_tables()
-    entries = scrape(False, 24)  # scrape x hours in advance
+    entries = scrape(True, 24)  # scrape x hours in advance
     add_to_db(entries)
