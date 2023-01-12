@@ -25,10 +25,11 @@ def scrape(FETCH, hours_to_scrape=24):
     if FETCH:
         entries = []
         dt = datetime.now().astimezone(tz)
-        all_scraped = 0
+        all_scraped = False
+        js = {}
         i = 0
         while not all_scraped:
-            js: dict = fetch(360, i * 360)
+            js = fetch(360, i * 360)
             for e in js["results"]:
                 if e["cancelled"]:
                     continue
@@ -52,9 +53,9 @@ def scrape(FETCH, hours_to_scrape=24):
                         "cancelled": e["cancelled"],
                         "livestream": e["livestream"],
                     }
+                    entries.append(t)
                 except KeyError:
                     print(f"Wasn't able to parse {e}")
-                entries.append(t)
             i += 1
             print(f"Fetching iteration: {i}")
 
