@@ -8,11 +8,17 @@ from models import Events, Lessons, Trackings, create_all_tables
 import os
 
 
+# global timezone as all times received are based in Zurich
 tz = timezone("Europe/Zurich")
 
 
 def fetch(limit, offset=0):
-    return json.loads(requests.get(f"https://asvz.ch/asvz_api/event_search?_format=json&limit={limit}&offset={offset}").text)
+    return json.loads(
+        requests.get(
+            f"https://asvz.ch/asvz_api/event_search?_format=json&limit={limit}&offset={offset}",
+            timeout=20,
+        ).text
+    )
 
 
 def scrape(FETCH, hours_to_scrape=24):
@@ -33,8 +39,7 @@ def scrape(FETCH, hours_to_scrape=24):
             for e in js["results"]:
                 if e["cancelled"]:
                     continue
-                from_date = dateutil.parser.isoparse(
-                    e['from_date']).astimezone(tz)
+                from_date = dateutil.parser.isoparse(e["from_date"]).astimezone(tz)
                 if (from_date - dt).total_seconds() / 3600 >= hours_to_scrape:
                     all_scraped = True
                     break
@@ -47,8 +52,8 @@ def scrape(FETCH, hours_to_scrape=24):
                         "places_free": e.get("places_free", 0),
                         "places_max": e.get("places_max", 0),
                         "places_taken": e.get("places_taken", e.get("places_max", 0)),
-                        "from_date": e['from_date'],
-                        "to_date": e['to_date'],
+                        "from_date": e["from_date"],
+                        "to_date": e["to_date"],
                         "niveau_name": e["niveau_name"],
                         "cancelled": e["cancelled"],
                         "livestream": e["livestream"],
@@ -79,68 +84,74 @@ def scrape(FETCH, hours_to_scrape=24):
 
     # converts datetime to datetime objects for ease of use
     for e in entries:
-        e["from_date"] = dateutil.parser.isoparse(
-            e['from_date']).astimezone(tz)
-        e["to_date"] = dateutil.parser.isoparse(
-            e['to_date']).astimezone(tz)
+        e["from_date"] = dateutil.parser.isoparse(e["from_date"]).astimezone(tz)
+        e["to_date"] = dateutil.parser.isoparse(e["to_date"]).astimezone(tz)
 
     return entries
 
 
 def add_to_db(entries: list):
     current_time = int(time.time())
-    add_events = []
-    add_lessons = []
     update_lessons = []
-    add_trackings = []
-    ids = []
     for e in entries:
         # create new activity
-        event, created_event = Events.get_or_create(
+        event, _ = Events.get_or_create(
             sport=e["sport"],
             title=e["title"],
             location=e["location"],
-            niveau = e["niveau_name"],
+            niveau=e["niveau_name"],
         )
-        if created_event:
-            add_events.append(event)
-        
+
         # Case 1: Same event ID, but from/toDate/places_max might've been modified
         lesson = Lessons.get_or_none(nid=e["nid"])
 
         # Case 2: event ID not stored yet. Either ID was changed or new lesson, but event & time overlap (so same event)
         if not lesson:
-            lesson, created_lesson = Lessons.get_or_create(
+            lesson, _ = Lessons.get_or_create(
                 event=event,
                 from_date=int(e["from_date"].timestamp()),
                 to_date=int(e["to_date"].timestamp()),
-                defaults={"nid": e["nid"], "places_max":0, "cancelled": False, "livestream": False, "from_date": 0, "to_date": 0},
+                defaults={
+                    "nid": e["nid"],
+                    "places_max": 0,
+                    "cancelled": False,
+                    "livestream": False,
+                    "from_date": 0,
+                    "to_date": 0,
+                },
             )
-            if created_lesson:
-                add_lessons.append(lesson)
         else:
             lesson.from_date = int(e["from_date"].timestamp())
             lesson.to_date = int(e["to_date"].timestamp())
-        
+
         # always update lessons to make sure values are up to date (they might change)
         lesson.places_max = e["places_max"]
         lesson.cancelled = e["cancelled"]
         lesson.livestream = e["livestream"]
         update_lessons.append(lesson)
-        
+
         # check free/taken spots
-        tracking = Trackings.create(lesson=lesson, track_date=current_time, places_free=e["places_free"], places_taken=e["places_taken"])
-        add_trackings.append(tracking)
-    
-    # save the values
-    Events.bulk_create(add_events)
-    Lessons.bulk_create(add_lessons)
-    Lessons.bulk_update(update_lessons, fields=[Lessons.from_date, Lessons.to_date, Lessons.places_max, Lessons.cancelled, Lessons.livestream])
-    Trackings.bulk_create(add_trackings)
-    
-    print(
-        f"Successfully inserted/updated {len(entries)} entries into the db")
-    
+        Trackings.create(
+            lesson=lesson,
+            track_date=current_time,
+            places_free=e["places_free"],
+            places_taken=e["places_taken"],
+        )
+
+    # bulk update all
+    Lessons.bulk_update(
+        update_lessons,
+        fields=[
+            Lessons.from_date,
+            Lessons.to_date,
+            Lessons.places_max,
+            Lessons.cancelled,
+            Lessons.livestream,
+        ],
+    )
+
+    print(f"Successfully inserted/updated {len(entries)} entries into the db")
+
 
 if __name__ == "__main__":
     if not os.path.exists("data/entries.db"):

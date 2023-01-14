@@ -1,4 +1,6 @@
-FROM python:3.10-alpine
+# Dockerfile used for deploying on the server
+
+FROM python:3.11-alpine3.16
 
 ENV PYTHONUNBUFFERED=1
 

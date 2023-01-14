@@ -3,12 +3,6 @@ services:
     build: .
     restart: "no"
     volumes:
-      - ./data:/app/data
-      - ./migrations:/app/migrations
+      - ../data:/app/data
     env_file:
       - ../.env.dev
-
-# connects to the same network as the backend
-networks:
-  default:
-    name: wenjim

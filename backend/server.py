@@ -1,46 +1,74 @@
-import os
+"""General backend server handling using REST API to communicate"""
+
 from flask import Flask, request, abort, jsonify
 from flask_compress import Compress
-from scraper.models import Timestamps, Entries, fn
+from peewee import fn
 from dateutil.parser import parse
+from scraper.models import Events, Lessons, Trackings
+
 
 app = Flask(__name__)
 Compress(app)
 
 
+# Gets the latest tracking time for a lesson
+LATEST_TRACKING = Trackings.select(
+    Trackings.lesson, fn.MAX(Trackings.track_date).alias("max_date")
+).group_by(Trackings.lesson)
+
+
 @app.route("/api/countday")
 def count_day():
-    query = (Timestamps
-             .select(Timestamps.start_date, fn.SUM(Timestamps.places_taken).alias("sum"))
-             .group_by(fn.STRFTIME("%Y-%m-%d", Timestamps.start_date, "unixepoch")))
+    """Returns the amount of total signups per day"""
+
+    # Only looking at the latest track dates, we sum up the places taken
+    query = (
+        Lessons.select(
+            fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch").alias("day"),
+            fn.SUM(Trackings.places_taken).alias("sum"),
+        )
+        .join(Trackings)
+        .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
+        .where(
+            Trackings.track_date == LATEST_TRACKING.c.max_date,
+            Trackings.lesson.id == LATEST_TRACKING.c.lesson_id,
+        )
+    ).group_by(fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch"))
+
     res = [
         {
-            "day": x.start_date.strftime("%Y-%m-%d"),
+            "day": x.day,
             "value": x.sum,
-        } for x in query
+        }
+        for x in query
     ]
     return jsonify(res)
 
 
 @app.route("/api/sports")
 def sports():
-    return jsonify([x.sport for x in Entries.select(Entries.sport).distinct()])
+    """Returns a list of all possible sports"""
+    return jsonify([x.sport for x in Events.select(Events.sport).distinct()])
 
 
 @app.route("/api/locations", methods=["POST"])
 def locations():
+    """Returns a list of all locations from a list of sports"""
     args = request.get_json()
     if len(args) == 0:
-        query = Entries.select(Entries.location).distinct()
+        query = Events.select(Events.location).distinct()
     else:
-        query = (Entries
-                 .select(Entries.location)
-                 .where(fn.LOWER(Entries.sport) << [x.lower() for x in args])
-                 .distinct())
+        query = (
+            Events.select(Events.location)
+            .where(fn.LOWER(Events.sport) << [x.lower() for x in args])
+            .distinct()
+        )
     return jsonify([x.location for x in query])
+
 
 @app.route("/api/history", methods=["POST"])
 def history():
+    """Returns the all time data of given list of sports"""
     args = request.get_json()
     try:
         activities = args["activities"]
@@ -48,8 +76,8 @@ def history():
         if len(activities) == 0:
             return abort(400, "Empty activities")
 
-        locations = args["locations"]
-            
+        facilities = args["locations"]
+
         order_by = args["orderBy"]
         if order_by == "date":
             order = Timestamps.track_date
@@ -64,78 +92,104 @@ def history():
         else:
             return abort(400, "Invalid orderBy")
         if args["desc"]:
-            order = order.desc() 
+            order = order.desc()
 
     except KeyError:
         return abort(400, "Invalid POST request")
 
-    query = (Timestamps
-             .select()
-             .join(Entries)
-             .where(
-                (fn.LOWER(Entries.sport) << [x.lower() for x in activities])
-                & (fn.LOWER(Entries.location) << [x.lower() for x in locations])
-                & (Timestamps.track_date >= parse(args["from"]))
-                & (Timestamps.track_date <= parse(args["to"]))
-             )
-             .order_by(order))
+    query = (
+        Events.select(
+            fn.STRFTIME("%a %Y-%m-%d", Lessons.from_date, "unixepoch").alias("date"),
+            Events.sport,
+            Events.location,
+            Lessons.places_max,
+            Trackings.places_free,
+            Trackings.places_taken,
+        )
+        .join(Lessons)
+        .join(Trackings)
+        .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
+        .where(
+            (fn.LOWER(Events.sport) << [x.lower() for x in activities]),
+            (fn.LOWER(Events.location) << [x.lower() for x in facilities]),
+            (Lessons.from_date >= parse(args["from"])),
+            (Lessons.from_date <= parse(args["to"])),
+        )
+    )
+
+    print(query)
+
     res = [
         {
-            "date": f"{x.track_date.strftime('%a %Y-%m-%d')}",
+            "date": x.date,
             "activity": x.entry.sport,
             "location": x.entry.location,
             "spots_total": x.places_max,
-            "spots_free": x.places_max-x.places_taken,
-        } for x in query
+            "spots_free": x.places_max - x.places_taken,
+        }
+        for x in query
     ]
     return jsonify(res)
 
 
+history()
+
+
 @app.route("/api/historyline", methods=["POST"])
 def history_line():
+    """
+    Returns the all time data of a given list of sports
+    in an easy to graph format
+    """
     args = request.get_json()
-    
+
     try:
         activities = args["activities"]
         if len(activities) == 0:
             return abort(400, "Empty activities")
-        locations = args["locations"]
-        if len(locations) == 0:
+        facilities = args["locations"]
+        if len(facilities) == 0:
             return abort(400, "Empty locations")
-
 
     except KeyError:
         return abort(400, "Invalid POST request")
-    
-    query = (Timestamps
-             .select(Timestamps.track_date, Entries.sport,  fn.SUM(Timestamps.places_max-Timestamps.places_taken).alias("sum"))
-             .join(Entries)
-             .where(
-                (fn.LOWER(Entries.sport) << [x.lower() for x in activities])
-                & (fn.LOWER(Entries.location) << [x.lower() for x in locations])
-                & (Timestamps.track_date >= parse(args["from"]))
-                & (Timestamps.track_date <= parse(args["to"]))
-             )
-             .group_by(Entries.sport, fn.STRFTIME("%Y-%m-%d", Timestamps.track_date, "unixepoch")))
+
+    query = (
+        Timestamps.select(
+            Timestamps.track_date,
+            Entries.sport,
+            fn.SUM(Timestamps.places_max - Timestamps.places_taken).alias("sum"),
+        )
+        .join(Entries)
+        .where(
+            (fn.LOWER(Entries.sport) << [x.lower() for x in activities])
+            & (fn.LOWER(Entries.location) << [x.lower() for x in facilities])
+            & (Timestamps.track_date >= parse(args["from"]))
+            & (Timestamps.track_date <= parse(args["to"]))
+        )
+        .group_by(
+            Entries.sport, fn.STRFTIME("%Y-%m-%d", Timestamps.track_date, "unixepoch")
+        )
+    )
 
     # get all the days
     data = {}
-    for s in activities:
-        data[s.lower()] = []
-    for x in query:
-        data[x.entry.sport.lower()].append({"x": x.track_date.strftime("%Y-%m-%d"), "y": x.sum})
-    final = []
-    for key in data.keys():
-        d = {"id": key, "data": data[key.lower()]}
-        final.append(d)
+    for sport in activities:
+        data[sport.lower()] = []
+    for row in query:
+        data[row.entry.sport.lower()].append(
+            {"x": row.track_date.strftime("%Y-%m-%d"), "y": row.sum}
+        )
+    final = [{"id": key, "data": data[key.lower()]} for key in data]
 
     return jsonify(final)
 
 
 @app.route("/api/weekly", methods=["POST"])
 def weekly():
+    """Returns a weekly view by hour of how many slots are taken"""
     args = request.get_json()
-    
+
     try:
         activity = args["activities"]
         if len(activity) == 0:
@@ -144,69 +198,92 @@ def weekly():
         location = args["locations"]
         if len(location) == 0:
             return abort(400, "Empty locations")
-    
-        query = (Timestamps
-                .select(
-                    Timestamps.track_date,
-                    fn.AVG(Timestamps.places_max-Timestamps.places_taken).alias("avg_free"),
-                    fn.AVG(Timestamps.places_max).alias("avg_max"),
-                    Entries.from_date,
-                    Entries.to_date,
-                    Entries.sport,
-                    Entries.title,
-                )
-                .join(Entries)
-                .where(
-                    (fn.LOWER(Entries.sport) ** activity)
-                    & (fn.LOWER(Entries.location) ** location)
-                    & (Timestamps.track_date >= parse(args["from"]))
-                    & (Timestamps.track_date <= parse(args["to"]))
-                )
-                .group_by(fn.STRFTIME("%w", Timestamps.track_date, "unixepoch"), fn.STRFTIME("%H:%M", Entries.from_date)))
-    
+
+        query = (
+            Timestamps.select(
+                Timestamps.track_date,
+                fn.AVG(Timestamps.places_max - Timestamps.places_taken).alias(
+                    "avg_free"
+                ),
+                fn.AVG(Timestamps.places_max).alias("avg_max"),
+                Entries.from_date,
+                Entries.to_date,
+                Entries.sport,
+                Entries.title,
+            )
+            .join(Entries)
+            .where(
+                (fn.LOWER(Entries.sport) ** activity)
+                & (fn.LOWER(Entries.location) ** location)
+                & (Timestamps.track_date >= parse(args["from"]))
+                & (Timestamps.track_date <= parse(args["to"]))
+            )
+            .group_by(
+                fn.STRFTIME("%w", Timestamps.track_date, "unixepoch"),
+                fn.STRFTIME("%H:%M", Entries.from_date),
+            )
+        )
+
     except KeyError:
         return abort(400, "Invalid POST request")
-    
+
     data = {}
     details = {}  # more details when its clicked on
-    weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-    time_slots = ["%02d:%s" % (h, m) for h in range(0, 24) for m in ["00"]]
-    for wd in weekdays:
-        data[wd] = {}
-        details[wd] = []
-        for rt in time_slots:
-            data[wd][rt] = []
+    weekdays = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+    ]
+    time_slots = [f"{h:02}:00" for h in range(0, 24)]
+    for day in weekdays:
+        data[day] = {}
+        details[day] = []
+        for rounded_time in time_slots:
+            data[day][rounded_time] = []
 
-    for x in query:
-        rt = x.entry.from_date[:3] + "00"
-        wd = weekdays[x.track_date.weekday()]
-        data[wd][rt].append(
-            {"sport": x.entry.sport,
-             "time": x.entry.from_date,
-             "weekday": wd,
-             "timeTo": x.entry.to_date,
-             "avgFree": x.avg_free,
-             "maxAvg": x.avg_max,
-             "title": x.entry.title,
+    for row in query:
+        rounded_time = row.entry.from_date[:3] + "00"
+        day = weekdays[row.track_date.weekday()]
+        data[day][rounded_time].append(
+            {
+                "sport": row.entry.sport,
+                "time": row.entry.from_date,
+                "weekday": day,
+                "timeTo": row.entry.to_date,
+                "avgFree": row.avg_free,
+                "maxAvg": row.avg_max,
+                "title": row.entry.title,
             }
         )
-    
+
     formatted = {}
-    for wd in sorted(data.keys()):
-        formatted[wd] = []
-        for rt in time_slots:
-            formatted[wd].append({"time": rt, "details": data[wd][rt]})
-    
+    for day in sorted(data.keys()):
+        formatted[day] = []
+        for rounded_time in time_slots:
+            formatted[day].append(
+                {"time": rounded_time, "details": data[day][rounded_time]}
+            )
+
     return jsonify(formatted)
 
 
 @app.route("/api/minmaxdate", methods=["GET"])
 def min_max_date():
-    query = Timestamps.select(fn.MIN(Timestamps.track_date).alias("min"), fn.MAX(Timestamps.track_date).alias("max"))
-    for x in query:
-        return jsonify({"from": x.min.strftime("%Y-%m-%d"), "to": x.max.strftime("%Y-%m-%d")})
+    """Returns the minimum and maximum date of the tracked data"""
+    query = Timestamps.select(
+        fn.MIN(Timestamps.track_date).alias("min"),
+        fn.MAX(Timestamps.track_date).alias("max"),
+    )
+    for row in query:
+        return jsonify(
+            {"from": row.min.strftime("%Y-%m-%d"), "to": row.max.strftime("%Y-%m-%d")}
+        )
     return abort(500, "No Data")
 
 
 if __name__ == "__main__":
-    app.run(debug=os.getenv("FLASK_DEBUG", "true") == "true", host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0")
