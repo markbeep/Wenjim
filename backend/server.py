@@ -31,7 +31,6 @@ def count_day():
         .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
         .where(
             Trackings.track_date == LATEST_TRACKING.c.max_date,
-            Trackings.lesson.id == LATEST_TRACKING.c.lesson_id,
         )
     ).group_by(fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch"))
 
@@ -80,15 +79,15 @@ def history():
 
         order_by = args["orderBy"]
         if order_by == "date":
-            order = Timestamps.track_date
+            order = Trackings.track_date
         elif order_by == "sport":
-            order = Entries.sport
+            order = Events.sport
         elif order_by == "location":
-            order = Entries.location
+            order = Events.location
         elif order_by == "places_max":
-            order = Timestamps.places_max
-        elif order_by == "places_max-places_taken":
-            order = Timestamps.places_max - Timestamps.places_taken
+            order = Lessons.places_max
+        elif order_by == "places_free":
+            order = Trackings.places_free
         else:
             return abort(400, "Invalid orderBy")
         if args["desc"]:
@@ -110,29 +109,26 @@ def history():
         .join(Trackings)
         .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
         .where(
+            Trackings.track_date == LATEST_TRACKING.c.max_date,
             (fn.LOWER(Events.sport) << [x.lower() for x in activities]),
             (fn.LOWER(Events.location) << [x.lower() for x in facilities]),
             (Lessons.from_date >= parse(args["from"])),
             (Lessons.from_date <= parse(args["to"])),
         )
+        .order_by(order)
     )
-
-    print(query)
 
     res = [
         {
             "date": x.date,
-            "activity": x.entry.sport,
-            "location": x.entry.location,
-            "spots_total": x.places_max,
-            "spots_free": x.places_max - x.places_taken,
+            "activity": x.sport,
+            "location": x.location,
+            "spots_total": x.trackings.places_max,
+            "spots_free": x.trackings.places_free,
         }
         for x in query
     ]
     return jsonify(res)
-
-
-history()
 
 
 @app.route("/api/historyline", methods=["POST"])
@@ -153,32 +149,35 @@ def history_line():
 
     except KeyError:
         return abort(400, "Invalid POST request")
-
+    
     query = (
-        Timestamps.select(
-            Timestamps.track_date,
-            Entries.sport,
-            fn.SUM(Timestamps.places_max - Timestamps.places_taken).alias("sum"),
+        Events.select(
+            fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch").alias("date"),
+            Events.sport,
+            fn.SUM(Trackings.places_free).alias("sum"),
         )
-        .join(Entries)
+        .join(Lessons)
+        .join(Trackings)
+        .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
         .where(
-            (fn.LOWER(Entries.sport) << [x.lower() for x in activities])
-            & (fn.LOWER(Entries.location) << [x.lower() for x in facilities])
-            & (Timestamps.track_date >= parse(args["from"]))
-            & (Timestamps.track_date <= parse(args["to"]))
+            Trackings.track_date == LATEST_TRACKING.c.max_date,
+            (fn.LOWER(Events.sport) << [x.lower() for x in activities])
+            & (fn.LOWER(Events.location) << [x.lower() for x in facilities])
+            & (Lessons.from_date >= parse(args["from"]))
+            & (Lessons.from_date <= parse(args["to"]))
         )
         .group_by(
-            Entries.sport, fn.STRFTIME("%Y-%m-%d", Timestamps.track_date, "unixepoch")
+            Events.sport, fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch")
         )
     )
-
+    
     # get all the days
     data = {}
     for sport in activities:
         data[sport.lower()] = []
     for row in query:
-        data[row.entry.sport.lower()].append(
-            {"x": row.track_date.strftime("%Y-%m-%d"), "y": row.sum}
+        data[row.sport.lower()].append(
+            {"x": row.date, "y": row.sum}
         )
     final = [{"id": key, "data": data[key.lower()]} for key in data]
 
@@ -198,29 +197,30 @@ def weekly():
         location = args["locations"]
         if len(location) == 0:
             return abort(400, "Empty locations")
-
+        
         query = (
-            Timestamps.select(
-                Timestamps.track_date,
-                fn.AVG(Timestamps.places_max - Timestamps.places_taken).alias(
-                    "avg_free"
-                ),
-                fn.AVG(Timestamps.places_max).alias("avg_max"),
-                Entries.from_date,
-                Entries.to_date,
-                Entries.sport,
-                Entries.title,
+            Events.select(
+                Trackings.track_date,
+                fn.AVG(Trackings.places_free).alias("avg_free"),
+                fn.AVG(Trackings.places_max).alias("avg_max"),
+                Lessons.from_date,
+                Lessons.to_date,
+                Events.sport,
+                Events.title,
             )
-            .join(Entries)
+            .join(Lessons)
+            .join(Trackings)
+            .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
             .where(
-                (fn.LOWER(Entries.sport) ** activity)
-                & (fn.LOWER(Entries.location) ** location)
-                & (Timestamps.track_date >= parse(args["from"]))
-                & (Timestamps.track_date <= parse(args["to"]))
+                Trackings.track_date == LATEST_TRACKING.c.max_date,
+                (fn.LOWER(Events.sport) ** activity),
+                (fn.LOWER(Events.location) ** location),
+                (Lessons.from_date >= parse(args["from"])),
+                (Lessons.from_date <= parse(args["to"])),
             )
             .group_by(
-                fn.STRFTIME("%w", Timestamps.track_date, "unixepoch"),
-                fn.STRFTIME("%H:%M", Entries.from_date),
+                fn.STRFTIME("%w", Lessons.from_date, "unixepoch"),
+                fn.STRFTIME("%H:%M", Lessons.from_date),
             )
         )
 
@@ -246,7 +246,7 @@ def weekly():
             data[day][rounded_time] = []
 
     for row in query:
-        rounded_time = row.entry.from_date[:3] + "00"
+        rounded_time = row.lessons.from_date[:3] + "00"
         day = weekdays[row.track_date.weekday()]
         data[day][rounded_time].append(
             {
@@ -274,9 +274,9 @@ def weekly():
 @app.route("/api/minmaxdate", methods=["GET"])
 def min_max_date():
     """Returns the minimum and maximum date of the tracked data"""
-    query = Timestamps.select(
-        fn.MIN(Timestamps.track_date).alias("min"),
-        fn.MAX(Timestamps.track_date).alias("max"),
+    query = Lessons.select(
+        fn.MIN(Lessons.from_date).alias("min"),
+        fn.MAX(Lessons.to_date).alias("max"),
     )
     for row in query:
         return jsonify(
