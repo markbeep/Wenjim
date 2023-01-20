@@ -35,6 +35,7 @@ Poetry:
 cd backend/scraper
 poetry install
 poetry run python scraper.py
+```
 
 Docker:
 ```bash
