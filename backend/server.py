@@ -5,11 +5,13 @@ from flask_compress import Compress
 from peewee import fn
 from dateutil.parser import parse
 from scraper.models import Events, Lessons, Trackings
-
+from pytz import timezone
 
 app = Flask(__name__)
 Compress(app)
 
+# global timezone as all times received are based in Zurich
+tz = timezone("Europe/Zurich")
 
 # Gets the latest tracking time for a lesson
 LATEST_TRACKING = Trackings.select(
@@ -47,7 +49,7 @@ def count_day():
 @app.route("/api/sports")
 def sports():
     """Returns a list of all possible sports"""
-    return jsonify([x.sport for x in Events.select(Events.sport).distinct()])
+    return jsonify([x.sport for x in Events.select(Events.sport).distinct().order_by(Events.sport.asc())])
 
 
 @app.route("/api/locations", methods=["POST"])
@@ -61,6 +63,7 @@ def locations():
             Events.select(Events.location)
             .where(fn.LOWER(Events.sport) << [x.lower() for x in args])
             .distinct()
+            .order_by(Events.location.asc())
         )
     return jsonify([x.location for x in query])
 
@@ -123,8 +126,8 @@ def history():
             "date": x.date,
             "activity": x.sport,
             "location": x.location,
-            "spots_total": x.trackings.places_max,
-            "spots_free": x.trackings.places_free,
+            "spots_total": x.lessons.places_max,
+            "spots_free": x.lessons.trackings.places_free,
         }
         for x in query
     ]
@@ -149,7 +152,7 @@ def history_line():
 
     except KeyError:
         return abort(400, "Invalid POST request")
-    
+
     query = (
         Events.select(
             fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch").alias("date"),
@@ -164,21 +167,17 @@ def history_line():
             (fn.LOWER(Events.sport) << [x.lower() for x in activities])
             & (fn.LOWER(Events.location) << [x.lower() for x in facilities])
             & (Lessons.from_date >= parse(args["from"]))
-            & (Lessons.from_date <= parse(args["to"]))
+            & (Lessons.from_date <= parse(args["to"])),
         )
-        .group_by(
-            Events.sport, fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch")
-        )
+        .group_by(Events.sport, fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch"))
     )
-    
+
     # get all the days
     data = {}
     for sport in activities:
         data[sport.lower()] = []
     for row in query:
-        data[row.sport.lower()].append(
-            {"x": row.date, "y": row.sum}
-        )
+        data[row.sport.lower()].append({"x": row.date, "y": row.sum})
     final = [{"id": key, "data": data[key.lower()]} for key in data]
 
     return jsonify(final)
@@ -197,12 +196,12 @@ def weekly():
         location = args["locations"]
         if len(location) == 0:
             return abort(400, "Empty locations")
-        
+
         query = (
             Events.select(
                 Trackings.track_date,
                 fn.AVG(Trackings.places_free).alias("avg_free"),
-                fn.AVG(Trackings.places_max).alias("avg_max"),
+                fn.AVG(Lessons.places_max).alias("avg_max"),
                 Lessons.from_date,
                 Lessons.to_date,
                 Events.sport,
@@ -210,7 +209,9 @@ def weekly():
             )
             .join(Lessons)
             .join(Trackings)
-            .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
+            .join(
+                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
+            )
             .where(
                 Trackings.track_date == LATEST_TRACKING.c.max_date,
                 (fn.LOWER(Events.sport) ** activity),
@@ -220,7 +221,7 @@ def weekly():
             )
             .group_by(
                 fn.STRFTIME("%w", Lessons.from_date, "unixepoch"),
-                fn.STRFTIME("%H:%M", Lessons.from_date),
+                fn.STRFTIME("%H:%M", Lessons.from_date, "unixepoch"),
             )
         )
 
@@ -246,17 +247,18 @@ def weekly():
             data[day][rounded_time] = []
 
     for row in query:
-        rounded_time = row.lessons.from_date[:3] + "00"
-        day = weekdays[row.track_date.weekday()]
+        rounded_time = f"{row.lessons.from_date.hour:02}:00"
+        print(row.lessons.from_date.astimezone(tz).strftime("%H:%M"))
+        day = weekdays[row.lessons.trackings.track_date.weekday()]
         data[day][rounded_time].append(
             {
-                "sport": row.entry.sport,
-                "time": row.entry.from_date,
+                "sport": row.sport,
+                "time": row.lessons.from_date.astimezone(tz).strftime("%H:%M"),
                 "weekday": day,
-                "timeTo": row.entry.to_date,
+                "timeTo": row.lessons.to_date.astimezone(tz).strftime("%H:%M"),
                 "avgFree": row.avg_free,
                 "maxAvg": row.avg_max,
-                "title": row.entry.title,
+                "title": row.title,
             }
         )
 

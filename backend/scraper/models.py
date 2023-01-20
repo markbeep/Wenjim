@@ -51,8 +51,8 @@ class Lessons(BaseModel):
     places_max = IntegerField()
     cancelled = BooleanField()
     livestream = BooleanField()
-    from_date = TimestampField(utc=True)
-    to_date = TimestampField(utc=True)
+    from_date = TimestampField()
+    to_date = TimestampField()
 
 
 class Trackings(BaseModel):
@@ -63,7 +63,7 @@ class Trackings(BaseModel):
     """
 
     lesson = ForeignKeyField(Lessons, backref="trackings")
-    track_date = TimestampField(utc=True)
+    track_date = TimestampField()
     places_free = IntegerField()
     places_taken = IntegerField()
 

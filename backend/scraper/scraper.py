@@ -1,11 +1,11 @@
 import json
-import requests
 from datetime import datetime
+import os
+import time
+import requests
 import dateutil.parser
 from pytz import timezone
-import time
 from models import Events, Lessons, Trackings, create_all_tables
-import os
 
 
 # global timezone as all times received are based in Zurich
@@ -66,7 +66,7 @@ def scrape(FETCH, hours_to_scrape=24):
 
         print(f"Entries: {len(entries)}")
 
-        with open("data/entries.json", "w") as f:
+        with open("data/entries.json", "w", encoding="utf-8") as f:
             json.dump(entries, f, indent=4)
 
         # updates the sports.json file with all the current sport types
@@ -76,10 +76,10 @@ def scrape(FETCH, hours_to_scrape=24):
                 continue
             for s in fa["terms"]:
                 sports[s["tid"]] = s["label"]
-        with open("sports.json", "w") as f:
+        with open("sports.json", "w", encoding="utf-8") as f:
             json.dump(sports, f, indent=4)
     else:
-        with open("data/entries.json", "r") as f:
+        with open("data/entries.json", "r", encoding="utf-8") as f:
             entries: list = json.load(f)
 
     # converts datetime to datetime objects for ease of use
