@@ -7,7 +7,5 @@ services:
     ports:
       - "5000:5000"
     expose: [ 5000 ]
-    volumes:
-      - ./data:/data
-    environment:
-      - FLASK_DEBUG=true
+    env_file:
+      - .env.dev
