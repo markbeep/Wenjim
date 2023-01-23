@@ -71,7 +71,6 @@ const Shell = ({ children }: { children: ReactNode }) => {
                       src="/assets/wenjim_dark.svg"
                       height={30}
                       width={30}
-                      placeholder="blur"
                       blurDataURL="/assets/favicon.png"
                       alt="Logo"
                       style={{

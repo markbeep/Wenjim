@@ -14,7 +14,6 @@ const Home = () => {
             src="/assets/wenjim_dark.svg"
             height={80}
             width={80}
-            placeholder="blur"
             blurDataURL="/assets/favicon.png"
             alt="Logo"
           />

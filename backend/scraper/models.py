@@ -1,49 +1,73 @@
-from peewee import *
-from peewee import Expression
+"""Defines all the models used"""
 
-database = SqliteDatabase('data/entries.db')
+from peewee import (
+    Model,
+    SqliteDatabase,
+    TextField,
+    ForeignKeyField,
+    IntegerField,
+    BooleanField,
+    TimestampField,
+)
 
-class UnknownField(object):
-    def __init__(self, *_, **__): pass
+database = SqliteDatabase("data/entries.db")
+
 
 class BaseModel(Model):
+    """Base model that defines the same database"""
+
     class Meta:
+        """Defines the database"""
+
         database = database
 
-class Entries(BaseModel):
-    entry_id = AutoField(null=True)
+
+class Events(BaseModel):
+    """
+    Corresponds to the unique activities taking place on a
+    daily basis
+    """
+
     sport = TextField()
     title = TextField()
     location = TextField()
-    from_date = TimeField(formats="%H:%M")
-    to_date = TimeField(formats="%H:%M")
+    niveau = TextField()
 
     class Meta:
-        table_name = 'Entries'
-        indexes = (
-            (('sport', 'location', 'from_date', 'to_date'), True),
-        )
+        """Makes the events be unique in all its fields"""
 
-class Timestamps(BaseModel):
-    entry = ForeignKeyField(column_name='entry_id', field='entry_id', model=Entries, backref="timestamps")
-    last_space_date = TimestampField(null=True, utc=True)
-    track_date = TimestampField(utc=True)
+        indexes = ("sport", "title", "location", "niveau", True)
+
+
+class Lessons(BaseModel):
+    """
+    The specific lessons
+    taking place at a specific time
+    on a given day
+    """
+
+    event = ForeignKeyField(Events, backref="lessons")
+    nid = IntegerField(unique=True)
     places_max = IntegerField()
+    cancelled = BooleanField()
+    livestream = BooleanField()
+    from_date = TimestampField()
+    to_date = TimestampField()
+
+
+class Trackings(BaseModel):
+    """
+    The amount of places free and taken at a given track time.
+    places_free / places_taken are not necessarily consistent with
+    places_max.
+    """
+
+    lesson = ForeignKeyField(Lessons, backref="trackings")
+    track_date = TimestampField()
+    places_free = IntegerField()
     places_taken = IntegerField()
-    start_date = TimestampField(utc=True)
-
-    class Meta:
-        table_name = 'Timestamps'
-
-
-class SqliteSequence(BaseModel):
-    name = BareField(null=True)
-    seq = BareField(null=True)
-
-    class Meta:
-        table_name = 'sqlite_sequence'
-        primary_key = False
 
 
 def create_all_tables():
-    database.create_tables([Entries, Timestamps])
+    # Creates all the tables
+    database.create_tables([Events, Lessons, Trackings])

@@ -34,7 +34,7 @@ const History = () => {
     activities,
     locations,
     date?.[0] ?? new Date("2022-09-19"),
-    date?.[1] ?? new Date("2022-12-24"),
+    date?.[1] ?? new Date("2023-12-24"),
     orderBy,
     desc,
   );
@@ -42,7 +42,7 @@ const History = () => {
     activities,
     locations,
     date?.[0] ?? new Date("2022-09-19"),
-    date?.[1] ?? new Date("2022-12-24"),
+    date?.[1] ?? new Date("2023-12-24"),
   );
 
   const [_, scrollTo] = useWindowScroll();

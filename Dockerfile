@@ -1,16 +1,26 @@
-FROM python:3.10-alpine
+# Dockerfile used for deploying on the server
 
-ENV PYTHONUNBUFFERED=1
+FROM python:3.11-alpine3.17 as base
 
-RUN apk add --no-cache gcc musl-dev libpq-dev
-
-RUN pip3 install --no-cache --upgrade pip
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    POETRY_VERSION=1.3
 
 WORKDIR /app
-COPY backend/requirements.txt .
-RUN python -m pip install --no-cache -r requirements.txt
+
+RUN apk add --no-cache gcc musl-dev libpq-dev
+RUN pip install --no-cache "poetry==$POETRY_VERSION"
+RUN python -m venv /venv
+
+COPY backend/pyproject.toml backend/poetry.lock ./
+RUN poetry export -f requirements.txt | /venv/bin/pip install -r /dev/stdin
+
+
+FROM base as final
+
 COPY backend/ .
-
 EXPOSE 5000
-
-ENTRYPOINT ["gunicorn", "--config", "gunicorn_config.py", "wsgi:app", "--access-logfile -"]
+ENTRYPOINT ["/venv/bin/gunicorn", "--config", "gunicorn_config.py", "wsgi:app", "--access-logfile -"]

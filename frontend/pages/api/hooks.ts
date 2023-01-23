@@ -102,7 +102,7 @@ async function loadHistory(activities: string[], locations: string[], from: Date
       orderByKey = "places_max";
       break;
     case HistoryOrder.spots_free:
-      orderByKey = "places_max-places_taken";
+      orderByKey = "places_free";
       break;
   }
   const body = { activities, locations, from: from.toISOString(), to: to.toISOString(), orderBy: orderByKey, desc };
