@@ -1,6 +1,118 @@
-service TotalDay () returns (TotalDayReply) {}
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+// requests that are used all around
+service Utility () {
+    rpc TotalDay() returns (TotalDayReply) {}
+    rpc Sports() returns (SportsReply) {} 
+    rpc Locations() returns (LocationsReply) {} 
+}
 
 message TotalDayReply {
     string day = 1;
     int value = 2;
+}
+
+message SportsReply {
+    repeated string sports = 1;
+}
+
+message LocationsReply {
+    repeated string locations = 1;
+}
+
+message MinMaxDate {
+    sint64 min = 1;
+    sint64 max = 2;
+}
+
+// the requests for the history page
+service History () {
+    rpc HistoryGraph(HistoryGraphRequest) returns (HistoryGraphReply) {}
+    rpc History(HistoryRequest) returns (HistoryReply) {}
+}
+
+enum HistorySortType {
+    HISTORYSORT_DATE = 0;
+    HISTORYSORT_SPORT = 1;
+    HISTORYSORT_LOCATION = 2;
+    HISTORYSORT_PLACESMAX = 3;
+    HISTORYSORT_PLACESFREE = 4;
+}
+
+message HistoryGraphRequest {
+    repeated string sports = 1;
+    repeated string locations = 2;
+    sint64 dateFrom = 3;
+    sint64 dateTo = 4;
+}
+
+message HistoryGraphPoint {
+    sint64 date = 1; // date as int saves on size
+    sint32 y = 2;
+}
+
+message HistoryGraphRow {
+    string id = 1; // the sport name
+    repeated HistoryGraphPoint data = 2;
+}
+
+message HistoryGraphReply {
+    repeated HistoryGraphRow rows = 1;
+}
+
+message HistoryRequest {
+    repeated string sports = 1;
+    repeated string locations = 2;
+    HistorySortType orderBy = 3;
+    sint32 page = 4;
+    sint64 dateFrom = 5;
+    sint64 dateTo = 6;
+}
+
+message HistoryRow {
+    string date = 1; // DATE in format "%a %Y-%m-%d"
+    string sport = 2;
+    string location = 3;
+    sint32 placesMax = 4;
+    sint32 placesFree = 5; 
+}
+
+message HistoryReply {
+    repeated HistoryRow rows = 1;
+}
+
+
+service Weekly () {
+    rpc Weekly(WeeklyRequest) returns (WeeklyReply) {}
+}
+
+message WeeklyRequest {
+    string sport = 1;
+    string location = 2;
+    sint64 dateFrom = 3;
+    sint64 dateTo = 4;
+}
+
+message WeeklyDetails {
+    string sport = 1;
+    sint32 startHour = 2;
+    sint32 startMinute = 3;
+    sint32 endHour = 4;
+    sint32 endMinute = 5;
+    string weekday = 6;
+    float avgFree = 7;
+    float avgMax = 8;
+    string title = 9;
+}
+
+message WeeklyReply {
+    repeated WeeklyDetails monday = 1;
+    repeated WeeklyDetails tuesday = 2;
+    repeated WeeklyDetails wednesday = 3;
+    repeated WeeklyDetails thursday = 4;
+    repeated WeeklyDetails friday = 5;
+    repeated WeeklyDetails saturday = 6;
+    repeated WeeklyDetails sunday = 7;
 }

@@ -19,9 +19,6 @@ LATEST_TRACKING = Trackings.select(
 ).group_by(Trackings.lesson)
 
 
-class TotalDay():
-    ...
-
 @app.route("/api/countday")
 def count_day():
     """Returns the amount of total signups per day"""
