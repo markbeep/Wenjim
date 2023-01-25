@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-RUN apk add --no-cache gcc musl-dev libpq-dev
+RUN apk add --no-cache gcc musl-dev
 RUN pip install --no-cache "poetry==$POETRY_VERSION"
 RUN python -m venv /venv
 
@@ -23,9 +23,7 @@ FROM base as final
 
 WORKDIR /app
 
-COPY protos/ protos/
-RUN /venv/bin/python -m grpc_tools.protoc -I./protos --python_out=. --pyi_out=. --grpc_python_out=. ./protos/countday.proto
-
+COPY ../proto/ /proto/
 COPY scraper/models.py scraper/models.py
 COPY server.py .
 

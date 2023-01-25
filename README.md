@@ -50,3 +50,23 @@ cd frontend
 npm i # install all packages
 npm run dev
 ```
+
+
+# GRPC
+To build protos, execute:
+```bash
+/venv/bin/python -m grpc_tools.protoc \
+    -I./proto \
+    --plugin=protoc-gen-ts=./frontend/node_modules/.bin/protoc-gen-ts \
+    --ts_out=./generated \
+    --python_out=./generated \
+    --pyi_out=./generated \
+    --grpc_python_out=./generated \
+    ./proto/*.proto
+```
+
+Or if you're too lazy to install grpc just run the Dockerfile
+and feed it the volume:
+```bash
+docker run --rm -v $PWD/generated:/app/generated $(docker build -q . -f build_protos)
+```
