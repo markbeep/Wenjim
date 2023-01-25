@@ -1,34 +1,41 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 // requests that are used all around
-service Utility () {
-    rpc TotalDay() returns (TotalDayReply) {}
-    rpc Sports() returns (SportsReply) {} 
-    rpc Locations() returns (LocationsReply) {} 
+service Utility {
+    rpc TotalDay(TotalDayRequest) returns (TotalDayReply) {}
+    rpc Sports(SportsRequest) returns (SportsReply) {} 
+    rpc Locations(LocationsRequest) returns (LocationsReply) {} 
+    rpc MinMaxDate(MinMaxDateRequest) returns (MinMaxDateReply) {} 
 }
+
+message TotalDayRequest {}
 
 message TotalDayReply {
     string day = 1;
-    int value = 2;
+    sint32 value = 2;
 }
+
+message SportsRequest {}
 
 message SportsReply {
     repeated string sports = 1;
 }
 
+message LocationsRequest {}
+
 message LocationsReply {
     repeated string locations = 1;
 }
 
-message MinMaxDate {
+message MinMaxDateRequest {}
+
+message MinMaxDateReply {
     sint64 min = 1;
     sint64 max = 2;
 }
 
 // the requests for the history page
-service History () {
+service History {
     rpc HistoryGraph(HistoryGraphRequest) returns (HistoryGraphReply) {}
     rpc History(HistoryRequest) returns (HistoryReply) {}
 }
@@ -84,7 +91,7 @@ message HistoryReply {
 }
 
 
-service Weekly () {
+service Weekly {
     rpc Weekly(WeeklyRequest) returns (WeeklyReply) {}
 }
 

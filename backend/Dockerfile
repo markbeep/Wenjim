@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PIP_DEFAULT_TIMEOUT=100 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1 \
+    PIP_helloNO_CACHE_DIR=1 \
     POETRY_VERSION=1.3
 
 WORKDIR /app
@@ -22,6 +22,9 @@ RUN poetry export -f requirements.txt | /venv/bin/pip install -r /dev/stdin
 FROM base as final
 
 WORKDIR /app
+
+COPY protos/ protos/
+RUN /venv/bin/python -m grpc_tools.protoc -I./protos --python_out=. --pyi_out=. --grpc_python_out=. ./protos/countday.proto
 
 COPY scraper/models.py scraper/models.py
 COPY server.py .
