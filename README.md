@@ -68,5 +68,9 @@ To build protos, execute:
 Or if you're too lazy to install grpc just run the Dockerfile
 and feed it the volume:
 ```bash
+docker build . -f build_protos -t wenjim-generate && docker run --rm -v $PWD/generated:/app/generated wenjim-generate
+```
+Or if you don't care about the terminal output:
+```bash
 docker run --rm -v $PWD/generated:/app/generated $(docker build -q . -f build_protos)
 ```
