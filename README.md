@@ -3,74 +3,38 @@
 When gym? Find out with this tool!
 ## Local Development
 
+The exact details on how to setup the front- and backend are in the READMEs
+of the specific directory. The general requirements are:
+- Frontend
+  - Node LTS (>=16)
+  - npm
+- Backend
+  - Python 3.11
+  - [Poetry](https://python-poetry.org/) (package manager)
+
+These should suffice to get everything setup for simple local development.
+There are Dockerfiles for using the scraper or backend if needed.
+
+# GRPC
+Wenjim uses GRPC to communicate between the front- and backend.
+
+To generate the required proto files, simply execute:
+```bash
+make
+```
+*Poetry is required for this.*
+
+## "Manual" Install
+The manual install consists of simply executing the Makefile manually:
+
 ### Backend
-The backend is split into two parts. There is the scraper which gets the latest stats from
-the ASVZ API and then there's the backend Flask instance using Peewee on SQLite.
-
-The backend is a Python REST API server running with Flask. [Poetry](https://python-poetry.org/)
-is used to maintain consistent and reproducible package versions.
-
-Poetry additional has `pylint` and `black` installed for linting and consistent formatting.
-Simply run `poetry run black .` to format all the documents in the current directory.
-
-But there are also Dockerfiles to run the programs without Poetry if desired.
-
-**Scraper:**
-Poetry:
-```bash
-cd backend/scraper
-poetry install
-poetry run python scraper.py
-```
-
-Docker:
-```bash
-cd backend/scraper
-docker build -t scraper . && docker run --rm scraper
-```
-
-**REST API Backend:**
-Poetry:
-```bash
-cd backend/scraper
-poetry install
-poetry run python scraper.py
-```
-
-Docker:
 ```bash
 cd backend
-docker compose up --build
+poetry run poe build
 ```
 
 ### Frontend
-Frontend runs on Next.js. To start simply run:
 ```bash
-cd frontend
-npm i # install all packages
-npm run dev
-```
-
-
-# GRPC
-To build protos, execute:
-```bash
-/venv/bin/python -m grpc_tools.protoc \
-    -I./proto \
-    --plugin=protoc-gen-ts=./frontend/node_modules/.bin/protoc-gen-ts \
-    --ts_out=./generated \
-    --python_out=./generated \
-    --pyi_out=./generated \
-    --grpc_python_out=./generated \
-    ./proto/*.proto
-```
-
-Or if you're too lazy to install grpc just run the Dockerfile
-and feed it the volume:
-```bash
-docker build . -f build_protos -t wenjim-generate && docker run --rm -v $PWD/generated:/app/generated wenjim-generate
-```
-Or if you don't care about the terminal output:
-```bash
-docker run --rm -v $PWD/generated:/app/generated $(docker build -q . -f build_protos)
+cd backend
+npm run build:proto
 ```

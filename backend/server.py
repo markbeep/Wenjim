@@ -1,11 +1,16 @@
 """General backend server handling using REST API to communicate"""
 
+from concurrent import futures
 from flask import Flask, request, abort, jsonify
 from flask_compress import Compress
 from peewee import fn
 from dateutil.parser import parse
 from scraper.models import Events, Lessons, Trackings
 from pytz import timezone
+import grpc
+from history import HistoryServicer
+import logging
+from generated import countday_pb2_grpc
 
 app = Flask(__name__)
 Compress(app)
@@ -49,7 +54,12 @@ def count_day():
 @app.route("/api/sports")
 def sports():
     """Returns a list of all possible sports"""
-    return jsonify([x.sport for x in Events.select(Events.sport).distinct().order_by(Events.sport.asc())])
+    return jsonify(
+        [
+            x.sport
+            for x in Events.select(Events.sport).distinct().order_by(Events.sport.asc())
+        ]
+    )
 
 
 @app.route("/api/locations", methods=["POST"])
@@ -287,5 +297,24 @@ def min_max_date():
     return abort(500, "No Data")
 
 
+class TempTotalDay(countday_pb2_grpc.UtilityServicer):
+    def TotalDay(self, request, context):
+        return countday_pb2.TotalDayReply(days=[])
+
+
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    countday_pb2_grpc.add_HistoryServicer_to_server(HistoryServicer(), server)
+    server.add_insecure_port("[::]:50051")
+    server.start()
+    logging.log(logging.INFO, "Listening on 50051")
+    server.wait_for_termination()
+
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+    serve()
+
+
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    main()

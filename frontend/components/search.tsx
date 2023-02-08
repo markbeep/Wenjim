@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useLocations, useMinMaxDate, useSports } from "../pages/api/hooks";
+import { useLocations, useMinMaxDate, useSports } from "../api/hooks";
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates";
 import {
   Flex,

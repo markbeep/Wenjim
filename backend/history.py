@@ -1,13 +1,12 @@
 from peewee import fn
 from dateutil.parser import parse
 from scraper.models import Events, Lessons, Trackings
-from ..generated import countday_pb2_grpc, countday_pb2
+from generated import countday_pb2_grpc, countday_pb2
 
 # Gets the latest tracking time for a lesson
 LATEST_TRACKING = Trackings.select(
     Trackings.lesson, fn.MAX(Trackings.track_date).alias("max_date")
 ).group_by(Trackings.lesson)
-
 
 class HistoryServicer(countday_pb2_grpc.HistoryServicer):
     def HistoryGraph(self, request, context):

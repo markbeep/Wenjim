@@ -12,7 +12,7 @@ import {
 import { DateRangePickerValue } from "@mantine/dates";
 import React, { useState } from "react";
 import SingleSearch from "../components/singleSearch";
-import { useWeekly } from "./api/hooks";
+import { useWeekly } from "../api/hooks";
 import { WeeklyTimeData } from "./api/interfaces";
 
 const Hour = (props: { data: WeeklyTimeData | undefined }) => {

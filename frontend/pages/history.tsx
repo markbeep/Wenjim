@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Search from "../components/search";
-import { useHistory, useHistoryLine } from "./api/hooks";
+import { useHistory, useHistoryLine } from "../api/hooks";
 import { HistoryOrder } from "./api/interfaces";
 import LineChart from "../components/lineChart";
 import {

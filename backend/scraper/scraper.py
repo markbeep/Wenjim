@@ -153,8 +153,11 @@ def add_to_db(entries: list):
     print(f"Successfully inserted/updated {len(entries)} entries into the db")
 
 
-if __name__ == "__main__":
+def main():
     if not os.path.exists("data/entries.db"):
         create_all_tables()
     entries = scrape(True, 24)  # scrape x hours in advance
     add_to_db(entries)
+
+if __name__ == "__main__":
+    main()

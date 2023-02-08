@@ -3,7 +3,7 @@ FROM node:16-alpine as build-stage
 WORKDIR /app
 
 COPY package*.json /app/
-RUN npm install
+RUN npm install --production
 COPY . .
 COPY public/ public/
 COPY tsconfig.json .
