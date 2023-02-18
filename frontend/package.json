@@ -8,7 +8,7 @@
         "start": "next start",
         "lint": "next lint",
         "analyze": "ANALYZE=true next build",
-        "build:proto": "proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=generated/ ../proto/generated/*.proto",
+        "build:proto": "bash compile-proto.sh",
         "prebuild": "npm run build:proto"
     },
     "dependencies": {
@@ -33,13 +33,18 @@
         "@tabler/icons": "^1.112.0",
         "axios": "^1.2.0",
         "dayjs": "^1.11.6",
+        "google-protobuf": "^3.21.2",
+        "grpc-tools": "^1.12.4",
+        "grpc-web": "^1.4.2",
         "next": "12.3.1",
+        "protoc-gen-grpc-web": "^1.4.1",
         "react": "18.2.0",
         "react-datepicker": "^4.8.0",
         "react-dom": "18.2.0",
         "react-query": "^3.39.2",
         "sharp": "^0.31.2",
-        "theme-change": "^2.2.0"
+        "theme-change": "^2.2.0",
+        "ts-protoc-gen": "^0.15.0"
     },
     "devDependencies": {
         "@types/node": "18.11.4",

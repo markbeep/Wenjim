@@ -309,7 +309,9 @@ def serve():
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("peewee")
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel(level=logging.DEBUG)
     serve()
 
 

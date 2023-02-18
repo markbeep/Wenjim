@@ -6,10 +6,12 @@ import {
   Center,
   Drawer,
   Flex,
+  Group,
   Header,
   Kbd,
   Text,
-  TextInput,
+  Transition,
+  UnstyledButton,
   useMantineTheme,
 } from "@mantine/core";
 import { ReactNode, useState } from "react";
@@ -23,6 +25,7 @@ import {
   SpotlightAction,
   SpotlightProvider,
 } from "@mantine/spotlight";
+import useResize from "./resize";
 
 const Shell = ({
   children,
@@ -33,6 +36,7 @@ const Shell = ({
 }) => {
   const theme = useMantineTheme();
   const [show, setShow] = useState(false);
+  const [bigSearch] = useResize();
   const [count, setCount] = useState(0);
   const router = useRouter();
 
@@ -60,15 +64,6 @@ const Shell = ({
     },
     keywords: [e.sport?.toLowerCase() ?? "", e.location?.toLowerCase() ?? ""],
   }));
-
-  const keybind = (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <Kbd>Ctrl</Kbd>
-      <span style={{ margin: "0 5px" }}>+</span>
-      <Kbd>K</Kbd>
-    </div>
-  );
-
   return (
     <AppShell
       header={
@@ -112,6 +107,22 @@ const Shell = ({
                   />
                 </ActionIcon>
               </Link>
+              <Transition
+                mounted={count % 20 >= 10}
+                transition="slide-right"
+                duration={250}
+                timingFunction="ease"
+              >
+                {styles => (
+                  <Text
+                    style={{ ...styles, MozUserSelect: "none" }}
+                    ml={-10}
+                    unselectable="on"
+                  >
+                    ark
+                  </Text>
+                )}
+              </Transition>
             </Flex>
             <Flex direction="row" w="100%" justify="right" align="center">
               <SpotlightProvider
@@ -121,15 +132,48 @@ const Shell = ({
                 shortcut={["mod + P", "mod + K"]}
                 highlightQuery
                 nothingFoundMessage="Nothing found"
-                transition="rotate-right"
+                transition="slide-down"
               >
-                <TextInput
-                  icon={<IconSearch size={18} />}
+                <UnstyledButton
                   onClick={() => openSpotlight()}
-                  rightSection={keybind}
-                  rightSectionWidth={90}
-                  placeholder="Search"
-                />
+                  p={3}
+                  w={bigSearch ? "30vw" : ""}
+                  maw={300}
+                  m="sm"
+                >
+                  {!bigSearch && <IconSearch size={30} />}
+                  {bigSearch && (
+                    <Flex
+                      w="100%"
+                      direction="row"
+                      display="flex"
+                      p={3}
+                      style={{
+                        border: `solid 2px ${theme.colors.dark[4]}`,
+                        borderRadius: "3px",
+                      }}
+                    >
+                      <Group w="100%">
+                        <IconSearch size={18} />
+                        <Text size={14} color="dimmed">
+                          Search
+                        </Text>
+                      </Group>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "right",
+                          width: "100%",
+                        }}
+                      >
+                        <Kbd>Ctrl</Kbd>
+                        <span style={{ margin: "0 5px" }}>+</span>
+                        <Kbd>K</Kbd>
+                      </div>
+                    </Flex>
+                  )}
+                </UnstyledButton>
               </SpotlightProvider>
               <Link href="https://github.com/markbeep/Wenjim" passHref>
                 <ActionIcon ml="sm">
@@ -162,7 +206,6 @@ const Shell = ({
           zIndex={50}
           className="shadow-md shadow-black"
         >
-          {/* <Burger opened={show} onClick={() => setShow(e => !e)} /> */}
           <Flex direction="column" pt={40}>
             {menus.map(e => (
               <Link key={e.name} href={e.href}>

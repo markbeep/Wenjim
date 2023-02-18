@@ -14,6 +14,7 @@ import {
   resetNavigationProgress,
   startNavigationProgress,
 } from "@mantine/nprogress";
+import useResize from "./resize";
 
 interface SearchData {
   activities: string[];
@@ -37,38 +38,13 @@ const Search = ({
   const { data: d1, isError: e1, isLoading: l1 } = useSports();
   const { data: d2, isError: e2, isLoading: l2 } = useLocations(activities);
   const { data: d3 } = useMinMaxDate();
-  const theme = useMantineTheme();
-  const [show, setShow] = useState(false);
+  const [show] = useResize();
   const [showDate, setShowDate] = useState(false);
 
   const startLoading = () => {
     resetNavigationProgress();
     startNavigationProgress();
   };
-
-  const handleResize = useCallback(
-    (width: number) => {
-      if (width < theme.breakpoints.sm) {
-        setShow(false);
-      } else {
-        setShow(true);
-      }
-    },
-    [theme],
-  );
-
-  // initially check for window size
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      handleResize(window.innerWidth);
-    }
-  }, [handleResize]);
-
-  if (typeof window !== "undefined") {
-    window.addEventListener("resize", () => {
-      handleResize(window.innerWidth);
-    });
-  }
 
   return (
     <Container fluid>
