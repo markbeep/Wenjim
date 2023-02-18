@@ -23,6 +23,7 @@
         "@mantine/next": "^5.9.5",
         "@mantine/notifications": "^5.9.0",
         "@mantine/nprogress": "^5.9.0",
+        "@mantine/spotlight": "^5.10.4",
         "@nivo/bar": "^0.80.0",
         "@nivo/calendar": "^0.80.0",
         "@nivo/colors": "^0.80.0",

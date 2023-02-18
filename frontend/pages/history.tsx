@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Search from "../components/search";
 import { useHistory, useHistoryLine } from "../api/hooks";
-import { HistoryOrder } from "./api/interfaces";
+import { HistoryOrder } from "../api/interfaces";
 import LineChart from "../components/lineChart";
 import {
   Center,
@@ -20,8 +20,18 @@ import {
 import { IconChevronUp, IconChevronDown } from "@tabler/icons";
 import { DateRangePickerValue } from "@mantine/dates";
 import { useWindowScroll } from "@mantine/hooks";
+import { GetServerSideProps } from "next";
+import { HistorySortType } from "../generated/HistorySortType";
+import { HistoryService } from "../api/service";
+import { HistoryReply } from "../generated/HistoryReply";
 
-const History = () => {
+const History = ({
+  history,
+  error,
+}: {
+  history: HistoryReply;
+  error: string;
+}) => {
   const theme = useMantineTheme();
   const [activities, setActivities] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
@@ -30,14 +40,6 @@ const History = () => {
   const [desc, setDesc] = useState(false);
   const [page, setPage] = useState(0);
   const [amount, setAmount] = useState(50); // amount of items to show per page
-  const { data, isLoading } = useHistory(
-    activities,
-    locations,
-    date?.[0] ?? new Date("2022-09-19"),
-    date?.[1] ?? new Date("2023-12-24"),
-    orderBy,
-    desc,
-  );
   const { data: lineData, isLoading: lineIsLoading } = useHistoryLine(
     activities,
     locations,
@@ -170,62 +172,88 @@ const History = () => {
 
       <Divider my="md" />
 
-      {data && data.length === 0 && (
-        <Center>
-          <Title>No activity/location selected</Title>
-        </Center>
-      )}
-
-      <Skeleton visible={!data || isLoading}>
-        <ScrollArea h={500} type="auto">
-          <Container sx={{ minHeight: "30rem" }} fluid>
-            {(!data || data.length === 0) && (
-              <Overlay color={theme.primaryShade.toString()} blur={2} />
-            )}
-            <Table captionSide="bottom" highlightOnHover striped>
-              <thead
-                style={{
-                  top: 0,
-                  position: "sticky",
-                  backgroundColor:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[7]
-                      : theme.white,
-                }}
-              >
-                {ths}
-              </thead>
-              <tbody>
-                {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
+      <ScrollArea h={500} type="auto">
+        <Container sx={{ minHeight: "30rem" }} fluid>
+          {(!history.rows || history.rows.length === 0) && (
+            <Overlay color={theme.primaryShade.toString()} blur={2} />
+          )}
+          <Table captionSide="bottom" highlightOnHover striped>
+            <thead
+              style={{
+                top: 0,
+                position: "sticky",
+                backgroundColor:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[7]
+                    : theme.white,
+              }}
+            >
+              {ths}
+            </thead>
+            <tbody>
+              {history.rows
+                ?.slice(page * amount, (page + 1) * amount)
+                .map((e, i) => (
                   <tr key={page * amount + i}>
                     <th>{page * amount + i + 1}</th>
                     <td>{e.date}</td>
-                    <td>{e.activity}</td>
+                    <td>{e.sport}</td>
                     <td>{e.location}</td>
-                    <td>{e.spots_free}</td>
-                    <td>{e.spots_total}</td>
+                    <td>{e.placesFree}</td>
+                    <td>{e.placesMax}</td>
                   </tr>
                 ))}
-              </tbody>
-            </Table>
-          </Container>
-        </ScrollArea>
-        <Center>
-          {data && data.length > amount && (
-            <Pagination
-              siblings={show ? 2 : 1}
-              withControls={show}
-              total={Math.ceil(data.length / amount)}
-              onChange={e => {
-                setPage(e - 1);
-                setTimeout(() => scrollTo({ y: 5000 }), 100);
-              }}
-            />
-          )}
-        </Center>
-      </Skeleton>
+            </tbody>
+          </Table>
+        </Container>
+      </ScrollArea>
+      <Center>
+        {history.rows && history.rows.length > amount && (
+          <Pagination
+            siblings={show ? 2 : 1}
+            withControls={show}
+            total={Math.ceil(history.rows.length / amount)}
+            onChange={e => {
+              setPage(e - 1);
+              setTimeout(() => scrollTo({ y: 5000 }), 100);
+            }}
+          />
+        )}
+      </Center>
     </Container>
   );
 };
 
 export default History;
+
+export const getServerSideProps: GetServerSideProps = async context => {
+  try {
+    const historyService = new HistoryService();
+    const { history, error } = await historyService.getHistory(
+      {
+        sport: "Fitness",
+        location: "Sport Center Polyterrasse",
+        title: "Individuelles Training",
+      },
+      new Date("2000-01-01"),
+      new Date("2030-12-12"),
+      HistorySortType.HISTORYSORT_DATE,
+    );
+
+    if (history) {
+      return {
+        props: { history },
+      };
+    } else {
+      return {
+        props: {
+          error: "No result",
+        },
+      };
+    }
+  } catch (error) {
+    return {
+      props: { error },
+    };
+  }
+};

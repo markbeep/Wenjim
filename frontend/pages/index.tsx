@@ -1,52 +1,56 @@
 import Image from "next/image";
-import { CalendarChart } from "../components/calendarChart";
-import { Container, Text, Center, Skeleton } from "@mantine/core";
+import { Container, Text, Center } from "@mantine/core";
 import { GetServerSideProps } from "next";
 import { UtilityService } from "../api/service";
-import { CalendarData, CalendarDatum } from "@nivo/calendar";
+import Shell from "../components/shell";
+import { Event } from "../generated/Event";
 
-interface Props {
-  day: { day: string; value: number }[];
-}
-
-export default function Home({ day }: Props) {
-  const formatted = day as CalendarDatum[];
-
+export default function Home({
+  events,
+  error,
+}: {
+  events: Event[];
+  error: string;
+}) {
   return (
-    <Container fluid mt="xl">
-      <Center>
-        <Container className="text-center" w="600px">
-          <Image
-            src="/assets/wenjim_dark.svg"
-            height={80}
-            width={80}
-            blurDataURL="/assets/favicon.png"
-            alt="Logo"
-          />
-          <Text my="xl">
-            Welcome to Wenjim, the ultimate destination for ASVZ enthusiasts
-            looking to stay up to date on the availability of free spots at
-            their favorite activities and locations.
-          </Text>
-        </Container>
-      </Center>
-
-      <Center>
-        <Skeleton visible={false}>
-          {<CalendarChart data={formatted} />}
-        </Skeleton>
-      </Center>
-    </Container>
+    <Shell events={events}>
+      <Container fluid mt="xl">
+        <Center>
+          <Container className="text-center" w="600px">
+            <Image
+              src="/assets/wenjim_dark.svg"
+              height={80}
+              width={80}
+              blurDataURL="/assets/favicon.png"
+              alt="Logo"
+            />
+            <Text my="xl">
+              Welcome to Wenjim, the ultimate destination for ASVZ enthusiasts
+              looking to stay up to date on the availability of free spots at
+              their favorite activities and locations.
+            </Text>
+          </Container>
+        </Center>
+      </Container>
+    </Shell>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
   try {
     const utilityService = new UtilityService();
-    const { day, error } = await utilityService.getTotalDay();
-    return {
-      props: { day, error },
-    };
+    const { events, error } = await utilityService.getEvents();
+
+    if (events) {
+      return {
+        props: {
+          events: events.events,
+          error,
+        },
+      };
+    } else {
+      throw "No result";
+    }
   } catch (error) {
     return {
       props: { error },

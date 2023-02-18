@@ -10,7 +10,8 @@ from pytz import timezone
 import grpc
 from history import HistoryServicer
 import logging
-from generated import countday_pb2_grpc
+from generated import countday_pb2_grpc, countday_pb2
+from utility import UtilityServicer
 
 app = Flask(__name__)
 Compress(app)
@@ -285,7 +286,6 @@ def weekly():
 
 @app.route("/api/minmaxdate", methods=["GET"])
 def min_max_date():
-    """Returns the minimum and maximum date of the tracked data"""
     query = Lessons.select(
         fn.MIN(Lessons.from_date).alias("min"),
         fn.MAX(Lessons.to_date).alias("max"),
@@ -297,17 +297,14 @@ def min_max_date():
     return abort(500, "No Data")
 
 
-class TempTotalDay(countday_pb2_grpc.UtilityServicer):
-    def TotalDay(self, request, context):
-        return countday_pb2.TotalDayReply(days=[])
-
-
 def serve():
+    port = 50051
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    countday_pb2_grpc.add_UtilityServicer_to_server(UtilityServicer(), server)
     countday_pb2_grpc.add_HistoryServicer_to_server(HistoryServicer(), server)
-    server.add_insecure_port("[::]:50051")
+    server.add_insecure_port(f"[::]:{port}")
     server.start()
-    logging.log(logging.INFO, "Listening on 50051")
+    logging.log(logging.INFO, "Listening on %d", port)
     server.wait_for_termination()
 
 

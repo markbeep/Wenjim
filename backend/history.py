@@ -43,14 +43,14 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             )
             .where(
                 Trackings.track_date == LATEST_TRACKING.c.max_date,
-                (fn.LOWER(Events.sport) << [x.lower() for x in request.sports]),
-                (fn.LOWER(Events.location) << [x.lower() for x in request.locations]),
-                (Lessons.from_date >= parse(request.dateFrom)),
-                (Lessons.from_date <= parse(request.dateTo)),
+                Events.sport % request.event.sport,
+                Events.title % request.event.title,
+                Events.location % request.event.location,
+                Lessons.from_date >= request.dateFrom,
+                Lessons.from_date <= request.dateTo,
             )
             .order_by(order)
         )
-
         return countday_pb2.HistoryReply(
             rows=[
                 countday_pb2.HistoryRow(

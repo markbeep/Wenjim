@@ -13,7 +13,11 @@ import { DateRangePickerValue } from "@mantine/dates";
 import React, { useState } from "react";
 import SingleSearch from "../components/singleSearch";
 import { useWeekly } from "../api/hooks";
-import { WeeklyTimeData } from "./api/interfaces";
+import { WeeklyTimeData } from "../api/interfaces";
+import { GetServerSideProps } from "next";
+import { HistoryService, UtilityService } from "../api/service";
+import { HistorySortType } from "../generated/HistorySortType";
+import { HistoryReply } from "../generated/HistoryReply";
 
 const Hour = (props: { data: WeeklyTimeData | undefined }) => {
   const theme = useMantineTheme();
@@ -110,7 +114,7 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
   );
 };
 
-const Weekly = () => {
+const Weekly = (props: { history: HistoryReply; error: string }) => {
   const [activity, setActivity] = useState<string | null>(null);
   const [location, setLocation] = useState<string | null>(null);
   const [date, setDate] = useState<DateRangePickerValue>();
@@ -120,7 +124,6 @@ const Weekly = () => {
     date?.[0] ?? new Date("2022-09-19"),
     date?.[1] ?? new Date("2023-12-24"),
   );
-  console.log(data);
 
   return (
     <Container fluid>
@@ -207,3 +210,35 @@ const Weekly = () => {
 };
 
 export default Weekly;
+
+export const getServerSideProps: GetServerSideProps = async context => {
+  try {
+    const historyService = new HistoryService();
+    const { history, error } = await historyService.getHistory(
+      {
+        sport: "Fitness",
+        location: "Sport Center Polyterrasse",
+        title: "Individuelles Training",
+      },
+      new Date("2000-01-01"),
+      new Date("2030-12-12"),
+      HistorySortType.HISTORYSORT_DATE,
+    );
+
+    if (history) {
+      return {
+        props: { history },
+      };
+    } else {
+      return {
+        props: {
+          error: "No result",
+        },
+      };
+    }
+  } catch (error) {
+    return {
+      props: { error },
+    };
+  }
+};
