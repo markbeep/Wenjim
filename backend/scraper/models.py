@@ -36,7 +36,7 @@ class Events(BaseModel):
     class Meta:
         """Makes the events be unique in all its fields"""
 
-        indexes = ("sport", "title", "location", "niveau", True)
+        indexes = ((("sport", "title", "location", "niveau"), True),)
 
 
 class Lessons(BaseModel):
@@ -57,15 +57,12 @@ class Lessons(BaseModel):
 
 class Trackings(BaseModel):
     """
-    The amount of places free and taken at a given track time.
-    places_free / places_taken are not necessarily consistent with
-    places_max.
+    The amount of places free at a given track time.
     """
 
     lesson = ForeignKeyField(Lessons, backref="trackings")
     track_date = TimestampField()
     places_free = IntegerField()
-    places_taken = IntegerField()
 
 
 def create_all_tables():
