@@ -122,6 +122,8 @@ def add_to_db(entries: list):
 
 if __name__ == "__main__":
     if not os.path.exists("data/entries.db"):
+        print("Creating database")
+        os.mkdir("data")
         create_all_tables()
-    entries = scrape(True, 24)  # scrape x hours in advance
+    entries = scrape(False, 24*7)  # scrape x hours in advance
     add_to_db(entries)
