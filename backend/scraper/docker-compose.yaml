@@ -3,5 +3,6 @@ services:
     build: .
     restart: "no"
     volumes:
-      - ./data:/app/data
-      - ./migrations:/app/migrations
+      - ../data:/app/data
+    env_file:
+      - ../.env.dev

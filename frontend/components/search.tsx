@@ -156,7 +156,7 @@ const Search = ({
         <DateRangePicker
           label="Manual Date Range"
           w="100%"
-          placeholder="2022-01-01 - 2022-12-31"
+          placeholder="2022-01-01 - 2023-12-31"
           defaultValue={date}
           value={date}
           onChange={setDate}
