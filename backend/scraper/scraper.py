@@ -168,7 +168,7 @@ def main():
         except OSError:
             pass
         create_all_tables()
-    entries = scrape(True, 24)  # scrape 1 day
+    entries = scrape(True, 24 * 7)  # scrape 7 days in advance
     add_to_db(entries)
 
 
