@@ -95,7 +95,7 @@ def scrape(FETCH, hours_to_scrape=24):
 def add_to_db(entries: list):
     current_time = int(time.time())
     update_lessons = []
-    for e in entries:
+    for i, e in enumerate(entries):
         # create new activity
         event, _ = Events.get_or_create(
             sport=e["sport"],
@@ -141,6 +141,9 @@ def add_to_db(entries: list):
                 track_date=current_time,
                 places_free=e["places_free"],
             )
+        
+        if i % 10 == 0:
+            print(f"Added: {i}")
 
     # bulk update all
     Lessons.bulk_update(
@@ -165,7 +168,7 @@ def main():
         except OSError:
             pass
         create_all_tables()
-    entries = scrape(True, 24 * 7)  # scrape 7 days
+    entries = scrape(True, 24)  # scrape 1 day
     add_to_db(entries)
 
 
