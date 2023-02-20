@@ -39,7 +39,7 @@ def count_day():
     res = [
         {
             "day": x.day,
-            "value": min(x.sum, 0),
+            "value": max(x.sum, 0),
         }
         for x in query
     ]
