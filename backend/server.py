@@ -27,7 +27,7 @@ def count_day():
     query = (
         Lessons.select(
             fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch").alias("day"),
-            fn.SUM(Trackings.places_taken).alias("sum"),
+            fn.SUM(Lessons.places_max - Trackings.places_free).alias("sum"),
         )
         .join(Trackings)
         .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
@@ -39,7 +39,7 @@ def count_day():
     res = [
         {
             "day": x.day,
-            "value": x.sum,
+            "value": min(x.sum, 0),
         }
         for x in query
     ]
@@ -49,7 +49,12 @@ def count_day():
 @app.route("/api/sports")
 def sports():
     """Returns a list of all possible sports"""
-    return jsonify([x.sport for x in Events.select(Events.sport).distinct().order_by(Events.sport.asc())])
+    return jsonify(
+        [
+            x.sport
+            for x in Events.select(Events.sport).distinct().order_by(Events.sport.asc())
+        ]
+    )
 
 
 @app.route("/api/locations", methods=["POST"])
@@ -106,7 +111,6 @@ def history():
             Events.location,
             Lessons.places_max,
             Trackings.places_free,
-            Trackings.places_taken,
         )
         .join(Lessons)
         .join(Trackings)
