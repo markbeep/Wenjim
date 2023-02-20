@@ -38,3 +38,7 @@ poetry run poe build
 cd backend
 npm run build:proto
 ```
+
+# NixOS
+For NixOS users, the `shell.nix` is required as a workaround for
+grpc_tools to work and generate the proto files.
