@@ -1,5 +1,6 @@
 """General backend server handling using REST API to communicate"""
 
+import time
 from flask import Flask, request, abort, jsonify
 from flask_compress import Compress
 from peewee import fn
@@ -21,7 +22,7 @@ LATEST_TRACKING = Trackings.select(
 
 @app.route("/api/countday")
 def count_day():
-    """Returns the amount of total signups per day"""
+    """Returns the amount of total signups per day until now"""
 
     # Only looking at the latest track dates, we sum up the places taken
     query = (
@@ -33,6 +34,7 @@ def count_day():
         .join(LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id))
         .where(
             Trackings.track_date == LATEST_TRACKING.c.max_date,
+            Lessons.from_date <= int(time.time()),
         )
     ).group_by(fn.STRFTIME("%Y-%m-%d", Lessons.from_date, "unixepoch"))
 
