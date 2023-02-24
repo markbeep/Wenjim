@@ -1,6 +1,7 @@
 """General backend server handling using REST API to communicate"""
 
 from concurrent import futures
+import logging
 from flask import Flask, request, abort, jsonify
 from flask_compress import Compress
 from peewee import fn
@@ -9,8 +10,7 @@ from scraper.models import Events, Lessons, Trackings
 from pytz import timezone
 import grpc
 from history import HistoryServicer
-import logging
-from generated import countday_pb2_grpc, countday_pb2
+from generated import countday_pb2_grpc
 from utility import UtilityServicer
 
 app = Flask(__name__)
@@ -259,7 +259,6 @@ def weekly():
 
     for row in query:
         rounded_time = f"{row.lessons.from_date.hour:02}:00"
-        print(row.lessons.from_date.astimezone(tz).strftime("%H:%M"))
         day = weekdays[row.lessons.trackings.track_date.weekday()]
         data[day][rounded_time].append(
             {
@@ -298,7 +297,7 @@ def min_max_date():
 
 
 def serve():
-    port = 50051
+    port = 9090
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     countday_pb2_grpc.add_UtilityServicer_to_server(UtilityServicer(), server)
     countday_pb2_grpc.add_HistoryServicer_to_server(HistoryServicer(), server)
@@ -309,6 +308,7 @@ def serve():
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("peewee")
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(level=logging.DEBUG)

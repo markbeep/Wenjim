@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import { NotificationsProvider } from "@mantine/notifications";
 import { NavigationProgress } from "@mantine/nprogress";
 import { useState } from "react";
+import Shell from "../components/shell";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
@@ -14,8 +15,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <NotificationsProvider position="top-right" autoClose={8_000}>
           <NavigationProgress />
-          <Component {...pageProps} />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <Shell>
+            <Component {...pageProps} />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </Shell>
         </NotificationsProvider>
       </QueryClientProvider>
     </ThemeProvider>

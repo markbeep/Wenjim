@@ -8,73 +8,72 @@ import {
   Kbd,
   UnstyledButton,
   Title,
+  Loader,
 } from "@mantine/core";
-import { GetServerSideProps } from "next";
-import { UtilityService } from "../api/service";
-import Shell from "../components/shell";
-import { Event } from "../generated/Event";
 import { useRouter } from "next/router";
 import { useHotkeys } from "@mantine/hooks";
 import useResize from "../components/resize";
 import Link from "next/link";
-import { showNotification } from "@mantine/notifications";
+import { useTopEvents } from "../api/grpc";
 
-export default function Home({
-  events,
-  top,
-  error,
-}: {
-  events: Event[];
-  top: Event[];
-  error: string;
-}) {
-  if (error) {
-    showNotification({ title: "Error", message: error, color: "red" });
-  }
-
+export default function Home() {
   const router = useRouter();
   const keybinds = ["H", "J", "K", "L"];
+  const { data, isLoading } = useTopEvents();
+  const [show] = useResize();
+
   useHotkeys([
-    [keybinds[0], () => router.push(`/lessons/${top[0].id}`)],
-    [keybinds[1], () => router.push(`/lessons/${top[1].id}`)],
-    [keybinds[2], () => router.push(`/lessons/${top[2].id}`)],
-    [keybinds[3], () => router.push(`/lessons/${top[3].id}`)],
+    [keybinds[0], () => data && router.push(`/lessons/${data[0].eventId}`)],
+    [keybinds[1], () => data && router.push(`/lessons/${data[0].eventId}`)],
+    [keybinds[2], () => data && router.push(`/lessons/${data[0].eventId}`)],
+    [keybinds[3], () => data && router.push(`/lessons/${data[0].eventId}`)],
   ]);
 
   return (
-    <Shell events={events}>
-      <Container fluid mt="xl">
-        <Center>
-          <Container className="text-center" w="600px">
-            <Image
-              src="/assets/wenjim_dark.svg"
-              height={80}
-              width={80}
-              blurDataURL="/assets/favicon.png"
-              alt="Logo"
-            />
-            <Title>Wenjim, the open source ASVZ data spot</Title>
-            <Text my="xl">
-              Ever wanted to sign up for an ASVZ event but it was full? Fret no
-              more! With Wenjim you can lookup all the events you want and find
-              out at what time the least people go and how early you have to
-              enroll to still get a job.
-            </Text>
-            <Title size={20}>Top Events</Title>
+    <Container fluid mt="xl">
+      <Center>
+        <Container className="text-center justify-center" w="600px">
+          <Image
+            src="/assets/wenjim_dark.svg"
+            height={80}
+            width={80}
+            blurDataURL="/assets/favicon.png"
+            alt="Logo"
+          />
+          <Title>Wenjim, the open source ASVZ data spot</Title>
+          <Text my="xl">
+            Ever wanted to sign up for an ASVZ event but it was full? Fret no
+            more! With Wenjim you can lookup all the events you want and find
+            out at what time the least people go and how early you have to
+            enroll to still get a job.
+          </Text>
+          <Title size={20}>Top Events</Title>
+          <Center mt="md">{isLoading && <Loader variant="dots" />}</Center>
+          {data && (
             <SimpleGrid cols={2} mt="sm">
-              {top.map((e, i) => TopCard(e, keybinds[i]))}
+              {data.map((e, i) => TopCard(e, i, keybinds[i], show))}
             </SimpleGrid>
-          </Container>
-        </Center>
-      </Container>
-    </Shell>
+          )}
+        </Container>
+      </Center>
+    </Container>
   );
 }
 
-const TopCard = (event: Event, keybind: string) => {
-  const [show] = useResize();
+const TopCard = (
+  event: {
+    sport: string;
+    title: string;
+    location: string;
+    niveau: string;
+    eventId: number;
+  },
+  index: number,
+  keybind: string,
+  show: boolean,
+) => {
   return (
-    <Link href={`/lessons/${event.id}`}>
+    <Link href={`/lessons/${event.eventId}`} key={index}>
       <UnstyledButton>
         <Card shadow="sm" p="lg" radius="md" withBorder>
           {show && (
@@ -96,52 +95,4 @@ const TopCard = (event: Event, keybind: string) => {
       </UnstyledButton>
     </Link>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async context => {
-  try {
-    const utilityService = new UtilityService();
-    const { events, error } = await utilityService.getEvents();
-
-    if (events) {
-      return {
-        props: {
-          events: events.events,
-          top: [
-            {
-              sport: "Fitness",
-              title: "Individuelles Training",
-              location: "Sport Center Polyterrasse",
-              niveau: "Alle",
-            },
-            {
-              sport: "Fitness",
-              title: "Individuelles Training",
-              location: "Sport Center Hönggerberg",
-              niveau: "Alle",
-            },
-            {
-              sport: "Fitness",
-              title: "Individuelles Training",
-              location: "Sport Center Irchel",
-              niveau: "Alle",
-            },
-            {
-              sport: "Fitness",
-              title: "Individuelles Training",
-              location: "Sport Center Rämistrasse",
-              niveau: "Alle",
-            },
-          ],
-          error,
-        },
-      };
-    } else {
-      throw "No result";
-    }
-  } catch (error) {
-    return {
-      props: { error },
-    };
-  }
 };

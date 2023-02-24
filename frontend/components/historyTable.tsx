@@ -8,123 +8,113 @@ import {
   Table,
   useMantineTheme,
 } from "@mantine/core";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons";
-import React, { useState } from "react";
-import { HistoryRow } from "../generated/HistoryRow";
-import { HistorySortType } from "../generated/HistorySortType";
-import { JSONHistoryRow } from "../pages/lessons/[eventId]";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import React, { useEffect, useState } from "react";
+import { HistoryReply, HistoryRow } from "../generated/countday_pb";
 import useResize from "./resize";
 
-const HistoryTable = ({ history }: { history: JSONHistoryRow[] }) => {
-  const [orderBy, setOrderBy] = useState<HistorySortType>(
-    HistorySortType.HISTORYSORT_DATE,
-  );
+enum sortOrder {
+  DATE,
+  PLACES_FREE,
+  PLACES_MAX,
+}
+
+const formatHistory = (history: HistoryReply) => {};
+
+const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
+  const [orderBy, setOrderBy] = useState(sortOrder.DATE);
   const [descend, setDescend] = useState(false);
   const [page, setPage] = useState(0);
   const theme = useMantineTheme();
   const [amount, setAmount] = useState(50); // amount of items to show per page
   const [show] = useResize();
-  const [data, setData] = useState(history);
+  const [data, setData] = useState(history?.getRowsList());
 
-  const sortData = (descend: boolean, orderBy: HistorySortType) => {
+  useEffect(() => setData(history?.getRowsList()), [history]);
+
+  const sortData = (
+    data: HistoryRow[],
+    descend: boolean,
+    orderBy: sortOrder,
+  ) => {
     if (descend) {
       switch (orderBy) {
-        case HistorySortType.HISTORYSORT_DATE:
-          setData([...data.sort((a, b) => a.date - b.date)]);
+        case sortOrder.DATE:
+          setData([...data.sort((a, b) => a.getDate() - b.getDate())]);
           break;
-        case HistorySortType.HISTORYSORT_PLACESFREE:
+        case sortOrder.PLACES_FREE:
           setData([
-            ...data.sort((a, b) => (a.placesFree ?? 0) - (b.placesFree ?? 0)),
+            ...data.sort((a, b) => a.getPlacesfree() - b.getPlacesfree()),
           ]);
           break;
-        case HistorySortType.HISTORYSORT_PLACESMAX:
+        case sortOrder.PLACES_MAX:
           setData([
-            ...data.sort((a, b) => (a.placesMax ?? 0) - (b.placesMax ?? 0)),
+            ...data.sort((a, b) => a.getPlacesmax() - b.getPlacesmax()),
           ]);
           break;
       }
     } else {
       switch (orderBy) {
-        case HistorySortType.HISTORYSORT_DATE:
-          setData([...data.sort((a, b) => b.date - a.date)]);
+        case sortOrder.DATE:
+          setData([...data.sort((a, b) => b.getDate() - a.getDate())]);
           break;
-        case HistorySortType.HISTORYSORT_PLACESFREE:
+        case sortOrder.PLACES_FREE:
           setData([
-            ...data.sort((a, b) => (b.placesFree ?? 0) - (a.placesFree ?? 0)),
+            ...data.sort((a, b) => b.getPlacesfree() - a.getPlacesfree()),
           ]);
           break;
-        case HistorySortType.HISTORYSORT_PLACESMAX:
+        case sortOrder.PLACES_MAX:
           setData([
-            ...data.sort((a, b) => (b.placesMax ?? 0) - (a.placesMax ?? 0)),
+            ...data.sort((a, b) => b.getPlacesmax() - a.getPlacesmax()),
           ]);
           break;
       }
     }
   };
 
-  const handleSortClick = (d: HistorySortType) => {
+  const handleSortClick = (data: HistoryRow[], d: sortOrder) => {
     if (orderBy === d) {
-      sortData(!descend, orderBy);
+      sortData(data, !descend, orderBy);
       setDescend(b => !b);
     } else {
-      sortData(false, orderBy);
+      sortData(data, false, orderBy);
       setOrderBy(d);
       setDescend(false);
     }
   };
 
-  const ths = (
+  const ths = (data: HistoryRow[]) => (
     <tr>
       <th></th>
-      <th
-        className={
-          orderBy === HistorySortType.HISTORYSORT_DATE
-            ? `bg-neutral-content`
-            : ""
-        }
-      >
-        <button
-          onClick={() => handleSortClick(HistorySortType.HISTORYSORT_DATE)}
-        >
+      <th className={orderBy === sortOrder.DATE ? `bg-neutral-content` : ""}>
+        <button onClick={() => handleSortClick(data, sortOrder.DATE)}>
           <Flex justify="center" direction="row" align="center">
             DATE
-            {orderBy === HistorySortType.HISTORYSORT_DATE &&
+            {orderBy === sortOrder.DATE &&
               (descend ? <IconChevronUp /> : <IconChevronDown />)}
           </Flex>
         </button>
       </th>
       <th
         className={
-          orderBy === HistorySortType.HISTORYSORT_PLACESFREE
-            ? `bg-neutral-content`
-            : ""
+          orderBy === sortOrder.PLACES_FREE ? `bg-neutral-content` : ""
         }
       >
-        <button
-          onClick={() =>
-            handleSortClick(HistorySortType.HISTORYSORT_PLACESFREE)
-          }
-        >
+        <button onClick={() => handleSortClick(data, sortOrder.PLACES_FREE)}>
           <Flex justify="center" direction="row" align="center">
             SPOTS FREE
-            {orderBy === HistorySortType.HISTORYSORT_PLACESFREE &&
+            {orderBy === sortOrder.PLACES_FREE &&
               (descend ? <IconChevronUp /> : <IconChevronDown />)}
           </Flex>
         </button>
       </th>
       <th
-        className={
-          orderBy === HistorySortType.HISTORYSORT_PLACESMAX
-            ? `bg-neutral-content`
-            : ""
-        }
+        className={orderBy === sortOrder.PLACES_MAX ? `bg-neutral-content` : ""}
       >
-        <button
-          onClick={() => handleSortClick(HistorySortType.HISTORYSORT_PLACESMAX)}
-        >
+        <button onClick={() => handleSortClick(data, sortOrder.PLACES_MAX)}>
           <Flex justify="center" direction="row" align="center">
             SPOTS TOTAL
-            {orderBy === HistorySortType.HISTORYSORT_PLACESMAX &&
+            {orderBy === sortOrder.PLACES_MAX &&
               (descend ? <IconChevronUp /> : <IconChevronDown />)}
           </Flex>
         </button>
@@ -136,38 +126,37 @@ const HistoryTable = ({ history }: { history: JSONHistoryRow[] }) => {
     <Container>
       <ScrollArea h={500} type="auto">
         <Container sx={{ minHeight: "30rem" }} fluid>
-          {(!data || data.length === 0) && (
-            <Overlay color={theme.primaryShade.toString()} blur={2} />
+          {data && (
+            <Table captionSide="bottom" highlightOnHover striped>
+              <thead
+                style={{
+                  top: 0,
+                  position: "sticky",
+                  backgroundColor:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[7]
+                      : theme.white,
+                }}
+              >
+                {ths(data)}
+              </thead>
+              <tbody>
+                {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
+                  <tr key={page * amount + i}>
+                    <th>{page * amount + i + 1}</th>
+                    <td>
+                      {new Date(e.getDate() * 1e3).toLocaleString("nu-arab", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </td>
+                    <td>{e.getPlacesfree()}</td>
+                    <td>{e.getPlacesmax()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
           )}
-          <Table captionSide="bottom" highlightOnHover striped>
-            <thead
-              style={{
-                top: 0,
-                position: "sticky",
-                backgroundColor:
-                  theme.colorScheme === "dark"
-                    ? theme.colors.dark[7]
-                    : theme.white,
-              }}
-            >
-              {ths}
-            </thead>
-            <tbody>
-              {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
-                <tr key={page * amount + i}>
-                  <th>{page * amount + i + 1}</th>
-                  <td>
-                    {new Date(e.date).toLocaleString("nu-arab", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </td>
-                  <td>{e.placesFree}</td>
-                  <td>{e.placesMax}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
         </Container>
       </ScrollArea>
       <Center mt="sm">

@@ -1,4 +1,5 @@
-from peewee import fn
+import grpc
+from peewee import fn, DoesNotExist
 from dateutil.parser import parse
 from scraper.models import Events, Lessons
 from generated import countday_pb2_grpc, countday_pb2
@@ -9,6 +10,7 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
     """requests that are used all around"""
 
     def Events(self, request, context):
+        logging.info("Request for Events")
         query = (
             Events.select(
                 Events.id, Events.sport, Events.title, Events.location, Events.niveau
@@ -31,7 +33,13 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
         )
 
     def SingleEvent(self, request, context):
-        query = Events.get_by_id(request.id)
+        logging.info("Request for SingleEvent")
+        try:
+            query = Events.get_by_id(request.id)
+        except DoesNotExist:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("Invalid EventId")
+            return countday_pb2.Event()
         return countday_pb2.Event(
             id=query.id,
             sport=query.sport,
@@ -41,7 +49,13 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
         )
 
     def Locations(self, request, context):
-        event = Events.get_by_id(request.eventId)
+        logging.info("Request for Locations")
+        try:
+            event = Events.get_by_id(request.eventId)
+        except DoesNotExist:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("Invalid EventId")
+            return countday_pb2.LocationsReply()
         query = (
             Events.select(Events.id, Events.location)
             .distinct()
@@ -49,7 +63,6 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
             .where(
                 Events.sport == event.sport,
                 Events.title == event.title,
-                Events.niveau == event.niveau,
             )
         )
         return countday_pb2.LocationsReply(
@@ -60,26 +73,32 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
         )
 
     def Titles(self, request, context):
-        event = Events.get_by_id(request.eventId)
+        logging.info("Request for Titles")
+        try:
+            event = Events.get_by_id(request.eventId)
+        except DoesNotExist:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("Invalid EventId")
+            return countday_pb2.TitleReply()
         query = (
-            Events.select(Events.id, Events.location)
+            Events.select(Events.id, Events.title)
             .distinct()
             .join(Lessons)
             .where(
                 Events.sport == event.sport,
                 Events.location == event.location,
-                Events.niveau == event.niveau,
             )
         )
         return countday_pb2.TitleReply(
             titles=[
-                countday_pb2.TitleEvent(eventId=x.id, title=x.location) for x in query
+                countday_pb2.TitleEvent(eventId=x.id, title=x.title) for x in query
             ]
         )
 
     def MinMaxDate(self, request, context):
-        query = Lessons.get(
+        logging.info("Request for MinMaxDate")
+        query = Lessons.select(
             fn.MIN(Lessons.from_date).alias("min"),
             fn.MAX(Lessons.to_date).alias("max"),
         )
-        return countday_pb2.MinMaxDateReply(min=query.min, max=query.max)
+        return countday_pb2.MinMaxDateReply(min=int(query[0].min.timestamp()), max=int(query[0].max.timestamp()))

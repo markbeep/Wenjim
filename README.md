@@ -15,6 +15,13 @@ of the specific directory. The general requirements are:
 These should suffice to get everything setup for simple local development.
 There are Dockerfiles for using the scraper or backend if needed.
 
+**Note:** A part of the backend is [Envoy](https://www.envoyproxy.io/). This is
+a proxy that translates the GRPC-Web requests to normal GRPC calls, meaning it also has to be
+ran. Easiest is to run it with the docker-compose file in the root:
+```bash
+docker compose up --build
+```
+
 # GRPC
 Wenjim uses GRPC to communicate between the front- and backend.
 

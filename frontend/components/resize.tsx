@@ -16,7 +16,7 @@ export default function useResize(
         setShow(true);
       }
     },
-    [theme],
+    [breakpoint],
   );
   // initially check for window size
   useEffect(() => {

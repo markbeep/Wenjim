@@ -15,40 +15,31 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { ReactNode, useState } from "react";
-import { IconBrandGithub, IconExternalLink, IconSearch } from "@tabler/icons";
+import {
+  IconBrandGithub,
+  IconExternalLink,
+  IconSearch,
+} from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Event } from "../generated/Event";
 import {
   openSpotlight,
   SpotlightAction,
   SpotlightProvider,
 } from "@mantine/spotlight";
 import useResize from "./resize";
+import { useEvents } from "../api/grpc";
 
-const Shell = ({
-  children,
-  events,
-}: {
-  children: ReactNode;
-  events: Event[];
-}) => {
+const Shell = ({ children }: { children: ReactNode }) => {
   const theme = useMantineTheme();
   const [show, setShow] = useState(false);
   const [bigSearch] = useResize();
   const [count, setCount] = useState(0);
   const router = useRouter();
+  const { data, isLoading } = useEvents();
 
   const menus = [
-    {
-      name: "History",
-      href: "/history",
-    },
-    {
-      name: "Weekly",
-      href: "/weekly",
-    },
     {
       name: "Report Issues",
       href: "https://github.com/markbeep/Wenjim/issues",
@@ -56,14 +47,18 @@ const Shell = ({
     },
   ];
 
-  const actions: SpotlightAction[] = events.map(e => ({
-    title: `${e.sport}: ${e.title}`,
-    description: `${e.location} (${e.niveau})`,
-    onTrigger: () => {
-      router.push({ pathname: `/lessons/${e.id}` });
-    },
-    keywords: [e.sport?.toLowerCase() ?? "", e.location?.toLowerCase() ?? ""],
-  }));
+  const actions: SpotlightAction[] =
+    data?.getEventsList().map(e => ({
+      title: `${e.getSport()}: ${e.getTitle()}`,
+      description: `${e.getLocation()} (${e.getNiveau()})`,
+      onTrigger: () => {
+        router.push({ pathname: `/lessons/${e.getId()}` });
+      },
+      keywords: [
+        e.getSport().toLowerCase() ?? "",
+        e.getLocation().toLowerCase() ?? "",
+      ],
+    })) ?? [];
   return (
     <AppShell
       header={
@@ -128,7 +123,7 @@ const Shell = ({
               <SpotlightProvider
                 actions={actions}
                 searchIcon={<IconSearch size={18} />}
-                searchPlaceholder="Search..."
+                searchPlaceholder={isLoading ? "Loading..." : "Search..."}
                 shortcut={["mod + P", "mod + K"]}
                 highlightQuery
                 nothingFoundMessage="Nothing found"

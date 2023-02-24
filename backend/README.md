@@ -20,8 +20,7 @@ poetry install
 poetry run start
 ```
 
-Docker:
+Docker: (the file is in the root)
 ```bash
-cd backend
 docker compose up --build
 ```

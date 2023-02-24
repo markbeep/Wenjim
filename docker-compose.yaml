@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  grpc-backend:
+    build: .
+    restart: on-failure
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./backend/data:/app/data
+
+  envoy:
+    image: envoyproxy/envoy:v1.22.7
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+    depends_on:
+      - grpc-backend

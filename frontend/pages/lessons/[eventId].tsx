@@ -1,87 +1,100 @@
+import { Select, Title, Text, Skeleton, Alert } from "@mantine/core";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import React from "react";
-import { UtilityClient } from "../../generated/countday_grpc_web_pb";
-import { LocationsRequest } from "../../generated/countday_pb";
+import {
+  useHistoryById,
+  useLocations,
+  useSingleEvent,
+  useTitles,
+} from "../../api/grpc";
+import HistoryTable from "../../components/historyTable";
 
 export default function Lesson({}) {
   const router = useRouter();
-
-  const client = new UtilityClient("http://localhost:50051", null, null);
-  client.events(new LocationsRequest(), {}, console.log);
+  const eventId = Number(router.query.eventId ?? "-1");
+  const dateFrom = new Date(
+    router.query.dateFrom ? String(router.query.dateFrom) : "1970-01-01",
+  );
+  const dateTo = new Date(
+    router.query.dateTo ? String(router.query.dateTo) : "2040-12-31",
+  );
+  const { data, isLoading } = useSingleEvent(eventId);
+  const {
+    data: locations,
+    isLoading: locationsLoading,
+    isError: locationsError,
+  } = useLocations(eventId);
+  const {
+    data: titles,
+    isLoading: titlesLoading,
+    isError: titlesError,
+  } = useTitles(eventId);
+  const {
+    data: history,
+    isLoading: historyLoading,
+    isError: historyError,
+  } = useHistoryById(eventId, dateFrom, dateTo);
 
   return (
     <>
-      {/* {events && (
-        <Shell events={events}>
-          {event && (
-            <>
-              <Title>
-                {event.sport}: {event.title}
-              </Title>
+      {data && (
+        <>
+          <Title>
+            {data.getSport()}: {data.getTitle()}
+          </Title>
 
-              {locations && (
-                <Select
-                  placeholder={event.location}
-                  searchable
-                  dropdownPosition="bottom"
-                  data={locations.map(e => ({
-                    value: e.eventId?.toString() ?? "",
-                    label: e.location ?? "",
-                  }))}
-                  onChange={v => router.push(`/lessons/${v}`)}
-                />
-              )}
-              <Text color="dimmed">
-                {event.location} | Niveau: {event.niveau}
-              </Text>
-              {history && <HistoryTable history={history} />}
-            </>
+          {locationsError && (
+            <Alert icon={<IconAlertCircle />} color="red">
+              There was an error fetching locations
+            </Alert>
           )}
-        </Shell>
-      )} */}
+          {locations && (
+            <Select
+              placeholder={data.getLocation()}
+              disabled={locationsLoading}
+              searchable
+              dropdownPosition="bottom"
+              data={locations.getLocationsList().map(e => ({
+                value: e.getEventid().toString(),
+                label: e.getLocation(),
+              }))}
+              onChange={v => router.push(`/lessons/${v}`)}
+            />
+          )}
+
+          {titlesError && (
+            <Alert icon={<IconAlertCircle />} color="red">
+              There was an error fetching titles
+            </Alert>
+          )}
+          {titles && (
+            <Select
+              placeholder={data.getTitle()}
+              disabled={titlesLoading}
+              searchable
+              dropdownPosition="bottom"
+              data={titles.getTitlesList().map(e => ({
+                value: e.getEventid().toString(),
+                label: e.getTitle(),
+              }))}
+              onChange={v => router.push(`/lessons/${v}`)}
+            />
+          )}
+
+          <Text color="dimmed">
+            {data.getLocation()} | Niveau: {data.getLocation()}
+          </Text>
+          {historyError && (
+            <Alert icon={<IconAlertCircle />} color="red">
+              There was an error fetching history data
+            </Alert>
+          )}
+          <Skeleton animate visible={historyLoading}>
+            <HistoryTable history={history} />
+          </Skeleton>
+        </>
+      )}
     </>
   );
 }
-
-// export const getServerSideProps$: GetServerSideProps = async context => {
-//   try {
-//     const utilityService = new UtilityService();
-//     const { events, error } = await utilityService.getEvents();
-//     const historyService = new HistoryService();
-//     const { history, error: err2 } = await historyService.getHistoryById(
-//       Number(context.query.eventId),
-//       new Date("2000-01-01"),
-//       new Date("2030-12-31"),
-//     );
-//     const { event, error: err3 } = await utilityService.getSingleEvent(
-//       Number(context.query.eventId),
-//     );
-//     const { locations, error: err4 } = await utilityService.getLocations(
-//       Number(context.query.eventId),
-//     );
-//     const { titles, error: err5 } = await utilityService.getTitles(
-//       Number(context.query.eventId),
-//     );
-
-//     if (event && events && locations && titles && history) {
-//       return {
-//         props: {
-//           event,
-//           events: events.events,
-//           locations: locations.locations,
-//           titles: titles.titles,
-//           history: history.rows.map(e => ({
-//             ...e,
-//             date: Number(e.date) * 1e3,
-//           })), // convert to milliseconds
-//         },
-//       };
-//     } else {
-//       throw error ? error : "No result";
-//     }
-//   } catch (error) {
-//     return {
-//       props: { error },
-//     };
-//   }
-// };
