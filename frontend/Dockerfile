@@ -1,14 +1,11 @@
-FROM node:18-alpine3.17 as build-stage
+FROM node:18-bullseye-slim as build-stage
 
 WORKDIR /app
 
-COPY package*.json /app/
-RUN npm install --production
-COPY . .
-COPY proto .
-COPY public/ public/
-COPY tsconfig.json .
-COPY tailwind.config.js .
+COPY frontend/package*.json /app/
+RUN npm install --omit=dev
+COPY proto /proto
+COPY frontend/ /app
 
 ENV BACKEND_PROXY=http://wenjim-backend-staging:8080
 

@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: ../
-      dockerfile: ./Dockerfile
+      dockerfile: ./frontend/Dockerfile
     restart: "no"
     ports:
       - "3000:3000"
