@@ -47,7 +47,7 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache,mode=max
 
-      - name: Build and push frontend
+      - name: Build and push envoy
         uses: docker/build-push-action@v3
         with:
           context: .
