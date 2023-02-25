@@ -25,6 +25,5 @@ def main():
     logger.setLevel(level=logging.DEBUG)
     serve()
 
-
 if __name__ == "__main__":
     main()

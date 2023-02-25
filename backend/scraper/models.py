@@ -37,7 +37,7 @@ class Events(BaseModel):
     class Meta:
         """Makes the events be unique in all its fields"""
 
-        indexes = ("sport", "title", "location", "niveau", True)
+        indexes = ((("sport", "title", "location", "niveau"), True),)
 
 
 class Lessons(BaseModel):

@@ -35,7 +35,7 @@ def scrape(FETCH, hours_to_scrape=24):
         js = {}
         i = 0
         while not all_scraped:
-            js = fetch(360, i * 360)
+            js = fetch(800, i * 800)
             for e in js["results"]:
                 if e["cancelled"]:
                     continue
@@ -57,6 +57,7 @@ def scrape(FETCH, hours_to_scrape=24):
                         "niveau_name": e["niveau_name"],
                         "cancelled": e["cancelled"],
                         "livestream": e["livestream"],
+                        "oe_from_date": e["oe_from_date"],
                     }
                     entries.append(t)
                 except KeyError:
@@ -86,6 +87,7 @@ def scrape(FETCH, hours_to_scrape=24):
     for e in entries:
         e["from_date"] = dateutil.parser.isoparse(e["from_date"]).astimezone(tz)
         e["to_date"] = dateutil.parser.isoparse(e["to_date"]).astimezone(tz)
+        e["oe_from_date"] = dateutil.parser.isoparse(e["oe_from_date"]).astimezone(tz)
 
     return entries
 
@@ -93,7 +95,7 @@ def scrape(FETCH, hours_to_scrape=24):
 def add_to_db(entries: list):
     current_time = int(time.time())
     update_lessons = []
-    for e in entries:
+    for i, e in enumerate(entries):
         # create new activity
         event, _ = Events.get_or_create(
             sport=e["sport"],
@@ -129,13 +131,18 @@ def add_to_db(entries: list):
         lesson.cancelled = e["cancelled"]
         lesson.livestream = e["livestream"]
         update_lessons.append(lesson)
-
-        # check free/taken spots
-        Trackings.create(
-            lesson=lesson,
-            track_date=current_time,
-            places_free=e["places_free"],
-        )
+        
+        # checks if the signup is open already
+        if e["oe_from_date"].timestamp() <= current_time:
+            # check free/taken spots
+            Trackings.create(
+                lesson=lesson,
+                track_date=current_time,
+                places_free=e["places_free"],
+            )
+        
+        if i % 10 == 0:
+            print(f"Added: {i}")
 
     # bulk update all
     Lessons.bulk_update(
@@ -154,6 +161,11 @@ def add_to_db(entries: list):
 
 def main():
     if not os.path.exists("data/entries.db"):
+        print("Creating database")
+        try:
+            os.mkdir("data")
+        except OSError:
+            pass
         create_all_tables()
     entries = scrape(True, 24 * 7)  # scrape 7 days in advance
     add_to_db(entries)
