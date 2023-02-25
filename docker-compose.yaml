@@ -10,10 +10,10 @@ services:
       - ./backend/data:/app/data
 
   envoy:
-    image: envoyproxy/envoy:v1.22.7
+    build:
+      context: .
+      dockerfile: Dockerfile_envoy
     ports:
       - "8080:8080"
-    volumes:
-      - ./envoy.yaml:/etc/envoy/envoy.yaml
     depends_on:
       - grpc-backend

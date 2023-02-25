@@ -46,3 +46,14 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:staging
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache,mode=max
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile_envoy
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:staging
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache,mode=max
