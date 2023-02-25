@@ -3,50 +3,49 @@
 When gym? Find out with this tool!
 ## Local Development
 
-### Backend
-The backend is split into two parts. There is the scraper which gets the latest stats from
-the ASVZ API and then there's the backend Flask instance using Peewee on SQLite.
+The exact details on how to setup the front- and backend are in the READMEs
+of the specific directory. The general requirements are:
+- Frontend
+  - Node LTS (>=16)
+  - npm
+- Backend
+  - Python 3.11
+  - [Poetry](https://python-poetry.org/) (package manager)
 
-The backend is a Python REST API server running with Flask. [Poetry](https://python-poetry.org/)
-is used to maintain consistent and reproducible package versions.
+These should suffice to get everything setup for simple local development.
+There are Dockerfiles for using the scraper or backend if needed.
 
-Poetry additional has `pylint` and `black` installed for linting and consistent formatting.
-Simply run `poetry run black .` to format all the documents in the current directory.
-
-But there are also Dockerfiles to run the programs without Poetry if desired.
-
-**Scraper:**
-Poetry:
+**Note:** A part of the backend is [Envoy](https://www.envoyproxy.io/). This is
+a proxy that translates the GRPC-Web requests to normal GRPC calls, meaning it also has to be
+ran. Easiest is to run it with the docker-compose file in the root:
 ```bash
-cd backend/scraper
-poetry install
-poetry run python scraper.py
-```
-
-Docker:
-```bash
-cd backend/scraper
-docker build -t scraper . && docker run --rm scraper
-```
-
-**REST API Backend:**
-Poetry:
-```bash
-cd backend/scraper
-poetry install
-poetry run python scraper.py
-```
-
-Docker:
-```bash
-cd backend
 docker compose up --build
 ```
 
-### Frontend
-Frontend runs on Next.js. To start simply run:
+# GRPC
+Wenjim uses GRPC to communicate between the front- and backend.
+
+To generate the required proto files, simply execute:
 ```bash
-cd frontend
-npm i # install all packages
-npm run dev
+make
 ```
+*Poetry is required for this.*
+
+## "Manual" Install
+The manual install consists of simply executing the Makefile manually:
+
+### Backend
+```bash
+cd backend
+poetry run poe build
+```
+
+### Frontend
+```bash
+cd backend
+npm run build:proto
+```
+
+# NixOS
+For NixOS users, the `shell.nix` is required as a workaround for
+grpc_tools to work and generate the proto files.
