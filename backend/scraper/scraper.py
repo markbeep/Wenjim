@@ -135,7 +135,6 @@ def add_to_db(entries: list):
             lesson=lesson,
             track_date=current_time,
             places_free=e["places_free"],
-            places_taken=e["places_taken"],
         )
 
     # bulk update all
@@ -156,7 +155,7 @@ def add_to_db(entries: list):
 def main():
     if not os.path.exists("data/entries.db"):
         create_all_tables()
-    entries = scrape(True, 24)  # scrape x hours in advance
+    entries = scrape(True, 24 * 7)  # scrape 7 days in advance
     add_to_db(entries)
 
 if __name__ == "__main__":

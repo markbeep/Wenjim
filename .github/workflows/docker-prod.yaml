@@ -33,11 +33,11 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:latest
-      
+
       - name: Build and push frontend
         uses: docker/build-push-action@v3
         with:
-          context: ./frontend
+          context: .
           file: ./frontend/Dockerfile.prod
           platforms: linux/amd64
           push: true

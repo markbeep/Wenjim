@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { NotificationsProvider } from "@mantine/notifications";
 import { NavigationProgress } from "@mantine/nprogress";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Shell from "../components/shell";
 
 function MyApp({ Component, pageProps }: AppProps) {

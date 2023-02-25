@@ -8,6 +8,7 @@ from peewee import (
     IntegerField,
     BooleanField,
     TimestampField,
+    BitField,
 )
 
 database = SqliteDatabase("data/entries.db")
@@ -57,16 +58,25 @@ class Lessons(BaseModel):
 
 class Trackings(BaseModel):
     """
-    The amount of places free and taken at a given track time.
-    places_free / places_taken are not necessarily consistent with
-    places_max.
+    The amount of places free at a given track time.
     """
 
     lesson = ForeignKeyField(Lessons, backref="trackings")
     track_date = TimestampField()
     places_free = IntegerField()
-    places_taken = IntegerField()
 
+class Statistics(BaseModel):
+    """
+    Statistics about when what event was accessed (event is null for index page)
+    """
+    
+    event = ForeignKeyField(Events, backref="statistics", null=True)
+    flags = BitField()
+    is_history = flags.flag(1)
+    is_places = flags.flag(2)
+    is_weekly = flags.flag(4)
+    track_date = TimestampField()
+    
 
 def create_all_tables():
     # Creates all the tables

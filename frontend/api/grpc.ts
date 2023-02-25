@@ -162,3 +162,25 @@ export function useHistoryById(eventId: number, dateFrom: Date, dateTo: Date) {
   );
   return { isError, isLoading, data };
 }
+
+export function useEventStatistics(
+  eventId: number,
+  dateFrom: Date,
+  dateTo: Date,
+) {
+  const { isError, isLoading, data } = useQuery(
+    ["eventStatistics", eventId, dateFrom, dateTo],
+    async () => {
+      const promisified = promisify(historyClient.eventStatistics).bind(
+        historyClient,
+      );
+      const req = new HistoryIdRequest();
+      req.setEventid(eventId);
+      req.setDatefrom(Math.round(dateFrom.getTime() / 1e3));
+      req.setDateto(Math.round(dateTo.getTime() / 1e3));
+      const resp = await promisified(req, {});
+      return resp;
+    },
+  );
+  return { isError, isLoading, data };
+}

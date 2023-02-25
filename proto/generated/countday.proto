@@ -96,6 +96,7 @@ message MinMaxDateReply {
 /*
 
 ###############################################
+HISTORY
 
 */
 
@@ -106,6 +107,8 @@ service History {
 
     /* Sends the pure data of all time slots */
     rpc HistoryId(HistoryIdRequest) returns (HistoryReply) {}
+
+    rpc EventStatistics(HistoryIdRequest) returns (HistoryStatisticsReply) {}
 }
 
 message HistoryIdRequest {
@@ -145,9 +148,27 @@ message HistoryReply {
 }
 
 
+message HistoryStatisticsReply {
+    sint32 trackedLessons = 1;
+
+    /* the average amount of minutes before the event starts where it's full */
+    float averageMinutes = 2;
+    float averagePlacesFree = 3;
+    float averagePlacesMax = 4;
+    
+    sint32 maxPlacesFree = 5;
+    sint64 dateMaxPlacesFree = 6;
+
+    sint32 maxPlacesMax = 7;
+    sint64 dateMaxPlacesMax = 8;
+
+    sint32 totalTrackings = 9;
+}   
+
 /*
 
 ###############################################
+WEEKLY
 
 */
 

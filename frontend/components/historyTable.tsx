@@ -72,12 +72,14 @@ const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
     }
   };
 
+  useEffect(() => {
+    if (data) sortData(data, descend, orderBy);
+  }, [descend, orderBy, data]);
+
   const handleSortClick = (data: HistoryRow[], d: sortOrder) => {
     if (orderBy === d) {
-      sortData(data, !descend, orderBy);
-      setDescend(b => !b);
+      setDescend(d => !d);
     } else {
-      sortData(data, false, orderBy);
       setOrderBy(d);
       setDescend(false);
     }
@@ -123,8 +125,8 @@ const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
   );
 
   return (
-    <Container>
-      <ScrollArea h={500} type="auto">
+    <>
+      <ScrollArea h="75vh" type="auto">
         <Container sx={{ minHeight: "30rem" }} fluid>
           {data && (
             <Table captionSide="bottom" highlightOnHover striped>
@@ -169,7 +171,7 @@ const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
           />
         )}
       </Center>
-    </Container>
+    </>
   );
 };
 
