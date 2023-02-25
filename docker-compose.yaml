@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  grpc-backend:
+  wenjim-backend-staging:
     build: .
     restart: on-failure
     ports:
@@ -12,8 +12,8 @@ services:
   envoy:
     build:
       context: .
-      dockerfile: Dockerfile_envoy
+      dockerfile: Dockerfile_envoy_staging
     ports:
       - "8080:8080"
     depends_on:
-      - grpc-backend
+      - wenjim-backend-staging

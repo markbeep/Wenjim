@@ -17,16 +17,16 @@ export default class _Document extends Document {
           <NextScript />
         </body>
         <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-WFP61JCLV3"
+        ></script>
+        <script
           dangerouslySetInnerHTML={{
             __html: `
-          <script async src="https://www.googletagmanager.com/gtag/js?id=G-WFP61JCLV3"></script>
-          <script>
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-
             gtag('config', 'G-WFP61JCLV3');
-          </script>
           `,
           }}
         />
