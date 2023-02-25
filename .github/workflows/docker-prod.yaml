@@ -47,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: ./Dockerfile_envoy
+          file: ./Dockerfile_envoy_prod
           platforms: linux/amd64
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:latest

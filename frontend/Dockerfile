@@ -7,7 +7,7 @@ RUN npm install --omit=dev
 COPY proto /proto
 COPY frontend/ /app
 
-ENV BACKEND_PROXY=http://wenjim-backend-staging:8080
+ENV BACKEND_PROXY=http://wenjim-envoy-staging:8080
 
 RUN npm run build
 
