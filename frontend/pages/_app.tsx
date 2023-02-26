@@ -30,7 +30,9 @@ function MyApp({ Component, pageProps }: AppProps) {
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${publicRuntimeConfig.GOOGLE_ID}');
+                gtag('config', '${publicRuntimeConfig.GOOGLE_ID}', {
+                  'cookie_flags': 'SameSite=None;Secure'
+                });
               `}
             </Script>
             <Component {...pageProps} />
