@@ -17,7 +17,7 @@ import {
 } from "../generated/countday_pb";
 
 const { publicRuntimeConfig } = getConfig();
-const host = "http://swenjim.markc.su/api";
+const host = "https://swenjim.markc.su/api";
 
 const utilityClient = new UtilityClient(host, null, null);
 const historyClient = new HistoryClient(host, null, null);
