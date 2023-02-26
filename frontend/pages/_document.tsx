@@ -11,7 +11,6 @@ export default class _Document extends Document {
         <Head>
           <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
           <link rel="icon" type="image/png" href="/assets/favicon.png" />
-          <title>Wenjim | ASVZ Data & Graphs</title>
           <meta name="title" content="Wenjim | ASVZ Data & Graphs" />
           <meta
             name="description"
@@ -19,7 +18,7 @@ export default class _Document extends Document {
           />
           <meta name="keywords" content="asvz, sport, wenjim, data, graph" />
           <meta name="robots" content="index, follow" />
-          <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+          <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
           <meta name="language" content="English" />
           <meta name="author" content="Markbeep" />
 

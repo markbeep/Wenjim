@@ -10,6 +10,7 @@ import Shell from "../components/shell";
 import Script from "next/script";
 import getConfig from "next/config";
 import App from "next/app";
+import Head from "next/head";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -21,6 +22,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         <NotificationsProvider position="top-right" autoClose={8_000}>
           <NavigationProgress />
           <Shell>
+            <Head>
+              <title>Wenjim | ASVZ Data & Graphs</title>
+            </Head>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${publicRuntimeConfig.GOOGLE_ID}`}
               strategy="afterInteractive"
