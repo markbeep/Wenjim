@@ -1,4 +1,4 @@
-import { env } from "process";
+import getConfig from "next/config";
 import { useQuery } from "react-query";
 import { promisify } from "util";
 import {
@@ -16,7 +16,8 @@ import {
   TitleRequest,
 } from "../generated/countday_pb";
 
-const host = env.BACKEND_PROXY ?? "http://localhost:8080";
+const { publicRuntimeConfig } = getConfig();
+const host = publicRuntimeConfig.ENVOY_PROXY;
 
 const utilityClient = new UtilityClient(host, null, null);
 const historyClient = new HistoryClient(host, null, null);

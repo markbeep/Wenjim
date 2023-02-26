@@ -30,33 +30,35 @@ export default function Home() {
   ]);
 
   return (
-    <Center>
-      <Container className="text-center" w="600px">
-        <Center>
-          <Image
-            src="/assets/wenjim_dark.svg"
-            height={80}
-            width={80}
-            blurDataURL="/assets/favicon.png"
-            alt="Logo"
-          />
-        </Center>
-        <Title>Wenjim, the open source ASVZ data spot</Title>
-        <Text my="xl">
-          Ever wanted to sign up for an ASVZ event but it was full? Fret no
-          more! With Wenjim you can lookup all the events you want and find out
-          at what time the least people go and how early you have to enroll to
-          still get a job.
-        </Text>
-        <Title size={20}>Top Events</Title>
-        <Center mt="md">{isLoading && <Loader variant="dots" />}</Center>
-        {data && (
-          <SimpleGrid cols={2} mt="sm">
-            {data.map((e, i) => TopCard(e, i, keybinds[i], show))}
-          </SimpleGrid>
-        )}
-      </Container>
-    </Center>
+    <>
+      <Center>
+        <Container className="text-center" w="600px">
+          <Center>
+            <Image
+              src="/assets/wenjim_dark.svg"
+              height={80}
+              width={80}
+              blurDataURL="/assets/favicon.png"
+              alt="Logo"
+            />
+          </Center>
+          <Title>Wenjim, the open source ASVZ graph website</Title>
+          <Text my="xl">
+            Ever wanted to sign up for an ASVZ event but it was full? Fret no
+            more! With Wenjim you can lookup all the events you want and find
+            out at what time the least people go and how early you have to
+            enroll to still get a spot.
+          </Text>
+          <Title size={20}>Top Events</Title>
+          <Center mt="md">{isLoading && <Loader variant="dots" />}</Center>
+          {data && (
+            <SimpleGrid cols={2} mt="sm">
+              {data.map((e, i) => TopCard(e, i, keybinds[i], show))}
+            </SimpleGrid>
+          )}
+        </Container>
+      </Center>
+    </>
   );
 }
 

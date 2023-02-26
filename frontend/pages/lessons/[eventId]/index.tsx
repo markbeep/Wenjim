@@ -2,40 +2,26 @@ import {
   Select,
   Title,
   Text,
-  Skeleton,
   Alert,
   Flex,
   Divider,
-  Card,
-  NativeSelect,
   Grid,
-  Container,
-  Group,
   Center,
   Loader,
   HoverCard,
 } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
-import { Line, ResponsiveLine } from "@nivo/line";
-import {
-  IconAlertCircle,
-  IconHandClick,
-  IconHome,
-  IconMathAvg,
-  IconSignRightFilled,
-} from "@tabler/icons-react";
+import { IconAlertCircle, IconSignRightFilled } from "@tabler/icons-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import {
   useEventStatistics,
-  useHistoryById,
   useLocations,
   useSingleEvent,
   useTitles,
 } from "../../../api/grpc";
-import HistoryTable from "../../../components/historyTable";
 
 export default function Lesson({}) {
   const router = useRouter();

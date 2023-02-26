@@ -6,3 +6,6 @@ services:
     restart: "no"
     ports:
       - "3000:3000"
+    environment:
+      - ENVOY_PROXY=http://localhost:8080
+      - GOOGLE_ID=123123

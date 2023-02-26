@@ -37,7 +37,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
   const [bigSearch] = useResize();
   const [count, setCount] = useState(0);
   const router = useRouter();
-  const { data, isLoading } = useEvents();
+  const { data, isLoading, isError } = useEvents();
 
   const menus = [
     {
@@ -124,7 +124,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
                 actions={actions}
                 searchIcon={<IconSearch size={18} />}
                 searchPlaceholder={isLoading ? "Loading..." : "Search..."}
-                shortcut={["mod + P", "mod + K"]}
+                shortcut={isError ? [] : ["mod + P", "mod + K"]}
                 highlightQuery
                 nothingFoundMessage="Nothing found"
                 transition="slide-down"
@@ -135,6 +135,9 @@ const Shell = ({ children }: { children: ReactNode }) => {
                   w={bigSearch ? "30vw" : ""}
                   maw={300}
                   m="sm"
+                  opacity={isLoading || isError ? 0.5 : 1}
+                  disabled={isLoading || isError}
+                  style={{ cursor: isLoading || isError ? "not-allowed" : "" }}
                 >
                   {!bigSearch && <IconSearch size={30} />}
                   {bigSearch && (
@@ -151,7 +154,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
                       <Group w="100%">
                         <IconSearch size={18} />
                         <Text size={14} color="dimmed">
-                          Search
+                          {isLoading ? "Loading..." : "Search"}
                         </Text>
                       </Group>
                       <div
