@@ -16,10 +16,11 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                        - match: { prefix: "/" }
+                        - match: { prefix: "/api/" }
                           route:
                             cluster: wenjim_service
                             max_grpc_timeout: 0s
+                            prefix_rewrite: "/"
                       cors:
                         allow_origin_string_match:
                           - prefix: "*"
@@ -50,4 +51,4 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      { address: wenjim-backend-prod, port_value: 9090 }
+                      { address: ${BACKEND_HOST}, port_value: ${BACKEND_PORT} }

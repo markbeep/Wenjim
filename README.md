@@ -15,9 +15,9 @@ of the specific directory. The general requirements are:
 These should suffice to get everything setup for simple local development.
 There are Dockerfiles for using the scraper or backend if needed.
 
-**Note:** A part of the backend is [Envoy](https://www.envoyproxy.io/). This is
-a proxy that translates the GRPC-Web requests to normal GRPC calls, meaning it also has to be
-ran. Easiest is to run it with the docker-compose file in the root:
+**Note:** [Envoy](https://www.envoyproxy.io/) is used as a proxy from the frontend
+to the backend. It is a proxy that translates the GRPC-Web requests to normal GRPC calls,
+meaning it also has to be ran. Easiest is to run it with the docker-compose file in the root:
 ```bash
 docker compose up --build
 ```
@@ -49,3 +49,4 @@ npm run build:proto
 # NixOS
 For NixOS users, the `shell.nix` is required as a workaround for
 grpc_tools to work and generate the proto files.
+To activate simply execute `nix-shell`.

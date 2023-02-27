@@ -1,0 +1,70 @@
+name: Build Release Staging
+
+on:
+  push:
+    branches: ["master", "staging"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:$GITHUB_REF
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:buildcache-$GITHUB_REF
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:buildcache-$GITHUB_REF,mode=max
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./frontend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:$GITHUB_REF
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-$GITHUB_REF
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-$GITHUB_REF,mode=max
+
+      - name: Build and push envoy
+        uses: docker/build-push-action@v3
+        with:
+          context: ./envoy
+          file: ./envoy/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:$GITHUB_REF
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache-$GITHUB_REF
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache-$GITHUB_REF,mode=max
+
+      - name: Build and push scraper
+        uses: docker/build-push-action@v3
+        with:
+          context: ./backend/scraper
+          file: ./backend/scraper/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/asvz-tracker:$GITHUB_REF
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-tracker:buildcache-$GITHUB_REF
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-tracker:buildcache-$GITHUB_REF,mode=max

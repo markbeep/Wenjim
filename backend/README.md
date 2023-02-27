@@ -24,3 +24,5 @@ Docker: (the file is in the root)
 ```bash
 docker compose up --build
 ```
+*Note:* The Dockerfile here requires the context to be the root directory
+for it to be able to generate the proto files.
