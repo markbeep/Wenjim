@@ -76,7 +76,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
         >
           <Center h="100%" w="100%">
             <Flex direction="row" w="100%" justify="left" align="center">
-              <Burger opened={show} onClick={() => setShow(e => !e)} />
+              {/* <Burger opened={show} onClick={() => setShow(e => !e)} /> */}
               <Link href="/" passHref>
                 <ActionIcon
                   variant="transparent"
@@ -131,7 +131,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
               >
                 <UnstyledButton
                   onClick={() => openSpotlight()}
-                  p={3}
+                  p={bigSearch ? 3 : 0}
                   w={bigSearch ? "30vw" : ""}
                   maw={300}
                   m="sm"

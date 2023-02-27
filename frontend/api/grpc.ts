@@ -16,8 +16,8 @@ import {
   TitleRequest,
 } from "../generated/countday_pb";
 
-const { publicRuntimeMethod } = getConfig();
-const host = publicRuntimeMethod.ENVOY_PROXY;
+const { publicRuntimeConfig } = getConfig();
+const host = publicRuntimeConfig.ENVOY_PROXY;
 
 const utilityClient = new UtilityClient(host, null, null);
 const historyClient = new HistoryClient(host, null, null);
@@ -103,44 +103,16 @@ export function useMinMaxDate() {
 }
 
 export function useTopEvents() {
-  const { isError, isLoading, data } = useQuery(["topEvents"], async () => {
-    // const promisified = promisify(utilityClient.topEvents).bind(utilityClient);
-    // const req = new HistoryIdRequest();
-    // const resp = await promisified(req, {});
-
-    // PLACEHOLDER UNTIL IMPLEMENTED
-    return [
-      {
-        sport: "Fitness",
-        title: "Individuelles Training",
-        location: "Sport Center Polyterrasse",
-        niveau: "Alle",
-        eventId: 8,
-      },
-      {
-        sport: "Fitness",
-        title: "Individuelles Training",
-        location: "Sport Center Hönggerberg",
-        niveau: "Alle",
-        eventId: 8,
-      },
-      {
-        sport: "Fitness",
-        title: "Individuelles Training",
-        location: "Sport Center Irchel",
-        niveau: "Alle",
-        eventId: 8,
-      },
-      {
-        sport: "Fitness",
-        title: "Individuelles Training",
-        location: "Sport Center Rämistrasse",
-        niveau: "Alle",
-        eventId: 8,
-      },
-    ];
-  });
-  return { isError, isLoading, data };
+  // hardcoded events for now
+  const { data: e1, isLoading: l1, isError: err1 } = useSingleEvent(8);
+  const { data: e2, isLoading: l2, isError: err2 } = useSingleEvent(4);
+  const { data: e3, isLoading: l3, isError: err3 } = useSingleEvent(42);
+  const { data: e4, isLoading: l4, isError: err4 } = useSingleEvent(51);
+  return {
+    isError: err1 || err2 || err3 || err4,
+    isLoading: l1 || l2 || l3 || l4,
+    data: [e1, e2, e3, e4],
+  };
 }
 
 /*

@@ -15,6 +15,7 @@ import { useHotkeys } from "@mantine/hooks";
 import useResize from "../components/resize";
 import Link from "next/link";
 import { useTopEvents } from "../api/grpc";
+import { Event } from "../generated/countday_pb";
 
 export default function Home() {
   const router = useRouter();
@@ -23,10 +24,10 @@ export default function Home() {
   const [show] = useResize();
 
   useHotkeys([
-    [keybinds[0], () => data && router.push(`/lessons/${data[0].eventId}`)],
-    [keybinds[1], () => data && router.push(`/lessons/${data[0].eventId}`)],
-    [keybinds[2], () => data && router.push(`/lessons/${data[0].eventId}`)],
-    [keybinds[3], () => data && router.push(`/lessons/${data[0].eventId}`)],
+    [keybinds[0], () => data[0] && router.push(`/lessons/${data[0].getId()}`)],
+    [keybinds[1], () => data[1] && router.push(`/lessons/${data[1].getId()}`)],
+    [keybinds[2], () => data[2] && router.push(`/lessons/${data[2].getId()}`)],
+    [keybinds[3], () => data[3] && router.push(`/lessons/${data[3].getId()}`)],
   ]);
 
   return (
@@ -53,7 +54,7 @@ export default function Home() {
           <Center mt="md">{isLoading && <Loader variant="dots" />}</Center>
           {data && (
             <SimpleGrid cols={2} mt="sm">
-              {data.map((e, i) => TopCard(e, i, keybinds[i], show))}
+              {data.map((e, i) => e && TopCard(e, i, keybinds[i], show))}
             </SimpleGrid>
           )}
         </Container>
@@ -63,19 +64,13 @@ export default function Home() {
 }
 
 const TopCard = (
-  event: {
-    sport: string;
-    title: string;
-    location: string;
-    niveau: string;
-    eventId: number;
-  },
+  event: Event,
   index: number,
   keybind: string,
   show: boolean,
 ) => {
   return (
-    <Link href={`/lessons/${event.eventId}`} key={index}>
+    <Link href={`/lessons/${event.getId()}`} key={index}>
       <UnstyledButton h="100%" w="100%">
         <Card shadow="sm" p={4} radius="md" withBorder h="100%" w="100%">
           {show && (
@@ -83,15 +78,15 @@ const TopCard = (
               {keybind}
             </Kbd>
           )}
-          <Text align="center">{event.sport}</Text>
+          <Text align="center">{event.getSport()}</Text>
           <Text align="center" color="dimmed">
-            {event.title}
+            {event.getTitle()}
           </Text>
           <Text align="center" color="dimmed">
-            {event.location}
+            {event.getLocation()}
           </Text>
           <Text align="center" color="dimmed">
-            {event.niveau}
+            {event.getNiveau()}
           </Text>
         </Card>
       </UnstyledButton>
