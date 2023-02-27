@@ -48,6 +48,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
+// required for publicRuntimeConfig variables to work
 MyApp.getInitialProps = async (context: AppContext) => {
   const appProps = await App.getInitialProps(context);
   return { ...appProps };

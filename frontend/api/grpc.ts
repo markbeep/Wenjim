@@ -16,9 +16,12 @@ import {
   TitleRequest,
 } from "../generated/countday_pb";
 
-const utilityClient = new UtilityClient("/api", null, null);
-const historyClient = new HistoryClient("/api", null, null);
-const weeklyClient = new WeeklyClient("/api", null, null);
+const { publicRuntimeMethod } = getConfig();
+const host = publicRuntimeMethod.ENVOY_PROXY;
+
+const utilityClient = new UtilityClient(host, null, null);
+const historyClient = new HistoryClient(host, null, null);
+const weeklyClient = new WeeklyClient(host, null, null);
 
 /*
 UTILITY
