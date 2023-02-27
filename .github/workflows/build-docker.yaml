@@ -34,7 +34,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:${{ env.GITHUB_REF }}
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:buildcache-${{ env.GITHUB_REF }}
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:buildcache-${{ env.GITHUB_REF,mode=max }}
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:buildcache-${{ env.GITHUB_REF }},mode=max
 
       - name: Build and push frontend
         uses: docker/build-push-action@v3
@@ -45,7 +45,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:${{ env.GITHUB_REF }}
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-${{ env.GITHUB_REF }}
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-${{ env.GITHUB_REF,mode=max }}
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-${{ env.GITHUB_REF }},mode=max
 
       - name: Build and push envoy
         uses: docker/build-push-action@v3
@@ -56,7 +56,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:${{ env.GITHUB_REF }}
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache-${{ env.GITHUB_REF }}
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache-${{ env.GITHUB_REF,mode=max }}
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache-${{ env.GITHUB_REF }},mode=max
 
       - name: Build and push scraper
         uses: docker/build-push-action@v3
@@ -67,4 +67,4 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/asvz-tracker:${{ env.GITHUB_REF }}
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-tracker:buildcache-${{ env.GITHUB_REF }}
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-tracker:buildcache-${{ env.GITHUB_REF,mode=max }}
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-tracker:buildcache-${{ env.GITHUB_REF }},mode=max
