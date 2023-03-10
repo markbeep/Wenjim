@@ -165,7 +165,7 @@ message HistoryStatisticsReply {
 }   
 
 message TotalLessonsReply {
-    sint32 trackedLessons = 1;
+    sint32 totalLessons = 1;
 }
 
 message TotalTrackingsReply {

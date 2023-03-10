@@ -71,9 +71,14 @@ export default function Lesson({}) {
         </Link>
       </Grid.Col>
     ) : (
-      <Center>
-        <Loader variant="dots" />
-      </Center>
+      <Grid.Col span={1}>
+        <Flex h="100%" justify="end" direction="column">
+          <Center>
+            <Loader variant="dots" />
+          </Center>
+          <Text mt="sm">{text}</Text>
+        </Flex>
+      </Grid.Col>
     );
 
   return (
@@ -170,7 +175,7 @@ export default function Lesson({}) {
 
           <Grid grow className="text-center">
             {statCard(
-              totalTrackings?.getTotaltrackings().toString(),
+              totalLessons?.getTotallessons().toString(),
               `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
               "Total tracked lessons",
             )}
@@ -193,23 +198,33 @@ export default function Lesson({}) {
               "Average total places",
             )}
 
-            {statCard(
-              stats?.getMaxplacesfree().toString(),
-              `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
-              "Most recorded free spaces",
-            )}
-
             <HoverCard>
               <HoverCard.Target>
                 {statCard(
-                  stats.getMaxplacesmax().toString(),
+                  stats?.getMaxplacesfree().toString(),
                   `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
                   "Most recorded total spaces",
                 )}
               </HoverCard.Target>
               <HoverCard.Dropdown>
-                kek
-                {new Date(stats.getDatemaxplacesmax()).toDateString()}
+                {stats
+                  ? new Date(stats.getDatemaxplacesfree() * 1000).toDateString()
+                  : "n/a"}
+              </HoverCard.Dropdown>
+            </HoverCard>
+
+            <HoverCard>
+              <HoverCard.Target>
+                {statCard(
+                  stats?.getMaxplacesmax().toString(),
+                  `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
+                  "Most recorded total spaces",
+                )}
+              </HoverCard.Target>
+              <HoverCard.Dropdown>
+                {stats
+                  ? new Date(stats.getDatemaxplacesmax() * 1000).toDateString()
+                  : "n/a"}
               </HoverCard.Dropdown>
             </HoverCard>
 

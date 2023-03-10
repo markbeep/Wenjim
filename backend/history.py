@@ -82,6 +82,9 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         avg_minutes = max_time_full.select_from(
             fn.AVG(max_time_full.c.max).alias("avg")
         )
+        actual_avg_minutes = avg_minutes[0].avg
+        if actual_avg_minutes is None:
+            actual_avg_minutes = 0
 
         averages = (
             Events.select(
@@ -128,7 +131,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         )
 
         return countday_pb2.HistoryStatisticsReply(
-            averageMinutes=avg_minutes[0].avg / 60,  # convert seconds to minutes
+            averageMinutes=actual_avg_minutes / 60,  # convert seconds to minutes
             averagePlacesFree=averages[0].avgPlacesFree,
             averagePlacesMax=averages[0].avgPlacesMax,
             maxPlacesFree=averages[0].maxPlacesFree,

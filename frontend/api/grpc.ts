@@ -139,7 +139,7 @@ export function useHistoryById(eventId: number, dateFrom: Date, dateTo: Date) {
 
 export function useTotalLessons(eventId: number, dateFrom: Date, dateTo: Date) {
   const { isError, isLoading, data } = useQuery(
-    ["eventStatistics", eventId, dateFrom, dateTo],
+    ["totalLessons", eventId, dateFrom, dateTo],
     async () => {
       const promisified = promisify(historyClient.totalLessons).bind(
         historyClient,
@@ -161,7 +161,7 @@ export function useTotalTrackings(
   dateTo: Date,
 ) {
   const { isError, isLoading, data } = useQuery(
-    ["eventStatistics", eventId, dateFrom, dateTo],
+    ["totalTrackings", eventId, dateFrom, dateTo],
     async () => {
       const promisified = promisify(historyClient.totalTrackings).bind(
         historyClient,
