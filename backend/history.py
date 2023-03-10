@@ -2,6 +2,7 @@ from peewee import fn
 from scraper.models import Events, Lessons, Trackings
 from generated import countday_pb2_grpc, countday_pb2
 import logging
+import time
 
 # Gets the latest tracking time for a lesson
 LATEST_TRACKING = Trackings.select(
@@ -48,7 +49,9 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .join(Lessons)
             .where(Events.id == request.eventId)
         )
-        return countday_pb2.TotalLessonsReply(totalLessons=tracked_lessons[0].trackedLessons)
+        return countday_pb2.TotalLessonsReply(
+            totalLessons=tracked_lessons[0].trackedLessons
+        )
 
     def TotalTrackings(self, request, context):
         logging.info("Request for TotalTrackings")
@@ -60,9 +63,9 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         )
         return countday_pb2.TotalTrackingsReply(totalTrackings=trackings[0].trackings)
 
-
     def EventStatistics(self, request, context):
         logging.info("Request for EventStatistics")
+        start = time.time()
 
         # gets the maximum time away from the start of the event to find the
         # earliest time all places were taken up
@@ -130,6 +133,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .order_by(Lessons.from_date.desc())
         )
 
+        logging.info(f"EventStatistics took {time.time()-start} seconds")
         return countday_pb2.HistoryStatisticsReply(
             averageMinutes=actual_avg_minutes / 60,  # convert seconds to minutes
             averagePlacesFree=averages[0].avgPlacesFree,
