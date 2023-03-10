@@ -41,13 +41,28 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             ]
         )
 
-    def EventStatistics(self, request, context):
-        logging.info("Request for EventStatistics")
+    def TotalLessons(self, request, context):
+        logging.info("Request for TotalLessons")
         tracked_lessons = (
             Events.select(fn.COUNT().alias("trackedLessons"))
             .join(Lessons)
             .where(Events.id == request.eventId)
         )
+        return countday_pb2.TotalLessonsReply(totalLessons=tracked_lessons[0].trackedLessons)
+
+    def TotalTrackings(self, request, context):
+        logging.info("Request for TotalTrackings")
+        trackings = (
+            Events.select(fn.COUNT().alias("trackings"))
+            .join(Lessons)
+            .join(Trackings)
+            .where(Events.id == request.eventId)
+        )
+        return countday_pb2.TotalTrackingsReply(totalTrackings=totalTrackings=trackings[0].trackings)
+
+
+    def EventStatistics(self, request, context):
+        logging.info("Request for EventStatistics")
 
         # gets the maximum time away from the start of the event to find the
         # earliest time all places were taken up
@@ -112,15 +127,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .order_by(Lessons.from_date.desc())
         )
 
-        trackings = (
-            Events.select(fn.COUNT().alias("trackings"))
-            .join(Lessons)
-            .join(Trackings)
-            .where(Events.id == request.eventId)
-        )
-
         return countday_pb2.HistoryStatisticsReply(
-            trackedLessons=tracked_lessons[0].trackedLessons,
             averageMinutes=avg_minutes[0].avg / 60,  # convert seconds to minutes
             averagePlacesFree=averages[0].avgPlacesFree,
             averagePlacesMax=averages[0].avgPlacesMax,
@@ -128,5 +135,4 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             maxPlacesMax=averages[0].maxPlacesMax,
             dateMaxPlacesFree=int(date_places_free[0].lessons.from_date.timestamp()),
             dateMaxPlacesMax=int(date_places_max[0].lessons.from_date.timestamp()),
-            totalTrackings=trackings[0].trackings,
         )

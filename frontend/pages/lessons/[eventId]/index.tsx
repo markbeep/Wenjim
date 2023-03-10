@@ -21,6 +21,8 @@ import {
   useLocations,
   useSingleEvent,
   useTitles,
+  useTotalLessons,
+  useTotalTrackings,
 } from "../../../api/grpc";
 
 export default function Lesson({}) {
@@ -50,17 +52,29 @@ export default function Lesson({}) {
     isLoading: statsLoading,
     isError: statsError,
   } = useEventStatistics(eventId, dateFrom, dateTo);
-
-  const statCard = (header: string, link: string, text: string) => (
-    <Grid.Col span={1}>
-      <Link href={link}>
-        <Title variant="gradient" color="blue">
-          {header}
-        </Title>
-        <Text>{text}</Text>
-      </Link>
-    </Grid.Col>
+  const { data: totalLessons, isLoading: lessonsLoading } = useTotalLessons(
+    eventId,
+    dateFrom,
+    dateTo,
   );
+  const { data: totalTrackings, isLoading: trackingsLoading } =
+    useTotalTrackings(eventId, dateFrom, dateTo);
+
+  const statCard = (header: string | undefined, link: string, text: string) =>
+    header ? (
+      <Grid.Col span={1}>
+        <Link href={link}>
+          <Title variant="gradient" color="blue">
+            {header}
+          </Title>
+          <Text>{text}</Text>
+        </Link>
+      </Grid.Col>
+    ) : (
+      <Center>
+        <Loader variant="dots" />
+      </Center>
+    );
 
   return (
     <>
@@ -153,64 +167,58 @@ export default function Lesson({}) {
           />
 
           <Divider my="sm" />
-          {statsLoading && (
-            <Center>
-              <Loader variant="dots" />
-            </Center>
-          )}
-          {stats && (
-            <Grid grow className="text-center">
-              {statCard(
-                stats.getTrackedlessons().toString(),
-                `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
-                "Total tracked lessons",
-              )}
 
-              {statCard(
-                (stats.getAverageminutes() / 60).toFixed(2),
-                `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
-                "Average hours before full",
-              )}
+          <Grid grow className="text-center">
+            {statCard(
+              totalTrackings?.getTotaltrackings().toString(),
+              `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
+              "Total tracked lessons",
+            )}
 
-              {statCard(
-                stats.getAverageplacesfree().toFixed(2),
-                `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
-                "Average free places",
-              )}
+            {statCard(
+              stats ? (stats?.getAverageminutes() / 60).toFixed(2) : undefined,
+              `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
+              "Average hours before full",
+            )}
 
-              {statCard(
-                stats.getAverageplacesmax().toFixed(2),
-                `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
-                "Average total places",
-              )}
+            {statCard(
+              stats?.getAverageplacesfree().toFixed(2),
+              `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
+              "Average free places",
+            )}
 
-              {statCard(
-                stats.getMaxplacesfree().toString(),
-                `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
-                "Most recorded free spaces",
-              )}
+            {statCard(
+              stats?.getAverageplacesmax().toFixed(2),
+              `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
+              "Average total places",
+            )}
 
-              <HoverCard>
-                <HoverCard.Target>
-                  {statCard(
-                    stats.getMaxplacesmax().toString(),
-                    `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
-                    "Most recorded total spaces",
-                  )}
-                </HoverCard.Target>
-                <HoverCard.Dropdown>
-                  kek
-                  {new Date(stats.getDatemaxplacesmax()).toDateString()}
-                </HoverCard.Dropdown>
-              </HoverCard>
+            {statCard(
+              stats?.getMaxplacesfree().toString(),
+              `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
+              "Most recorded free spaces",
+            )}
 
-              {statCard(
-                stats.getTotaltrackings().toString(),
-                `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
-                "Total data points",
-              )}
-            </Grid>
-          )}
+            <HoverCard>
+              <HoverCard.Target>
+                {statCard(
+                  stats.getMaxplacesmax().toString(),
+                  `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
+                  "Most recorded total spaces",
+                )}
+              </HoverCard.Target>
+              <HoverCard.Dropdown>
+                kek
+                {new Date(stats.getDatemaxplacesmax()).toDateString()}
+              </HoverCard.Dropdown>
+            </HoverCard>
+
+            {statCard(
+              totalTrackings?.getTotaltrackings().toString(),
+              `/lessons/${eventId}/history?dateFrom=${dateFrom.toISOString()}&dateTo=${dateTo.toISOString()}`,
+              "Total data points",
+            )}
+          </Grid>
         </>
       )}
     </>

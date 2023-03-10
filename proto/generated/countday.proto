@@ -109,6 +109,8 @@ service History {
     rpc HistoryId(HistoryIdRequest) returns (HistoryReply) {}
 
     rpc EventStatistics(HistoryIdRequest) returns (HistoryStatisticsReply) {}
+    rpc TotalLessons(HistoryIdRequest) returns (TotalLessonsReply) {}
+    rpc TotalTrackings(HistoryIdRequest) returns (TotalTrackingsReply) {}
 }
 
 message HistoryIdRequest {
@@ -149,8 +151,7 @@ message HistoryReply {
 
 
 message HistoryStatisticsReply {
-    sint32 trackedLessons = 1;
-
+    reserved 1;
     /* the average amount of minutes before the event starts where it's full */
     float averageMinutes = 2;
     float averagePlacesFree = 3;
@@ -161,9 +162,15 @@ message HistoryStatisticsReply {
 
     sint32 maxPlacesMax = 7;
     sint64 dateMaxPlacesMax = 8;
-
-    sint32 totalTrackings = 9;
 }   
+
+message TotalLessonsReply {
+    sint32 trackedLessons = 1;
+}
+
+message TotalTrackingsReply {
+    sint32 totalTrackings = 1;
+}
 
 /*
 
