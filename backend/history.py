@@ -58,7 +58,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .join(Trackings)
             .where(Events.id == request.eventId)
         )
-        return countday_pb2.TotalTrackingsReply(totalTrackings=totalTrackings=trackings[0].trackings)
+        return countday_pb2.TotalTrackingsReply(totalTrackings=trackings[0].trackings)
 
 
     def EventStatistics(self, request, context):
