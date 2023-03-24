@@ -22,7 +22,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .join(Lessons)
             .join(Trackings)
             .join(
-                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
+                LATEST_TRACKING, on=(
+                    LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
             )
             .where(
                 Trackings.track_date == LATEST_TRACKING.c.max_date,
@@ -30,6 +31,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
+            .limit(request.size)
+            .offset((request.page + 1) * request.size)
         )
         return countday_pb2.HistoryReply(
             rows=[
@@ -71,7 +74,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         # earliest time all places were taken up
         max_time_full = (
             Events.select(
-                Events.id, fn.MAX(Lessons.from_date - Trackings.track_date).alias("max")
+                Events.id, fn.MAX(Lessons.from_date -
+                                  Trackings.track_date).alias("max")
             )
             .join(Lessons)
             .join(Trackings)
@@ -100,7 +104,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .join(Lessons)
             .join(Trackings)
             .join(
-                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
+                LATEST_TRACKING, on=(
+                    LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
             )
             .where(
                 Events.id == request.eventId,
@@ -140,6 +145,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             averagePlacesMax=averages[0].avgPlacesMax,
             maxPlacesFree=averages[0].maxPlacesFree,
             maxPlacesMax=averages[0].maxPlacesMax,
-            dateMaxPlacesFree=int(date_places_free[0].lessons.from_date.timestamp()),
-            dateMaxPlacesMax=int(date_places_max[0].lessons.from_date.timestamp()),
+            dateMaxPlacesFree=int(
+                date_places_free[0].lessons.from_date.timestamp()),
+            dateMaxPlacesMax=int(
+                date_places_max[0].lessons.from_date.timestamp()),
         )

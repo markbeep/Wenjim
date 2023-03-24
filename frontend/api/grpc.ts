@@ -1,5 +1,5 @@
 import getConfig from "next/config";
-import { useQuery } from "react-query";
+import { useInfiniteQuery, useQuery } from "react-query";
 import { promisify } from "util";
 import {
   HistoryClient,
@@ -10,6 +10,7 @@ import {
   EventsIdRequest,
   EventsRequest,
   HistoryIdRequest,
+  HistoryPageIdRequest,
   LocationsRequest,
   MinMaxDateRequest,
   SportsRequest,
@@ -42,13 +43,13 @@ export function useLocations(eventId: number) {
     ["locations", eventId],
     async () => {
       const promisified = promisify(utilityClient.locations).bind(
-        utilityClient,
+        utilityClient
       );
       const req = new LocationsRequest();
       req.setEventid(eventId);
       const resp = await promisified(req, {});
       return resp;
-    },
+    }
   );
   return { isError, isLoading, data };
 }
@@ -62,7 +63,7 @@ export function useTitles(eventId: number) {
       req.setEventid(eventId);
       const resp = await promisified(req, {});
       return resp;
-    },
+    }
   );
   return { isError, isLoading, data };
 }
@@ -72,13 +73,13 @@ export function useSingleEvent(eventId: number) {
     ["singleEvent", eventId],
     async () => {
       const promisified = promisify(utilityClient.singleEvent).bind(
-        utilityClient,
+        utilityClient
       );
       const req = new EventsIdRequest();
       req.setId(eventId);
       const resp = await promisified(req, {});
       return resp;
-    },
+    }
   );
   return { isError, isLoading, data };
 }
@@ -119,22 +120,31 @@ export function useTopEvents() {
 HISTORY
 */
 
-export function useHistoryById(eventId: number, dateFrom: Date, dateTo: Date) {
-  const { isError, isLoading, data } = useQuery(
-    ["historyId", eventId, dateFrom, dateTo],
-    async () => {
-      const promisified = promisify(historyClient.historyId).bind(
-        historyClient,
-      );
-      const req = new HistoryIdRequest();
-      req.setEventid(eventId);
-      req.setDatefrom(Math.round(dateFrom.getTime() / 1e3));
-      req.setDateto(Math.round(dateTo.getTime() / 1e3));
-      const resp = await promisified(req, {});
-      return resp;
-    },
-  );
-  return { isError, isLoading, data };
+export function useHistoryById(
+  eventId: number,
+  dateFrom: Date,
+  dateTo: Date,
+  pageSize: number
+) {
+  const { isError, isFetching, isLoading, data, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey: ["historyId", eventId, dateFrom, dateTo],
+      queryFn: async ({ pageParam = 0 }) => {
+        const promisified = promisify(historyClient.historyId).bind(
+          historyClient
+        );
+        const req = new HistoryPageIdRequest();
+        req.setEventid(eventId);
+        req.setDatefrom(Math.round(dateFrom.getTime() / 1e3));
+        req.setDateto(Math.round(dateTo.getTime() / 1e3));
+        req.setSize(pageSize);
+        req.setPage(pageParam);
+        const resp = await promisified(req, {});
+        return resp.getRowsList();
+      },
+      getNextPageParam: (_, pages) => pages.length,
+    });
+  return { isError, isFetching, isLoading, data, fetchNextPage };
 }
 
 export function useTotalLessons(eventId: number, dateFrom: Date, dateTo: Date) {
@@ -142,7 +152,7 @@ export function useTotalLessons(eventId: number, dateFrom: Date, dateTo: Date) {
     ["totalLessons", eventId, dateFrom, dateTo],
     async () => {
       const promisified = promisify(historyClient.totalLessons).bind(
-        historyClient,
+        historyClient
       );
       const req = new HistoryIdRequest();
       req.setEventid(eventId);
@@ -150,7 +160,7 @@ export function useTotalLessons(eventId: number, dateFrom: Date, dateTo: Date) {
       req.setDateto(Math.round(dateTo.getTime() / 1e3));
       const resp = await promisified(req, {});
       return resp;
-    },
+    }
   );
   return { isError, isLoading, data };
 }
@@ -158,13 +168,13 @@ export function useTotalLessons(eventId: number, dateFrom: Date, dateTo: Date) {
 export function useTotalTrackings(
   eventId: number,
   dateFrom: Date,
-  dateTo: Date,
+  dateTo: Date
 ) {
   const { isError, isLoading, data } = useQuery(
     ["totalTrackings", eventId, dateFrom, dateTo],
     async () => {
       const promisified = promisify(historyClient.totalTrackings).bind(
-        historyClient,
+        historyClient
       );
       const req = new HistoryIdRequest();
       req.setEventid(eventId);
@@ -172,7 +182,7 @@ export function useTotalTrackings(
       req.setDateto(Math.round(dateTo.getTime() / 1e3));
       const resp = await promisified(req, {});
       return resp;
-    },
+    }
   );
   return { isError, isLoading, data };
 }
@@ -180,13 +190,13 @@ export function useTotalTrackings(
 export function useEventStatistics(
   eventId: number,
   dateFrom: Date,
-  dateTo: Date,
+  dateTo: Date
 ) {
   const { isError, isLoading, data } = useQuery(
     ["eventStatistics", eventId, dateFrom, dateTo],
     async () => {
       const promisified = promisify(historyClient.eventStatistics).bind(
-        historyClient,
+        historyClient
       );
       const req = new HistoryIdRequest();
       req.setEventid(eventId);
@@ -194,7 +204,7 @@ export function useEventStatistics(
       req.setDateto(Math.round(dateTo.getTime() / 1e3));
       const resp = await promisified(req, {});
       return resp;
-    },
+    }
   );
   return { isError, isLoading, data };
 }

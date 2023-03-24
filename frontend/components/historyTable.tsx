@@ -1,17 +1,18 @@
 import {
+  Button,
   Center,
   Container,
   Flex,
-  Overlay,
-  Pagination,
+  Loader,
   ScrollArea,
   Table,
   useMantineTheme,
 } from "@mantine/core";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import router from "next/router";
 import React, { useEffect, useState } from "react";
-import { HistoryReply, HistoryRow } from "../generated/countday_pb";
-import useResize from "./resize";
+import { useHistoryById } from "../api/grpc";
+import { HistoryRow } from "../generated/countday_pb";
 
 enum sortOrder {
   DATE,
@@ -19,77 +20,93 @@ enum sortOrder {
   PLACES_MAX,
 }
 
-const formatHistory = (history: HistoryReply) => {};
+const pageSize = 50;
 
-const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
+const HistoryTable = () => {
   const [orderBy, setOrderBy] = useState(sortOrder.DATE);
   const [descend, setDescend] = useState(false);
-  const [page, setPage] = useState(0);
   const theme = useMantineTheme();
-  const [amount, setAmount] = useState(50); // amount of items to show per page
-  const [show] = useResize();
-  const [data, setData] = useState(history?.getRowsList());
-
-  useEffect(() => setData(history?.getRowsList()), [history]);
-
+  const eventId = Number(router.query.eventId ?? "-1");
+  const dateFrom = new Date(
+    router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01"
+  );
+  const dateTo = new Date(
+    router.query.dateTo ? String(router.query.dateTo) : "2030-12-31"
+  );
+  const {
+    data: history,
+    isLoading: historyLoading,
+    isFetching: historyFetching,
+    fetchNextPage,
+  } = useHistoryById(eventId, dateFrom, dateTo, pageSize);
+  const [data, setData] = useState<HistoryRow[]>([]);
   const sortData = (
     data: HistoryRow[],
     descend: boolean,
-    orderBy: sortOrder,
+    orderBy: sortOrder
   ) => {
+    let sortedData: HistoryRow[] = [];
     if (descend) {
       switch (orderBy) {
         case sortOrder.DATE:
-          setData([...data.sort((a, b) => a.getDate() - b.getDate())]);
+          sortedData = [...data.sort((a, b) => a.getDate() - b.getDate())];
           break;
         case sortOrder.PLACES_FREE:
-          setData([
+          sortedData = [
             ...data.sort((a, b) => a.getPlacesfree() - b.getPlacesfree()),
-          ]);
+          ];
           break;
         case sortOrder.PLACES_MAX:
-          setData([
+          sortedData = [
             ...data.sort((a, b) => a.getPlacesmax() - b.getPlacesmax()),
-          ]);
+          ];
           break;
       }
     } else {
       switch (orderBy) {
         case sortOrder.DATE:
-          setData([...data.sort((a, b) => b.getDate() - a.getDate())]);
+          sortedData = [...data.sort((a, b) => b.getDate() - a.getDate())];
           break;
         case sortOrder.PLACES_FREE:
-          setData([
+          sortedData = [
             ...data.sort((a, b) => b.getPlacesfree() - a.getPlacesfree()),
-          ]);
+          ];
           break;
         case sortOrder.PLACES_MAX:
-          setData([
+          sortedData = [
             ...data.sort((a, b) => b.getPlacesmax() - a.getPlacesmax()),
-          ]);
+          ];
           break;
       }
     }
+    setData(sortedData);
+    return sortedData;
   };
+  console.log(history);
+  useEffect(() => {
+    if (!history) return;
+    const all = history.pages.flat();
+    setData(sortData(all, descend, orderBy));
+  }, [history, descend, orderBy]);
 
   useEffect(() => {
     if (data) sortData(data, descend, orderBy);
-  }, [descend, orderBy, data]);
+  }, [descend, orderBy]); // data is not here to avoid infinite loops
 
-  const handleSortClick = (data: HistoryRow[], d: sortOrder) => {
+  const handleSortClick = (d: sortOrder) => {
     if (orderBy === d) {
-      setDescend(d => !d);
+      setDescend((d) => !d);
     } else {
       setOrderBy(d);
       setDescend(false);
     }
   };
 
-  const ths = (data: HistoryRow[]) => (
+  const ths = (_: HistoryRow[]) => (
     <tr>
       <th></th>
       <th className={orderBy === sortOrder.DATE ? `bg-neutral-content` : ""}>
-        <button onClick={() => handleSortClick(data, sortOrder.DATE)}>
+        <button onClick={() => handleSortClick(sortOrder.DATE)}>
           <Flex justify="center" direction="row" align="center">
             DATE
             {orderBy === sortOrder.DATE &&
@@ -102,7 +119,7 @@ const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
           orderBy === sortOrder.PLACES_FREE ? `bg-neutral-content` : ""
         }
       >
-        <button onClick={() => handleSortClick(data, sortOrder.PLACES_FREE)}>
+        <button onClick={() => handleSortClick(sortOrder.PLACES_FREE)}>
           <Flex justify="center" direction="row" align="center">
             SPOTS FREE
             {orderBy === sortOrder.PLACES_FREE &&
@@ -113,7 +130,7 @@ const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
       <th
         className={orderBy === sortOrder.PLACES_MAX ? `bg-neutral-content` : ""}
       >
-        <button onClick={() => handleSortClick(data, sortOrder.PLACES_MAX)}>
+        <button onClick={() => handleSortClick(sortOrder.PLACES_MAX)}>
           <Flex justify="center" direction="row" align="center">
             SPOTS TOTAL
             {orderBy === sortOrder.PLACES_MAX &&
@@ -126,7 +143,16 @@ const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
 
   return (
     <>
-      <ScrollArea h="75vh" type="auto">
+      {historyLoading && (
+        <Center>
+          <Loader variant="dots" />
+        </Center>
+      )}
+      <ScrollArea
+        h="75vh"
+        type="auto"
+        onScrollPositionChange={() => fetchNextPage()}
+      >
         <Container sx={{ minHeight: "30rem" }} fluid>
           {data && (
             <Table captionSide="bottom" highlightOnHover striped>
@@ -143,9 +169,9 @@ const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
                 {ths(data)}
               </thead>
               <tbody>
-                {data?.slice(page * amount, (page + 1) * amount).map((e, i) => (
-                  <tr key={page * amount + i}>
-                    <th>{page * amount + i + 1}</th>
+                {data.map((e, i) => (
+                  <tr key={i + e.getDate()}>
+                    <th>{i}</th>
                     <td>
                       {new Date(e.getDate() * 1e3).toLocaleString("nu-arab", {
                         dateStyle: "medium",
@@ -161,15 +187,11 @@ const HistoryTable = ({ history }: { history: HistoryReply | undefined }) => {
           )}
         </Container>
       </ScrollArea>
-      <Center mt="sm">
-        {data && data.length > amount && (
-          <Pagination
-            siblings={show ? 2 : 1}
-            withControls={show}
-            total={Math.ceil(data.length / amount)}
-            onChange={e => setPage(e - 1)}
-          />
-        )}
+      <Center mb="xl">
+        {historyFetching && <Loader mr="sm" />}
+        <Button disabled={historyFetching} onClick={() => fetchNextPage()}>
+          Load more
+        </Button>
       </Center>
     </>
   );

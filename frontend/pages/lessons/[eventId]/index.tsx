@@ -14,6 +14,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { useLocations, useSingleEvent, useTitles } from "../../../api/grpc";
+import HistoryTable from "../../../components/historyTable";
 import StatisticsBar from "../../../components/statisticsBar";
 
 export default function Lesson({}) {
@@ -21,11 +22,11 @@ export default function Lesson({}) {
   const eventId = Number(router.query.eventId ?? "-1");
   const [dateFrom, setDateFrom] = useState(
     new Date(
-      router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
-    ),
+      router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01"
+    )
   );
   const [dateTo, setDateTo] = useState(
-    new Date(router.query.dateTo ? String(router.query.dateTo) : "2030-12-31"),
+    new Date(router.query.dateTo ? String(router.query.dateTo) : "2030-12-31")
   );
   const { data, isLoading } = useSingleEvent(eventId);
   const {
@@ -77,11 +78,11 @@ export default function Lesson({}) {
               label="Location"
               placeholder={data.getLocation()}
               disabled={locationsLoading}
-              data={locations.getLocationsList().map(e => ({
+              data={locations.getLocationsList().map((e) => ({
                 value: e.getEventid().toString(),
                 label: e.getLocation(),
               }))}
-              onChange={v => router.push(`/lessons/${v}`)}
+              onChange={(v) => router.push(`/lessons/${v}`)}
               w="100%"
               mt="sm"
             />
@@ -97,11 +98,11 @@ export default function Lesson({}) {
               label="Subtitle"
               placeholder={data.getTitle()}
               disabled={titlesLoading}
-              data={titles.getTitlesList().map(e => ({
+              data={titles.getTitlesList().map((e) => ({
                 value: e.getEventid().toString(),
                 label: e.getTitle(),
               }))}
-              onChange={v => router.push(`/lessons/${v}`)}
+              onChange={(v) => router.push(`/lessons/${v}`)}
               w="100%"
             />
           )}
@@ -109,22 +110,22 @@ export default function Lesson({}) {
           <DatePicker
             value={dateFrom}
             label="Date From"
-            onChange={v => {
+            onChange={(v) => {
               const newDate = v ?? new Date("2022-01-01");
               setDateFrom(newDate);
               router.push(
-                `${eventId}?dateFrom=${newDate.toISOString()}&dateTo=${dateTo.toISOString()}`,
+                `${eventId}?dateFrom=${newDate.toISOString()}&dateTo=${dateTo.toISOString()}`
               );
             }}
           />
           <DatePicker
             value={dateTo}
             label="Date To"
-            onChange={v => {
+            onChange={(v) => {
               const newDate = v ?? new Date("2030-12-31");
               setDateTo(newDate);
               router.push(
-                `${eventId}?dateFrom=${dateFrom.toISOString()}&dateTo=${newDate.toISOString()}`,
+                `${eventId}?dateFrom=${dateFrom.toISOString()}&dateTo=${newDate.toISOString()}`
               );
             }}
           />
@@ -132,6 +133,10 @@ export default function Lesson({}) {
           <Divider my="sm" />
 
           <StatisticsBar dateFrom={dateFrom} dateTo={dateTo} />
+
+          <Divider my="sm" />
+
+          <HistoryTable />
         </>
       )}
     </>
