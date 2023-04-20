@@ -43,17 +43,17 @@ export default function Home() {
               alt="Logo"
             />
           </Center>
-          <Title>Wenjim, the open source ASVZ graph website</Title>
+          <Title>Wenjim, the open source ASVZ statistics website</Title>
           <Text my="xl">
-            Ever wanted to sign up for an ASVZ event but it was full? Fret no
-            more! With Wenjim you can lookup all the events you want and find
-            out at what time the least people go and how early you have to
+            Ever wanted to sign up for an ASVZ event only for it to be full?
+            Fret no more! With Wenjim you can lookup all the events you want and
+            find out at what time the least people go and how early you have to
             enroll to still get a spot.
           </Text>
           <Title size={20}>Top Events</Title>
-          <Center mt="md">{isLoading && <Loader variant="dots" />}</Center>
+          <Center mt="sm">{isLoading && <Loader variant="dots" />}</Center>
           {data && (
-            <SimpleGrid cols={2} mt="sm">
+            <SimpleGrid cols={2}>
               {data.map((e, i) => e && TopCard(e, i, keybinds[i], show))}
             </SimpleGrid>
           )}
@@ -84,9 +84,6 @@ const TopCard = (
           </Text>
           <Text align="center" color="dimmed">
             {event.getLocation()}
-          </Text>
-          <Text align="center" color="dimmed">
-            {event.getNiveau()}
           </Text>
         </Card>
       </UnstyledButton>

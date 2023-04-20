@@ -48,9 +48,14 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
     def TotalLessons(self, request, context):
         logging.info("Request for TotalLessons")
         tracked_lessons = (
-            Events.select(fn.COUNT().alias("trackedLessons"))
+            Events.select(fn.COUNT(fn.DISTINCT(Lessons.id)).alias("trackedLessons"))
             .join(Lessons)
-            .where(Events.id == request.eventId)
+            .join(Trackings) # to only show lessons that already have trackings
+            .where(
+                Events.id == request.eventId,
+                Lessons.from_date >= request.dateFrom,
+                Lessons.from_date <= request.dateTo,
+            )
         )
         return countday_pb2.TotalLessonsReply(
             totalLessons=tracked_lessons[0].trackedLessons
@@ -62,7 +67,11 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             Events.select(fn.COUNT().alias("trackings"))
             .join(Lessons)
             .join(Trackings)
-            .where(Events.id == request.eventId)
+            .where(
+                Events.id == request.eventId,
+                Lessons.from_date >= request.dateFrom,
+                Lessons.from_date <= request.dateTo,
+            )
         )
         return countday_pb2.TotalTrackingsReply(totalTrackings=trackings[0].trackings)
 
@@ -82,6 +91,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .where(
                 Trackings.places_free == 0,
                 Events.id == request.eventId,
+                Lessons.from_date >= request.dateFrom,
+                Lessons.from_date <= request.dateTo,
             )
             .group_by(Lessons)
         )
@@ -110,6 +121,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .where(
                 Events.id == request.eventId,
                 Trackings.track_date == LATEST_TRACKING.c.max_date,
+                Lessons.from_date >= request.dateFrom,
+                Lessons.from_date <= request.dateTo,
             )
             .group_by(Events)
         )
@@ -122,6 +135,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .where(
                 Lessons.places_max == averages.c.maxPlacesMax,
                 Events.id == request.eventId,
+                Lessons.from_date >= request.dateFrom,
+                Lessons.from_date <= request.dateTo,
             )
             .order_by(Lessons.from_date.desc())
         )
@@ -134,19 +149,32 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .where(
                 Trackings.places_free == averages.c.maxPlacesFree,
                 Events.id == request.eventId,
+                Lessons.from_date >= request.dateFrom,
+                Lessons.from_date <= request.dateTo,
             )
             .order_by(Lessons.from_date.desc())
         )
 
         logging.info(f"EventStatistics took {time.time()-start} seconds")
-        return countday_pb2.HistoryStatisticsReply(
-            averageMinutes=actual_avg_minutes / 60,  # convert seconds to minutes
-            averagePlacesFree=averages[0].avgPlacesFree,
-            averagePlacesMax=averages[0].avgPlacesMax,
-            maxPlacesFree=averages[0].maxPlacesFree,
-            maxPlacesMax=averages[0].maxPlacesMax,
-            dateMaxPlacesFree=int(
-                date_places_free[0].lessons.from_date.timestamp()),
-            dateMaxPlacesMax=int(
-                date_places_max[0].lessons.from_date.timestamp()),
-        )
+        try:
+            return countday_pb2.HistoryStatisticsReply(
+                averageMinutes=actual_avg_minutes / 60,  # convert seconds to minutes
+                averagePlacesFree=averages[0].avgPlacesFree,
+                averagePlacesMax=averages[0].avgPlacesMax,
+                maxPlacesFree=averages[0].maxPlacesFree,
+                maxPlacesMax=averages[0].maxPlacesMax,
+                dateMaxPlacesFree=int(
+                    date_places_free[0].lessons.from_date.timestamp()),
+                dateMaxPlacesMax=int(
+                    date_places_max[0].lessons.from_date.timestamp()),
+            )
+        except IndexError:
+            return countday_pb2.HistoryStatisticsReply(
+                averageMinutes=0,
+                averagePlacesFree=0,
+                averagePlacesMax=0,
+                maxPlacesFree=0,
+                maxPlacesMax=0,
+                dateMaxPlacesFree=0,
+                dateMaxPlacesMax=0,
+            )

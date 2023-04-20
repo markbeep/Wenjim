@@ -20,7 +20,7 @@ enum sortOrder {
   PLACES_MAX,
 }
 
-const pageSize = 50;
+const pageSize = 200;
 
 const HistoryTable = () => {
   const [orderBy, setOrderBy] = useState(sortOrder.DATE);
@@ -28,10 +28,10 @@ const HistoryTable = () => {
   const theme = useMantineTheme();
   const eventId = Number(router.query.eventId ?? "-1");
   const dateFrom = new Date(
-    router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01"
+    router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
   );
   const dateTo = new Date(
-    router.query.dateTo ? String(router.query.dateTo) : "2030-12-31"
+    router.query.dateTo ? String(router.query.dateTo) : "2030-12-31",
   );
   const {
     data: history,
@@ -43,7 +43,7 @@ const HistoryTable = () => {
   const sortData = (
     data: HistoryRow[],
     descend: boolean,
-    orderBy: sortOrder
+    orderBy: sortOrder,
   ) => {
     let sortedData: HistoryRow[] = [];
     if (descend) {
@@ -82,7 +82,6 @@ const HistoryTable = () => {
     setData(sortedData);
     return sortedData;
   };
-  console.log(history);
   useEffect(() => {
     if (!history) return;
     const all = history.pages.flat();
@@ -95,16 +94,16 @@ const HistoryTable = () => {
 
   const handleSortClick = (d: sortOrder) => {
     if (orderBy === d) {
-      setDescend((d) => !d);
+      setDescend(d => !d);
     } else {
       setOrderBy(d);
       setDescend(false);
     }
   };
 
-  const ths = (_: HistoryRow[]) => (
+  const ths = (data: HistoryRow[]) => (
     <tr>
-      <th></th>
+      <th>{data.length} rows</th>
       <th className={orderBy === sortOrder.DATE ? `bg-neutral-content` : ""}>
         <button onClick={() => handleSortClick(sortOrder.DATE)}>
           <Flex justify="center" direction="row" align="center">
@@ -148,11 +147,7 @@ const HistoryTable = () => {
           <Loader variant="dots" />
         </Center>
       )}
-      <ScrollArea
-        h="75vh"
-        type="auto"
-        onScrollPositionChange={() => fetchNextPage()}
-      >
+      <ScrollArea h="50vh" type="auto">
         <Container sx={{ minHeight: "30rem" }} fluid>
           {data && (
             <Table captionSide="bottom" highlightOnHover striped>

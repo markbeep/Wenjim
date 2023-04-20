@@ -1,6 +1,10 @@
 import { useMantineTheme } from "@mantine/core";
 import React, { useCallback, useEffect, useState } from "react";
 
+/*
+Checks the size of the window to allow for easily checking if it should be
+mobile formatted or desktop
+*/
 export default function useResize(
   breakpoint: number = -1,
   default_ = false,

@@ -1,7 +1,6 @@
 import {
   ActionIcon,
   AppShell,
-  Burger,
   Button,
   Center,
   Drawer,
@@ -59,6 +58,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
         e.getLocation().toLowerCase() ?? "",
       ],
     })) ?? [];
+
   return (
     <AppShell
       header={
@@ -127,7 +127,8 @@ const Shell = ({ children }: { children: ReactNode }) => {
                 shortcut={isError ? [] : ["mod + P", "mod + K"]}
                 highlightQuery
                 nothingFoundMessage="Nothing found"
-                transition="slide-down"
+                styles={{ root: { margin: 10 } }}
+                limit={8}
               >
                 <UnstyledButton
                   onClick={() => openSpotlight()}
