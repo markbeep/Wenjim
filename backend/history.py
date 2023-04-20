@@ -3,6 +3,9 @@ from scraper.models import Events, Lessons, Trackings
 from generated import countday_pb2_grpc, countday_pb2
 import logging
 import time
+from pytz import timezone
+
+tz = timezone("Europe/Zurich")
 
 # Gets the latest tracking time for a lesson
 LATEST_TRACKING = Trackings.select(
@@ -37,7 +40,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         return countday_pb2.HistoryReply(
             rows=[
                 countday_pb2.HistoryRow(
-                    date=round(x.lessons.from_date.timestamp()),
+                    date=round(x.lessons.from_date.astimezone(tz).timestamp()),
                     placesMax=x.lessons.places_max,
                     placesFree=x.lessons.trackings.places_free,
                 )

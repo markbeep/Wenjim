@@ -3,6 +3,7 @@ import React from "react";
 import HistoryTable from "../../../components/historyTable";
 import StatisticsBar from "../../../components/statisticsBar";
 import LessonForm from "../../../components/lessonForm";
+import Weekly from "../../../components/weekly";
 
 export default function Lesson({}) {
   return (
@@ -27,7 +28,7 @@ export default function Lesson({}) {
         </Tabs.Panel>
 
         <Tabs.Panel value="weekly">
-          <Center>Coming soon...</Center>
+          <Weekly />
         </Tabs.Panel>
       </Tabs>
     </>

@@ -38,6 +38,7 @@ const LessonForm = () => {
   const [dateTo, setDateTo] = useState(
     new Date(router.query.dateTo ? String(router.query.dateTo) : "2030-12-31"),
   );
+
   const { data, isLoading } = useSingleEvent(eventId);
   const {
     data: locations,

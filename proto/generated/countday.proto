@@ -188,34 +188,28 @@ WEEKLY
 */
 
 service Weekly {
-    rpc Weekly(WeeklyRequest) returns (WeeklyReply) {}
-}
-
-message WeeklyRequest {
-    string sport = 1;
-    string location = 2;
-    sint64 dateFrom = 3;
-    sint64 dateTo = 4;
+    rpc Weekly(HistoryIdRequest) returns (WeeklyReply) {}
 }
 
 message WeeklyDetails {
-    string sport = 1;
-    sint32 startHour = 2;
-    sint32 startMinute = 3;
-    sint32 endHour = 4;
-    sint32 endMinute = 5;
-    string weekday = 6;
-    float avgFree = 7;
-    float avgMax = 8;
-    string title = 9;
+    string timeFrom = 1;
+    string timeTo = 2;
+    string weekday = 3;
+    float avgFree = 4;
+    float avgMax = 5;
+}
+
+message WeeklyHour {
+    sint32 hour = 1;
+    repeated WeeklyDetails details = 2;
 }
 
 message WeeklyReply {
-    repeated WeeklyDetails monday = 1;
-    repeated WeeklyDetails tuesday = 2;
-    repeated WeeklyDetails wednesday = 3;
-    repeated WeeklyDetails thursday = 4;
-    repeated WeeklyDetails friday = 5;
-    repeated WeeklyDetails saturday = 6;
-    repeated WeeklyDetails sunday = 7;
+    repeated WeeklyHour monday = 1;
+    repeated WeeklyHour tuesday = 2;
+    repeated WeeklyHour wednesday = 3;
+    repeated WeeklyHour thursday = 4;
+    repeated WeeklyHour friday = 5;
+    repeated WeeklyHour saturday = 6;
+    repeated WeeklyHour sunday = 7;
 }

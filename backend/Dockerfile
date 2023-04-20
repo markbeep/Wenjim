@@ -31,7 +31,7 @@ FROM base as final
 WORKDIR /app
 
 COPY backend/scraper/models.py scraper/models.py
-COPY backend/server.py backend/history.py backend/utility.py ./
+COPY backend/server.py backend/history.py backend/utility.py backend/weekly.py ./
 
 EXPOSE 5000
 
