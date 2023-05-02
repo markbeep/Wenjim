@@ -7,5 +7,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - ENVOY_PROXY=http://localhost:8080
+      - ENVOY_PROXY=http://envoy:8080
       - GOOGLE_ID=123123
+
+networks:
+  wenjim:

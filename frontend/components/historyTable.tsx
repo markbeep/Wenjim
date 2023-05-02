@@ -9,7 +9,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import router from "next/router";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useHistoryById } from "../api/grpc";
 import { HistoryRow } from "../generated/countday_pb";
@@ -26,6 +26,7 @@ const HistoryTable = () => {
   const [orderBy, setOrderBy] = useState(sortOrder.DATE);
   const [descend, setDescend] = useState(false);
   const theme = useMantineTheme();
+  const router = useRouter();
   const eventId = Number(router.query.eventId ?? "-1");
   const dateFrom = new Date(
     router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
@@ -90,7 +91,7 @@ const HistoryTable = () => {
 
   useEffect(() => {
     if (data) sortData(data, descend, orderBy);
-  }, [descend, orderBy]); // data is not here to avoid infinite loops
+  }, [data, descend, orderBy]); // data is not here to avoid infinite loops
 
   const handleSortClick = (d: sortOrder) => {
     if (orderBy === d) {

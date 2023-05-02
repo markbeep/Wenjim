@@ -15,12 +15,12 @@ import {
   IconListDetails,
   IconMapPin,
 } from "@tabler/icons-react";
-import router from "next/router";
 import React, { useState } from "react";
 import { useSingleEvent, useLocations, useTitles } from "../api/grpc";
 import { DatePicker } from "@mantine/dates";
 import Head from "next/head";
 import { useDisclosure } from "@mantine/hooks";
+import { useRouter } from "next/router";
 
 const formatDate = (date: Date) => {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
@@ -29,6 +29,7 @@ const formatDate = (date: Date) => {
 const LessonForm = () => {
   const [opened, { open, close }] = useDisclosure(false);
 
+  const router = useRouter();
   const eventId = Number(router.query.eventId ?? "-1");
   const [dateFrom, setDateFrom] = useState(
     new Date(

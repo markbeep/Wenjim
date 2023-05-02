@@ -22,3 +22,6 @@ services:
     environment:
       - BACKEND_HOST=grpc-backend
       - BACKEND_PORT=9090
+
+networks:
+  wenjim:

@@ -5,7 +5,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 First install all required packages
 ```bash
 cd frontend
-npm i
+yarn
 ```
 
 First, run the development server:
