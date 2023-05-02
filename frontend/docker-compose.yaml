@@ -8,7 +8,6 @@ services:
       - "3000:3000"
     environment:
       - ENVOY_PROXY=http://envoy:8080
-      - GOOGLE_ID=123123
 
 networks:
   wenjim:
