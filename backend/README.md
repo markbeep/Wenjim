@@ -13,7 +13,8 @@ But there are also Dockerfiles to run the services without Poetry if desired.
 
 ## Local Development
 
-Poetry: (enables hot-reload)
+**Poetry:**
+Enables hot-reload, but requires you to set the environment variables manually.
 
 ```bash
 cd backend
@@ -23,7 +24,7 @@ poetry run start
 
 If the start fails, you can also start it differently: `poetry run flask --debug -A server run -h "0.0.0.0" -p 8080`
 
-Docker: (the file is in the root)
+**Docker:** (the file is in the root)
 
 ```bash
 docker compose up --build

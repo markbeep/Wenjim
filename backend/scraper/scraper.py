@@ -67,8 +67,8 @@ def scrape(FETCH, hours_to_scrape=24):
 
         print(f"Entries: {len(entries)}")
 
-        with open("data/entries.json", "w", encoding="utf-8") as f:
-            json.dump(entries, f, indent=4)
+        # with open("data/entries.json", "w", encoding="utf-8") as f:
+        #     json.dump(entries, f, indent=4)
 
         # updates the sports.json file with all the current sport types
         sports = {}
