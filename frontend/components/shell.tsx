@@ -1,9 +1,7 @@
 import {
   ActionIcon,
   AppShell,
-  Button,
   Center,
-  Drawer,
   Flex,
   Group,
   Header,
@@ -14,11 +12,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { ReactNode, useState } from "react";
-import {
-  IconBrandGithub,
-  IconExternalLink,
-  IconSearch,
-} from "@tabler/icons-react";
+import { IconBrandGithub, IconSearch } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
