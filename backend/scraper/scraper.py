@@ -131,7 +131,7 @@ def add_to_db(entries: list):
         lesson.cancelled = e["cancelled"]
         lesson.livestream = e["livestream"]
         update_lessons.append(lesson)
-        
+
         # checks if the signup is open already
         if e["oe_from_date"].timestamp() <= current_time:
             # check free/taken spots
@@ -140,7 +140,7 @@ def add_to_db(entries: list):
                 track_date=current_time,
                 places_free=e["places_free"],
             )
-        
+
         if i % 10 == 0:
             print(f"Added: {i}")
 
@@ -169,6 +169,7 @@ def main():
         create_all_tables()
     entries = scrape(True, 24 * 7)  # scrape 7 days in advance
     add_to_db(entries)
+
 
 if __name__ == "__main__":
     main()

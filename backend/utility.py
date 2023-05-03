@@ -90,9 +90,7 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
             )
         )
         return countday_pb2.TitleReply(
-            titles=[
-                countday_pb2.TitleEvent(eventId=x.id, title=x.title) for x in query
-            ]
+            titles=[countday_pb2.TitleEvent(eventId=x.id, title=x.title) for x in query]
         )
 
     def MinMaxDate(self, request, context):
@@ -101,4 +99,6 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
             fn.MIN(Lessons.from_date).alias("min"),
             fn.MAX(Lessons.to_date).alias("max"),
         )
-        return countday_pb2.MinMaxDateReply(min=int(query[0].min.timestamp()), max=int(query[0].max.timestamp()))
+        return countday_pb2.MinMaxDateReply(
+            min=int(query[0].min.timestamp()), max=int(query[0].max.timestamp())
+        )

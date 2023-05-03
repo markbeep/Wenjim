@@ -35,4 +35,4 @@ COPY backend/server.py backend/history.py backend/utility.py backend/weekly.py .
 
 EXPOSE 5000
 
-CMD /venv/bin/python server.py
+CMD /venv/bin/gunicorn -w 4 -b 0.0.0.0:8080 'server:app'
