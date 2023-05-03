@@ -1,7 +1,6 @@
 from peewee import (
     Model,
     SqliteDatabase,
-    PostgresqlDatabase,
     TextField,
     ForeignKeyField,
     IntegerField,
@@ -9,12 +8,10 @@ from peewee import (
     TimestampField,
     BitField,
 )
+from scraper.models import database as psql
 
 
 sqlite = SqliteDatabase("data/entries.db")
-psql = PostgresqlDatabase(
-    "wenjim", user="postgres", password="postgres", host="0.0.0.0", port=5432
-)
 
 
 class SqliteModel(Model):
