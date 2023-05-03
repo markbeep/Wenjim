@@ -12,6 +12,7 @@ peewee = "^3.15.4"
 requests = "^2.28.2"
 pytz = "^2022.7.1"
 python-dateutil = "^2.8.2"
+psycopg2 = "^2.9.6"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.10"

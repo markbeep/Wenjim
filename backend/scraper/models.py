@@ -85,8 +85,3 @@ class Statistics(BaseModel):
     is_places = flags.flag(2)
     is_weekly = flags.flag(4)
     track_date = TimestampField()
-
-
-def create_all_tables():
-    # Creates all the tables
-    database.create_tables([Events, Lessons, Trackings])
