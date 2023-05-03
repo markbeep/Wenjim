@@ -39,3 +39,11 @@ To make database changes consistent, there is a list of migrations which can be 
 
 If you change the database models, run `poetry run python manage.py create NAME` to create
 a new migration with the `NAME`. To apply all migrations run `poetry run python manage.py migrate`.
+
+## Accessing Postgres in Kubernetes
+
+Port forward the psql pod:
+`kubectl port-forward pod/wenjim-staging-psql-74f9b59d5c-pl7xp 5432:5432`
+
+Once the port forward is running, simply run:
+`psql --host localhost --username postgres`
