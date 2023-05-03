@@ -1,29 +1,55 @@
 # Wenjim
 
 When gym? Find out with this tool!
+
 ## Local Development
 
-### Backend
-Backend is split into two parts. There is the scraper which gets the latest stats from
-the ASVZ API and then there's the backend Flask instance using Peewee on SQLite.
+The exact details on how to setup the front- and backend are in the READMEs
+of the specific directory. The general requirements are:
 
-Backend is all set up using Dockerfiles. So it can all be run using a simple command.
+- Frontend
+  - Node LTS (>=16)
+  - npm
+- Backend
+  - Python 3.11
+  - [Poetry](https://python-poetry.org/) (package manager)
 
-**Scraper:**
+These should suffice to get everything setup for simple local development.
+There are Dockerfiles for using the scraper or backend if needed.
+
+Easiest is to run the backend with the docker-compose file in the root.
+For more details and hot-reload, check the README in the backend directory.
+
 ```bash
-cd backend/scraper
-docker build -t scraper . && docker run scraper
-```
-
-**Backend:**
-```bash
-cd backend
 docker compose up --build
 ```
 
-### Frontend
-Frontend runs on Next.js. To start simply run:
+# GRPC
+
+Wenjim uses GRPC to communicate between the front- and backend.
+
+To generate the required proto files, simply execute:
+
 ```bash
-cd frontend
-npm run dev
+make
+```
+
+_Poetry is required for this._
+
+## "Manual" Install
+
+The manual install consists of simply executing the Makefile manually:
+
+### Backend
+
+```bash
+cd backend
+poetry run poe build
+```
+
+### Frontend
+
+```bash
+cd backend
+npm run build:proto
 ```

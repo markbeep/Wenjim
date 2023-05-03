@@ -1,4 +1,0 @@
-requests
-python-dateutil
-pytz
-peewee==3.15

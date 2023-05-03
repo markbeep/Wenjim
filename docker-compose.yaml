@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  grpc-backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      psql:
+        condition: service_healthy
+  psql:
+    container_name: psql
+    image: postgres:15.2-alpine3.17
+    volumes:
+      - ./backend/data/sql:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-u postgres"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+networks:
+  wenjim:

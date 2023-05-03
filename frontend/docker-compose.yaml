@@ -1,6 +1,13 @@
 services:
   frontend:
-    build: .
+    build:
+      context: ../
+      dockerfile: ./frontend/Dockerfile
     restart: "no"
     ports:
       - "3000:3000"
+    environment:
+      - BACKEND_PROXY=http://grpc-backend:8080
+
+networks:
+  wenjim:

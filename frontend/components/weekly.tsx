@@ -8,19 +8,19 @@ import {
   useMantineTheme,
   Center,
   Modal,
+  Loader,
 } from "@mantine/core";
-import { DateRangePickerValue } from "@mantine/dates";
 import React, { useState } from "react";
-import SingleSearch from "../components/singleSearch";
-import { useWeekly } from "./api/hooks";
-import { WeeklyTimeData } from "./api/interfaces";
+import { useWeekly } from "../api/grpc";
+import { WeeklyHour } from "../generated/countday_pb";
+import { useRouter } from "next/router";
+import { useDisclosure } from "@mantine/hooks";
 
-const Hour = (props: { data: WeeklyTimeData | undefined }) => {
+const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
   const theme = useMantineTheme();
-  const [opened, setOpened] = useState(false);
-  const { data } = props;
+  const [opened, { open, close }] = useDisclosure(false);
 
-  if (!data || !data.details || data.details.length === 0) {
+  if (!data) {
     return (
       <Container
         mt={5}
@@ -32,17 +32,25 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
     );
   }
   const avgFree =
-    data.details.reduce((a, b) => a + b.avgFree, 0) / data.details.length;
-  const maxAvg =
-    data.details.reduce((a, b) => a + b.maxAvg, 0) / data.details.length;
+    data.getDetailsList().reduce((a, b) => a + b.getAvgfree(), 0) /
+    data.getDetailsList().length;
+  const avgMax =
+    data.getDetailsList().reduce((a, b) => a + b.getAvgmax(), 0) /
+    data.getDetailsList().length;
   const c = theme.colors;
   const colors = [c.red, c.orange, c.yellow, c.lime, c.teal, c.lime];
-  const ind = Math.floor((avgFree / maxAvg) * (colors.length - 1));
+  const ind = Math.floor((avgFree / avgMax) * (colors.length - 1));
 
   return (
     <>
-      <Modal opened={opened} onClose={() => setOpened(false)} overlayBlur={2}>
-        {data.details.map((d, i) => (
+      <Modal
+        opened={opened}
+        onClose={close}
+        overlayBlur={2}
+        title="Detailed View"
+      >
+        {data.getDetailsList().length === 0 && "There's no lesson here"}
+        {data.getDetailsList().map((d, i) => (
           <Container key={i}>
             {i > 0 && <Divider size="sm" />}
             <Flex
@@ -59,10 +67,7 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
                 justify="flex-start"
                 mr="sm"
               >
-                <Text>Sport</Text>
-                <Text>Subtitle</Text>
                 <Text>Time</Text>
-                <Text>Weekday</Text>
                 <Text>Average Free Spots</Text>
                 <Text>Average Total Spots</Text>
               </Flex>
@@ -73,27 +78,16 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
                 justify="flex-start"
               >
                 <Text>
-                  {d.sport.slice(0, 1).toUpperCase() + d.sport.slice(1)}
+                  {d.getTimefrom()} - {d.getTimeto()}
                 </Text>
-                <Text>{d.title}</Text>
-                <Text>
-                  {d.time} - {d.timeTo}
-                </Text>
-                <Text>
-                  {d.weekday.slice(0, 1).toUpperCase() + d.weekday.slice(1)}
-                </Text>
-                <Text>{Math.round(d.avgFree)}</Text>
-                <Text>{Math.round(d.maxAvg)}</Text>
+                <Text>{Math.round(d.getAvgfree())}</Text>
+                <Text>{Math.round(d.getAvgmax())}</Text>
               </Flex>
             </Flex>
           </Container>
         ))}
       </Modal>
-
-      <button
-        style={{ width: "100%", height: "100%" }}
-        onClick={() => setOpened(true)}
-      >
+      <button style={{ width: "100%", height: "100%" }} onClick={open}>
         <Container
           mt={5}
           bg={colors[ind] ? colors[ind][4] : c.dark[6]}
@@ -111,31 +105,24 @@ const Hour = (props: { data: WeeklyTimeData | undefined }) => {
 };
 
 const Weekly = () => {
-  const [activity, setActivity] = useState<string | null>(null);
-  const [location, setLocation] = useState<string | null>(null);
-  const [date, setDate] = useState<DateRangePickerValue>();
-  const { data } = useWeekly(
-    activity ? [activity] : [],
-    location ? [location] : [],
-    date?.[0] ?? new Date("2022-09-19"),
-    date?.[1] ?? new Date("2022-12-24"),
+  const router = useRouter();
+  const eventId = Number(router.query.eventId ?? "-1");
+  const [dateFrom] = useState(
+    new Date(
+      router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
+    ),
   );
-  console.log(data);
+  const [dateTo] = useState(
+    new Date(router.query.dateTo ? String(router.query.dateTo) : "2030-12-31"),
+  );
+
+  const { data, isLoading } = useWeekly(eventId, dateFrom, dateTo);
 
   return (
     <Container fluid>
-      <SingleSearch
-        activity={activity}
-        setActivity={setActivity}
-        location={location}
-        setLocation={setLocation}
-        date={date}
-        setDate={setDate}
-      />
-
-      <Divider my="sm" />
-      {data && (
-        <Center>
+      <Center>
+        {!data && <Loader variant="dots" />}
+        {data && (
           <ScrollArea type="auto">
             <SimpleGrid cols={8} w={800}>
               <Center>Time</Center>
@@ -150,44 +137,49 @@ const Weekly = () => {
             <Divider />
             <SimpleGrid cols={8} w={800}>
               <Flex direction="column" align="center">
-                {data.monday.map((e, i) => (
-                  <Container key={i} mt={5} w="100%" mih={25}>
-                    <Center>{e.time}</Center>
-                  </Container>
-                ))}
+                {
+                  // to set the times on the left column
+                  Array(24)
+                    .fill(0)
+                    .map((_, i) => (
+                      <Container key={i} mt={5} w="100%" mih={25}>
+                        <Center>{i}:00</Center>
+                      </Container>
+                    ))
+                }
               </Flex>
               <Flex direction="column" align="center">
-                {data.monday.map((e, i) => (
+                {data.getMondayList().map((e, i) => (
                   <Hour key={"monday" + i} data={e} />
                 ))}
               </Flex>
               <Flex direction="column" align="center">
-                {data.tuesday.map((e, i) => (
+                {data.getTuesdayList().map((e, i) => (
                   <Hour key={"tuesday" + i} data={e} />
                 ))}
               </Flex>
               <Flex direction="column" align="center">
-                {data.wednesday.map((e, i) => (
+                {data.getWednesdayList().map((e, i) => (
                   <Hour key={"wednesday" + i} data={e} />
                 ))}
               </Flex>
               <Flex direction="column" align="center">
-                {data.thursday.map((e, i) => (
+                {data.getThursdayList().map((e, i) => (
                   <Hour key={"thursday" + i} data={e} />
                 ))}
               </Flex>
               <Flex direction="column" align="center">
-                {data.friday.map((e, i) => (
+                {data.getFridayList().map((e, i) => (
                   <Hour key={"friday" + i} data={e} />
                 ))}
               </Flex>
               <Flex direction="column" align="center">
-                {data.saturday.map((e, i) => (
+                {data.getSaturdayList().map((e, i) => (
                   <Hour key={"saturday" + i} data={e} />
                 ))}
               </Flex>
               <Flex direction="column" align="center">
-                {data.sunday.map((e, i) => (
+                {data.getSundayList().map((e, i) => (
                   <Hour key={"sunday" + i} data={e} />
                 ))}
               </Flex>
@@ -200,8 +192,8 @@ const Weekly = () => {
               }
             </Center>
           </ScrollArea>
-        </Center>
-      )}
+        )}
+      </Center>
     </Container>
   );
 };

@@ -10,16 +10,16 @@ export function CalendarChart({ data }: Data) {
     <ScrollArea type="auto">
       <AspectRatio
         ratio={1080 / 240}
-        sx={{ minWidth: "1080px", minHeight: "240px" }}
+        sx={{ minWidth: "1080px", minHeight: "500px" }}
       >
         {data && (
           <ResponsiveCalendar
             data={data}
             from="2022-01-01"
-            to="2022-12-12"
+            to="2023-12-12"
             emptyColor="#555555"
             colors={["#61cdbb", "#97e3d5", "#e8c1a0", "#f47560"]}
-            margin={{ right: 40, left: 40, bottom: 10 }}
+            margin={{ right: 40, left: 40, bottom: 20 }}
             yearSpacing={40}
             monthBorderColor="#000000"
             dayBorderWidth={2}
@@ -37,7 +37,7 @@ export function CalendarChart({ data }: Data) {
           />
         )}
       </AspectRatio>
-      <Center mt="-30px">
+      <Center>
         <Text>Total signups per day</Text>
       </Center>
     </ScrollArea>

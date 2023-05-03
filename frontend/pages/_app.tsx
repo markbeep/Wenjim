@@ -4,22 +4,25 @@ import ThemeProvider from "../context/themeProvider";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { NotificationsProvider } from "@mantine/notifications";
-import Shell from "../components/shell";
 import { NavigationProgress } from "@mantine/nprogress";
-import { useState } from "react";
+import React, { useState } from "react";
+import Shell from "../components/shell";
+import Head from "next/head";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
-
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <NotificationsProvider position="top-right" autoClose={8_000}>
           <NavigationProgress />
           <Shell>
+            <Head>
+              <title>Wenjim | ASVZ Data & Graphs</title>
+            </Head>
             <Component {...pageProps} />
+            <ReactQueryDevtools initialIsOpen={false} />
           </Shell>
-          <ReactQueryDevtools initialIsOpen={false} />
         </NotificationsProvider>
       </QueryClientProvider>
     </ThemeProvider>

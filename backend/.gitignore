@@ -1,1 +1,4 @@
-*.db
+data/
+.venv
+__pycache__
+generated

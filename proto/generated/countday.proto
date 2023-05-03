@@ -1,0 +1,215 @@
+syntax = "proto3";
+
+/* requests that are used all around */
+service Utility {
+    /* Returns all the sports */
+    rpc Sports(SportsRequest) returns (SportsReply) {} 
+    
+    /* Returns all the locations for a given event */
+    rpc Locations(LocationsRequest) returns (LocationsReply) {} 
+    
+    /* Returns all the titles for a given event */
+    rpc Titles(TitleRequest) returns (TitleReply) {} 
+
+    /* Returns all events */
+    rpc Events(EventsRequest) returns (EventsReply) {}
+
+    /* Returns a single event by ID */
+    rpc SingleEvent(EventsIdRequest) returns (Event) {}
+
+    /* Returns the minimum and maximum date of the tracked data */
+    rpc MinMaxDate(MinMaxDateRequest) returns (MinMaxDateReply) {} 
+}
+
+/*
+Sports
+*/
+message SportsRequest {}
+
+message SportsReply {
+    repeated string sports = 1;
+}
+
+/*
+Locations
+*/
+message LocationsRequest {
+    sint32 eventId = 1;
+}
+
+message LocationEvent {
+    sint32 eventId = 1;
+    string location = 2;
+}
+message LocationsReply {
+    repeated LocationEvent locations = 1;
+}
+
+/*
+Titles
+*/
+message TitleRequest {
+    sint32 eventId = 1;
+}
+
+message TitleEvent {
+    sint32 eventId = 1;
+    string title = 2;
+}
+
+message TitleReply {
+    repeated TitleEvent titles = 1;
+}
+
+
+/*
+Events
+*/
+message EventsRequest {}
+
+message Event {
+    sint32 id = 1;
+    string sport = 2;
+    string title = 3;
+    string location = 4;
+    string niveau = 5;
+}
+
+message EventsReply {
+    repeated Event events = 1;
+}
+
+message EventsIdRequest {
+    sint32 id = 1;
+}
+
+/*
+Min Max Date
+*/
+message MinMaxDateRequest {}
+
+message MinMaxDateReply {
+    sint64 min = 1;
+    sint64 max = 2;
+}
+
+/*
+
+###############################################
+HISTORY
+
+*/
+
+/* the requests for the history page */
+service History {
+    /* Sends the data to graph activity over a time period */
+    rpc HistoryGraph(HistoryIdRequest) returns (HistoryGraphReply) {}
+
+    /* Sends the pure data of all time slots */
+    rpc HistoryId(HistoryPageIdRequest) returns (HistoryReply) {}
+
+    rpc EventStatistics(HistoryIdRequest) returns (HistoryStatisticsReply) {}
+    rpc TotalLessons(HistoryIdRequest) returns (TotalLessonsReply) {}
+    rpc TotalTrackings(HistoryIdRequest) returns (TotalTrackingsReply) {}
+}
+
+message HistoryIdRequest {
+    sint32 eventId = 1;
+    sint64 dateFrom = 2;
+    sint64 dateTo = 3;
+}
+
+message HistoryPageIdRequest {
+    sint32 eventId = 1;
+    sint64 dateFrom = 2;
+    sint64 dateTo = 3;
+    sint32 size = 4;
+    sint32 page = 5;
+}
+
+/*
+History Graph Data
+*/
+message HistoryGraphPoint {
+    sint64 date = 1; // date in seconds
+    sint32 y = 2;
+}
+
+message HistoryGraphRow {
+    string id = 1; // the sport name
+    repeated HistoryGraphPoint data = 2;
+}
+
+message HistoryGraphReply {
+    repeated HistoryGraphRow rows = 1;
+}
+
+/*
+Pure History Data
+*/
+message HistoryRow {
+    sint64 date = 1;
+    sint32 placesMax = 2;
+    sint32 placesFree = 3; 
+}
+
+message HistoryReply {
+    repeated HistoryRow rows = 1;
+}
+
+
+message HistoryStatisticsReply {
+    reserved 1;
+    /* the average amount of minutes before the event starts where it's full */
+    float averageMinutes = 2;
+    float averagePlacesFree = 3;
+    float averagePlacesMax = 4;
+    
+    sint32 maxPlacesFree = 5;
+    sint64 dateMaxPlacesFree = 6;
+
+    sint32 maxPlacesMax = 7;
+    sint64 dateMaxPlacesMax = 8;
+}   
+
+message TotalLessonsReply {
+    sint32 totalLessons = 1;
+}
+
+message TotalTrackingsReply {
+    sint32 totalTrackings = 1;
+}
+
+/*
+
+###############################################
+WEEKLY
+
+*/
+
+service Weekly {
+    rpc Weekly(HistoryIdRequest) returns (WeeklyReply) {}
+}
+
+message WeeklyDetails {
+    string timeFrom = 1;
+    string timeTo = 2;
+    string weekday = 3;
+    float avgFree = 4;
+    float avgMax = 5;
+}
+
+message WeeklyHour {
+    sint32 hour = 1;
+    repeated WeeklyDetails details = 2;
+}
+
+message WeeklyReply {
+    repeated WeeklyHour monday = 1;
+    repeated WeeklyHour tuesday = 2;
+    repeated WeeklyHour wednesday = 3;
+    repeated WeeklyHour thursday = 4;
+    repeated WeeklyHour friday = 5;
+    repeated WeeklyHour saturday = 6;
+    repeated WeeklyHour sunday = 7;
+}

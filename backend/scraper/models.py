@@ -1,49 +1,87 @@
-from peewee import *
-from peewee import Expression
+"""Defines all the models used"""
 
-database = SqliteDatabase('data/entries.db')
+from peewee import (
+    Model,
+    PostgresqlDatabase,
+    TextField,
+    ForeignKeyField,
+    IntegerField,
+    BooleanField,
+    TimestampField,
+    BitField,
+)
+import os
 
-class UnknownField(object):
-    def __init__(self, *_, **__): pass
+
+database = PostgresqlDatabase(
+    os.getenv("POSTGRES_DB"),
+    user=os.getenv("POSTGRES_USER"),
+    password=os.getenv("POSTGRES_PASSWORD"),
+    host=os.getenv("POSTGRES_HOST"),
+    port=os.getenv("POSTGRES_PORT"),
+)
+
 
 class BaseModel(Model):
+    """Base model that defines the same database"""
+
     class Meta:
+        """Defines the database"""
+
         database = database
 
-class Entries(BaseModel):
-    entry_id = AutoField(null=True)
+
+class Events(BaseModel):
+    """
+    Corresponds to the unique activities taking place on a
+    daily basis
+    """
+
     sport = TextField()
     title = TextField()
     location = TextField()
-    from_date = TimeField(formats="%H:%M")
-    to_date = TimeField(formats="%H:%M")
+    niveau = TextField()
 
     class Meta:
-        table_name = 'Entries'
-        indexes = (
-            (('sport', 'location', 'from_date', 'to_date'), True),
-        )
+        """Makes the events be unique in all its fields"""
 
-class Timestamps(BaseModel):
-    entry = ForeignKeyField(column_name='entry_id', field='entry_id', model=Entries, backref="timestamps")
-    last_space_date = TimestampField(null=True, utc=True)
-    track_date = TimestampField(utc=True)
+        indexes = ((("sport", "title", "location", "niveau"), True),)
+
+
+class Lessons(BaseModel):
+    """
+    The specific lessons
+    taking place at a specific time
+    on a given day
+    """
+
+    event = ForeignKeyField(Events, backref="lessons")
+    nid = IntegerField(unique=True)
     places_max = IntegerField()
-    places_taken = IntegerField()
-    start_date = TimestampField(utc=True)
-
-    class Meta:
-        table_name = 'Timestamps'
-
-
-class SqliteSequence(BaseModel):
-    name = BareField(null=True)
-    seq = BareField(null=True)
-
-    class Meta:
-        table_name = 'sqlite_sequence'
-        primary_key = False
+    cancelled = BooleanField()
+    livestream = BooleanField()
+    from_date = TimestampField()
+    to_date = TimestampField()
 
 
-def create_all_tables():
-    database.create_tables([Entries, Timestamps])
+class Trackings(BaseModel):
+    """
+    The amount of places free at a given track time.
+    """
+
+    lesson = ForeignKeyField(Lessons, backref="trackings")
+    track_date = TimestampField()
+    places_free = IntegerField()
+
+
+class Statistics(BaseModel):
+    """
+    Statistics about when what event was accessed (event is null for index page)
+    """
+
+    event = ForeignKeyField(Events, backref="statistics", null=True)
+    flags = BitField()
+    is_history = flags.flag(1)
+    is_places = flags.flag(2)
+    is_weekly = flags.flag(4)
+    track_date = TimestampField()
