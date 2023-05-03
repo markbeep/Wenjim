@@ -16,11 +16,15 @@ def main():
         exit(1)
 
     if sys.argv[1] == "migrate":
+        database.connect(True)
         router.run()
+        database.close()
         return
 
     if sys.argv[1] == "create":
+        database.connect(True)
         router.create(sys.argv[2], auto="scraper.models")
+        database.close()
 
 
 if __name__ == "__main__":

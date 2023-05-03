@@ -11,7 +11,7 @@ from peewee import (
 from scraper.models import database as psql
 
 
-sqlite = SqliteDatabase("data/entries.db")
+sqlite = SqliteDatabase("data/entries2.db")
 
 
 class SqliteModel(Model):
@@ -115,22 +115,28 @@ class P_Statistics(PsqlModel):
 
 
 models = []
+psql.connect(True)
 for m in S_Events.select(
     S_Events.id, S_Events.sport, S_Events.title, S_Events.location, S_Events.niveau
 ):
     models.append((m.id, m.sport, m.title, m.location, m.niveau))
-P_Events.insert_many(
-    models,
-    fields=[
-        P_Events.id,
-        P_Events.sport,
-        P_Events.title,
-        P_Events.location,
-        P_Events.niveau,
-    ],
-).execute()
+try:
+    P_Events.insert_many(
+        models,
+        fields=[
+            P_Events.id,
+            P_Events.sport,
+            P_Events.title,
+            P_Events.location,
+            P_Events.niveau,
+        ],
+    ).execute()
+except:
+    pass
+psql.close()
 print("Inserted all events")
 
+psql.connect(True)
 models = []
 for m in S_Lessons.select():
     models.append(
@@ -145,31 +151,61 @@ for m in S_Lessons.select():
             m.to_date,
         )
     )
-P_Lessons.insert_many(
-    models,
-    fields=[
-        P_Lessons.id,
-        P_Lessons.event,
-        P_Lessons.nid,
-        P_Lessons.places_max,
-        P_Lessons.cancelled,
-        P_Lessons.livestream,
-        P_Lessons.from_date,
-        P_Lessons.to_date,
-    ],
-).execute()
+try:
+    P_Lessons.insert_many(
+        models,
+        fields=[
+            P_Lessons.id,
+            P_Lessons.event,
+            P_Lessons.nid,
+            P_Lessons.places_max,
+            P_Lessons.cancelled,
+            P_Lessons.livestream,
+            P_Lessons.from_date,
+            P_Lessons.to_date,
+        ],
+    ).execute()
+except:
+    pass
+psql.close()
 print("Inserted all lessons")
 
 models = []
-for m in S_Trackings.select():
+i = 0
+psql.connect(True)
+for m in S_Trackings.select().offset(1960000):
+    i += 1
     models.append((m.id, m.lesson.id, m.track_date, m.places_free))
-P_Trackings.insert_many(
-    models,
-    fields=[
-        P_Trackings.id,
-        P_Trackings.lesson,
-        P_Trackings.track_date,
-        P_Trackings.places_free,
-    ],
-).execute()
+    if len(models) >= 10000:
+        print(i)
+        try:
+            P_Trackings.insert_many(
+                models,
+                fields=[
+                    P_Trackings.id,
+                    P_Trackings.lesson,
+                    P_Trackings.track_date,
+                    P_Trackings.places_free,
+                ],
+            ).execute()
+        except Exception as e:
+            print(e, i)
+        psql.close()
+        psql.connect(True)
+        models = []
+
+if len(models) > 0:
+    try:
+        P_Trackings.insert_many(
+            models,
+            fields=[
+                P_Trackings.id,
+                P_Trackings.lesson,
+                P_Trackings.track_date,
+                P_Trackings.places_free,
+            ],
+        ).execute()
+    except:
+        pass
+psql.close()
 print("Inserted all trackings")

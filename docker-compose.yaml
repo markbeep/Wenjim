@@ -18,7 +18,6 @@ services:
     image: postgres:15.2-alpine3.17
     volumes:
       - ./backend/data/sql:/var/lib/postgresql/data
-      - ./backend/data/csv:/csv
     env_file:
       - .env
     ports:
