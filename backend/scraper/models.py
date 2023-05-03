@@ -65,18 +65,19 @@ class Trackings(BaseModel):
     track_date = TimestampField()
     places_free = IntegerField()
 
+
 class Statistics(BaseModel):
     """
     Statistics about when what event was accessed (event is null for index page)
     """
-    
+
     event = ForeignKeyField(Events, backref="statistics", null=True)
     flags = BitField()
     is_history = flags.flag(1)
     is_places = flags.flag(2)
     is_weekly = flags.flag(4)
     track_date = TimestampField()
-    
+
 
 def create_all_tables():
     # Creates all the tables

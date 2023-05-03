@@ -7,7 +7,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - ENVOY_PROXY=http://envoy:8080
+      - BACKEND_PROXY=http://grpc-backend:8080
 
 networks:
   wenjim:

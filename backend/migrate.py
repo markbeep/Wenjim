@@ -63,9 +63,10 @@ class SqliteSequence(BaseModel):
         table_name = "sqlite_sequence"
         primary_key = False
 
+
 if __name__ == "__main__":
     query = Entries.select().join(Timestamps)
-    
+
     for e in query:
         # create new activity
         event, _ = Events.get_or_create(
