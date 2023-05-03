@@ -7,21 +7,9 @@ services:
       dockerfile: ./backend/Dockerfile
     restart: on-failure
     ports:
-      - "9090:9090"
+      - "8080:8080"
     volumes:
       - ./backend/data:/app/data
-
-  envoy:
-    build:
-      context: ./envoy
-      dockerfile: ./Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - grpc-backend
-    environment:
-      - BACKEND_HOST=grpc-backend
-      - BACKEND_PORT=9090
 
 networks:
   wenjim:
