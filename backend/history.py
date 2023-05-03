@@ -66,7 +66,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
     def TotalTrackings(self, request, context):
         logging.info("Request for TotalTrackings")
         trackings = (
-            Events.select(fn.COUNT().alias("trackings"))
+            Events.select(fn.COUNT("*").alias("trackings"))
             .join(Lessons)
             .join(Trackings)
             .where(
@@ -85,7 +85,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         # earliest time all places were taken up
         max_time_full = (
             Events.select(
-                Events.id, fn.MAX(Lessons.from_date - Trackings.track_date).alias("max")
+                fn.MAX(Lessons.from_date - Trackings.track_date).alias("max")
             )
             .join(Lessons)
             .join(Trackings)

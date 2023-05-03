@@ -21,6 +21,8 @@ poetry install
 poetry run start
 ```
 
+If the start fails, you can also start it differently: `poetry run flask --debug -A server run -h "0.0.0.0" -p 8080`
+
 Docker: (the file is in the root)
 
 ```bash
@@ -29,3 +31,10 @@ docker compose up --build
 
 _Note:_ The Dockerfile here requires the context to be the root directory
 for it to be able to generate the proto files.
+
+## Migrations
+
+To make database changes consistent, there is a list of migrations which can be executed.
+
+If you change the database models, run `poetry run python manage.py create NAME` to create
+a new migration with the `NAME`. To apply all migrations run `poetry run python manage.py migrate`.

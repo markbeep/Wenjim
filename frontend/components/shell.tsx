@@ -32,19 +32,10 @@ import { useEvents } from "../api/grpc";
 
 const Shell = ({ children }: { children: ReactNode }) => {
   const theme = useMantineTheme();
-  const [show, setShow] = useState(false);
   const [bigSearch] = useResize();
   const [count, setCount] = useState(0);
   const router = useRouter();
   const { data, isLoading, isError } = useEvents();
-
-  const menus = [
-    {
-      name: "Report Issues",
-      href: "https://github.com/markbeep/Wenjim/issues",
-      icon: <IconExternalLink color={theme.colors.gray[3]} />,
-    },
-  ];
 
   const actions: SpotlightAction[] =
     data?.getEventsList().map(e => ({
@@ -69,23 +60,20 @@ const Shell = ({ children }: { children: ReactNode }) => {
             border: 0,
             transition: "250ms ease",
           }}
-          className={show ? "" : "backdrop-blur-sm"}
+          className="backdrop-blur-sm"
           zIndex={100}
           pl="sm"
           pr="md"
         >
           <Center h="100%" w="100%">
             <Flex direction="row" w="100%" justify="left" align="center">
-              {/* <Burger opened={show} onClick={() => setShow(e => !e)} /> */}
               <Link href="/" passHref>
                 <ActionIcon
                   variant="transparent"
                   onClick={() => {
-                    if (router.pathname !== "/") {
-                      setShow(false);
-                      return;
+                    if (router.pathname === "/") {
+                      setCount(c => (c += 1));
                     }
-                    setCount(c => (c += 1));
                   }}
                   m="sm"
                 >
@@ -192,46 +180,6 @@ const Shell = ({ children }: { children: ReactNode }) => {
               : theme.colors.gray[0],
         },
       })}
-      navbar={
-        <Drawer
-          withCloseButton={false}
-          padding="sm"
-          opened={show}
-          onClose={() => setShow(false)}
-          overlayOpacity={0.2}
-          overlayBlur={2}
-          size="sm"
-          transition="rotate-right"
-          zIndex={50}
-          className="shadow-md shadow-black"
-        >
-          <Flex direction="column" pt={40}>
-            {menus.map(e => (
-              <Link key={e.name} href={e.href}>
-                <Button
-                  mt="sm"
-                  variant="light"
-                  fullWidth
-                  h={40}
-                  sx={{
-                    "& > .mantine-Button-inner": {
-                      justifyContent: "flex-start",
-                    },
-                  }}
-                  rightIcon={e.icon}
-                  onClick={() => {
-                    if (router.pathname !== e.href) {
-                      setShow(false);
-                    }
-                  }}
-                >
-                  <Text color={theme.colors.gray[3]}>{e.name}</Text>
-                </Button>
-              </Link>
-            ))}
-          </Flex>
-        </Drawer>
-      }
     >
       {children}
     </AppShell>

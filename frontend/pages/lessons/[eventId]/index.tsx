@@ -1,6 +1,5 @@
-import { Center, Divider, Tabs } from "@mantine/core";
+import { Text, Divider, Tabs, Center } from "@mantine/core";
 import React from "react";
-import HistoryTable from "../../../components/historyTable";
 import StatisticsBar from "../../../components/statisticsBar";
 import LessonForm from "../../../components/lessonForm";
 import Weekly from "../../../components/weekly";
@@ -15,20 +14,30 @@ export default function Lesson({}) {
       <Tabs defaultValue="overview">
         <Tabs.List mb="sm">
           <Tabs.Tab value="overview">Overview</Tabs.Tab>
-          <Tabs.Tab value="history">History</Tabs.Tab>
           <Tabs.Tab value="weekly">Weekly</Tabs.Tab>
+          <Tabs.Tab value="history">History</Tabs.Tab>
+          <Tabs.Tab value="signup">Signup Speed</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="overview">
           <StatisticsBar />
         </Tabs.Panel>
 
-        <Tabs.Panel value="history">
-          <HistoryTable />
-        </Tabs.Panel>
-
         <Tabs.Panel value="weekly">
           <Weekly />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="history">
+          {/* <HistoryTable /> */}
+          <Center>
+            <Text>Curently not available</Text>
+          </Center>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="signup">
+          <Center>
+            <Text>Curently not available</Text>
+          </Center>
         </Tabs.Panel>
       </Tabs>
     </>

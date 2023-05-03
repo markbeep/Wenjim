@@ -47,17 +47,6 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-${{ github.ref_name }}
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-${{ github.ref_name }},mode=max
 
-      - name: Build and push envoy
-        uses: docker/build-push-action@v3
-        with:
-          context: ./envoy
-          file: ./envoy/Dockerfile
-          platforms: linux/amd64
-          push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:${{ github.ref_name }}
-          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache-${{ github.ref_name }}
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/wenjim-envoy:buildcache-${{ github.ref_name }},mode=max
-
       - name: Build and push scraper
         uses: docker/build-push-action@v3
         with:

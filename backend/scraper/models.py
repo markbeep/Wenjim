@@ -2,7 +2,7 @@
 
 from peewee import (
     Model,
-    SqliteDatabase,
+    PostgresqlDatabase,
     TextField,
     ForeignKeyField,
     IntegerField,
@@ -10,8 +10,16 @@ from peewee import (
     TimestampField,
     BitField,
 )
+import os
 
-database = SqliteDatabase("data/entries.db")
+
+database = PostgresqlDatabase(
+    os.getenv("POSTGRES_DB"),
+    user=os.getenv("POSTGRES_USER"),
+    password=os.getenv("POSTGRES_PASSWORD"),
+    host=os.getenv("POSTGRES_HOST"),
+    port=os.getenv("POSTGRES_PORT"),
+)
 
 
 class BaseModel(Model):

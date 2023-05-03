@@ -8,6 +8,7 @@ import {
   useMantineTheme,
   Center,
   Modal,
+  Loader,
 } from "@mantine/core";
 import React, { useState } from "react";
 import { useWeekly } from "../api/grpc";
@@ -108,19 +109,20 @@ const Weekly = () => {
   const eventId = Number(router.query.eventId ?? "-1");
   const [dateFrom] = useState(
     new Date(
-      router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01"
-    )
+      router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
+    ),
   );
   const [dateTo] = useState(
-    new Date(router.query.dateTo ? String(router.query.dateTo) : "2030-12-31")
+    new Date(router.query.dateTo ? String(router.query.dateTo) : "2030-12-31"),
   );
 
-  const { data } = useWeekly(eventId, dateFrom, dateTo);
+  const { data, isLoading } = useWeekly(eventId, dateFrom, dateTo);
 
   return (
     <Container fluid>
-      {data && (
-        <Center>
+      <Center>
+        {!data && <Loader variant="dots" />}
+        {data && (
           <ScrollArea type="auto">
             <SimpleGrid cols={8} w={800}>
               <Center>Time</Center>
@@ -190,8 +192,8 @@ const Weekly = () => {
               }
             </Center>
           </ScrollArea>
-        </Center>
-      )}
+        )}
+      </Center>
     </Container>
   );
 };

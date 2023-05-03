@@ -18,7 +18,7 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
 
         query = (
             Events.select(
-                Trackings.track_date,
+                Lessons.id,
                 fn.AVG(Trackings.places_free).alias("avg_free"),
                 fn.AVG(Lessons.places_max).alias("avg_max"),
                 Lessons.from_date,
@@ -36,8 +36,9 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
                 Lessons.from_date <= request.dateTo,
             )
             .group_by(
-                fn.STRFTIME("%w", Trackings.track_date, "unixepoch"),
-                fn.STRFTIME("%H:%M", Lessons.from_date, "unixepoch"),
+                Lessons.id,
+                fn.to_char(Lessons.from_date, "Day"),
+                fn.to_char(Lessons.from_date, "HH24:MI")
             )
         )
 
@@ -60,7 +61,7 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
 
         for x in query:
             h = x.lessons.from_date.astimezone(tz).hour
-            wd = weekdays[x.lessons.trackings.track_date.weekday()]
+            wd = weekdays[x.lessons.from_date.weekday()]
             data[wd][h].append(
                 countday_pb2.WeeklyDetails(
                     timeFrom=x.lessons.from_date.astimezone(tz).strftime("%H:%M"),

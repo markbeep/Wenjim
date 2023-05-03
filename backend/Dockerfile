@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-RUN apk add --no-cache gcc musl-dev
+RUN apk add --no-cache gcc musl-dev libpq-dev
 RUN pip install --no-cache "poetry==$POETRY_VERSION"
 RUN python -m venv /venv
 
@@ -30,9 +30,14 @@ FROM base as final
 
 WORKDIR /app
 
+# migrations
+COPY backend/manage.py .
+COPY backend/migrations/ /app/migrations
+
 COPY backend/scraper/models.py scraper/models.py
 COPY backend/server.py backend/history.py backend/utility.py backend/weekly.py ./
 
 EXPOSE 5000
 
-CMD /venv/bin/gunicorn -w 4 -b 0.0.0.0:8080 'server:app'
+CMD /venv/bin/python manage.py migrate && \
+    /venv/bin/gunicorn -w 4 -b 0.0.0.0:8080 'server:app'
