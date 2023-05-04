@@ -65,11 +65,11 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         database.connect(True)
         logging.info("Request for TotalTrackings")
         trackings = (
-            Events.select(fn.COUNT("*").alias("trackings"))
-            .join(Lessons)
+            Lessons
+            .select(fn.COUNT("1").alias("trackings"))
             .join(Trackings)
             .where(
-                Events.id == request.eventId,
+                Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
@@ -107,22 +107,21 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             actual_avg_minutes = 0
 
         averages = (
-            Events.select(
-                Events.id.alias("id"),
+            Lessons.select(
+                Lessons.event_id.alias("id"),
                 fn.AVG(Trackings.places_free).alias("avgPlacesFree"),
                 fn.AVG(Lessons.places_max).alias("avgPlacesMax"),
                 fn.MAX(Trackings.places_free).alias("maxPlacesFree"),
                 fn.MAX(Lessons.places_max).alias("maxPlacesMax"),
             )
-            .join(Lessons)
             .join(Trackings)
             .where(
                 Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
-                Events.id == request.eventId,
+                Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
-            .group_by(Events)
+            .group_by(Lessons.event_id)
         )
 
         # the last date where the event had the max amount of places
@@ -153,7 +152,6 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .order_by(Lessons.from_date.desc())
         )
 
-        logging.info("EventStatistics Query", str(averages))
         try:
             reply = countday_pb2.HistoryStatisticsReply(
                 averageMinutes=actual_avg_minutes / 60,  # convert seconds to minutes

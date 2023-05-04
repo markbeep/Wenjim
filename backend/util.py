@@ -9,8 +9,8 @@ from peewee import fn
 # Gets the latest tracking id per lesson
 LATEST_TRACKING = (
     Trackings.select(
-        Trackings.lesson.id,
+        Trackings.lesson_id,
         fn.MAX(Trackings.id).alias("max_id"),
     )
-    .group_by(Trackings.lesson.id)
+    .group_by(Trackings.lesson_id)
 )
