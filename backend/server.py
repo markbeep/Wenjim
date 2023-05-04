@@ -12,6 +12,7 @@ from weekly import WeeklyServicer
 
 app = Flask(__name__)
 app.wsgi_app = grpcWSGI(app)
+
 countday_pb2_grpc.add_UtilityServicer_to_server(
     UtilityServicer(), app.wsgi_app)
 countday_pb2_grpc.add_HistoryServicer_to_server(

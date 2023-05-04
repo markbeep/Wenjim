@@ -4,7 +4,7 @@ from peewee import Tuple, fn
 from pytz import timezone
 
 from generated import countday_pb2, countday_pb2_grpc
-from scraper.models import Events, Lessons, Trackings
+from scraper.models import Events, Lessons, Trackings, database
 from util import LATEST_TRACKING
 
 tz = timezone("Europe/Zurich")
@@ -12,6 +12,7 @@ tz = timezone("Europe/Zurich")
 
 class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
     def Weekly(self, request, context):
+        database.connect(True)
         logging.info("Request for Weekly")
 
         # Gets the average free spaces per hour
@@ -74,6 +75,7 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
                 countday_pb2.WeeklyHour(hour=h, details=data[day][h]) for h in range(24)
             ]
 
+        database.close()
         return countday_pb2.WeeklyReply(
             monday=weekdays["monday"],
             tuesday=weekdays["tuesday"],

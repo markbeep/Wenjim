@@ -5,7 +5,7 @@ from peewee import Tuple, fn
 from pytz import timezone
 
 from generated import countday_pb2, countday_pb2_grpc
-from scraper.models import Events, Lessons, Trackings
+from scraper.models import Events, Lessons, Trackings, database
 from util import LATEST_TRACKING
 
 tz = timezone("Europe/Zurich")
@@ -13,6 +13,7 @@ tz = timezone("Europe/Zurich")
 
 class HistoryServicer(countday_pb2_grpc.HistoryServicer):
     def HistoryId(self, request, context):
+        database.connect(True)
         logging.info("Request for HistoryId")
         query = (
             Events.select(
@@ -31,6 +32,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .limit(request.size)
             .offset((request.page + 1) * request.size)
         )
+        database.close()
         return countday_pb2.HistoryReply(
             rows=[
                 countday_pb2.HistoryRow(
@@ -43,6 +45,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         )
 
     def TotalLessons(self, request, context):
+        database.connect(True)
         logging.info("Request for TotalLessons")
         tracked_lessons = (
             Events.select(fn.COUNT(fn.DISTINCT(
@@ -55,11 +58,13 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
                 Lessons.from_date <= request.dateTo,
             )
         )
+        database.close()
         return countday_pb2.TotalLessonsReply(
             totalLessons=tracked_lessons[0].trackedLessons
         )
 
     def TotalTrackings(self, request, context):
+        database.connect(True)
         logging.info("Request for TotalTrackings")
         trackings = (
             Events.select(fn.COUNT("*").alias("trackings"))
@@ -71,9 +76,11 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
                 Lessons.from_date <= request.dateTo,
             )
         )
+        database.close()
         return countday_pb2.TotalTrackingsReply(totalTrackings=trackings[0].trackings)
 
     def EventStatistics(self, request, context):
+        database.connect(True)
         logging.info("Request for EventStatistics")
         start = time.time()
 
@@ -149,6 +156,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         )
 
         logging.info(f"EventStatistics took {time.time()-start} seconds")
+        database.close()
         try:
             return countday_pb2.HistoryStatisticsReply(
                 averageMinutes=actual_avg_minutes / 60,  # convert seconds to minutes

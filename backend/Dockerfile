@@ -40,4 +40,4 @@ COPY backend/server.py backend/history.py backend/utility.py backend/weekly.py b
 EXPOSE 5000
 
 CMD /venv/bin/python manage.py migrate && \
-    /venv/bin/gunicorn -w 4 -b 0.0.0.0:8080 'server:app'
+    /venv/bin/gunicorn -w 8 -b 0.0.0.0:8080 'server:app'
