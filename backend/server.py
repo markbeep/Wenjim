@@ -20,9 +20,9 @@ countday_pb2_grpc.add_HistoryServicer_to_server(
 countday_pb2_grpc.add_WeeklyServicer_to_server(WeeklyServicer(), app.wsgi_app)
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("peewee")
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(level=logging.DEBUG)
+# logger = logging.getLogger("peewee")
+# logger.addHandler(logging.StreamHandler())
+# logger.setLevel(level=logging.DEBUG)
 
 
 def serve():
