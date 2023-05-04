@@ -1,8 +1,10 @@
-from peewee import fn
-from scraper.models import Events, Lessons, Trackings
-from generated import countday_pb2_grpc, countday_pb2
 import logging
+
+from peewee import fn
 from pytz import timezone
+
+from generated import countday_pb2, countday_pb2_grpc
+from scraper.models import Events, Lessons, Trackings
 
 tz = timezone("Europe/Zurich")
 
@@ -16,21 +18,26 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
     def Weekly(self, request, context):
         logging.info("Request for Weekly")
 
+        # Gets the min places_free per lesson
+        subquery = (
+            Lessons.select(
+                Lessons.id.alias("lesson_id"),
+                fn.MIN(Trackings.places_free).alias("min_places"),
+            )
+            .join(Trackings)
+            .group_by(Lessons)
+        )
+
+        # Gets the average (min) free spaces per hour
         query = (
             Events.select(
-                Lessons.id,
-                fn.AVG(Trackings.places_free).alias("avg_free"),
+                Lessons,
+                fn.AVG(subquery.c.min_places).alias("avg_free"),
                 fn.AVG(Lessons.places_max).alias("avg_max"),
-                Lessons.from_date,
-                Lessons.to_date,
             )
             .join(Lessons)
-            .join(Trackings)
-            .join(
-                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
-            )
+            .join(subquery, on=(subquery.c.lesson_id == Lessons.id))
             .where(
-                Trackings.track_date == LATEST_TRACKING.c.max_date,
                 Events.id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
@@ -64,7 +71,8 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
             wd = weekdays[x.lessons.from_date.weekday()]
             data[wd][h].append(
                 countday_pb2.WeeklyDetails(
-                    timeFrom=x.lessons.from_date.astimezone(tz).strftime("%H:%M"),
+                    timeFrom=x.lessons.from_date.astimezone(
+                        tz).strftime("%H:%M"),
                     timeTo=x.lessons.to_date.astimezone(tz).strftime("%H:%M"),
                     avgFree=x.avg_free,
                     avgMax=x.avg_max,
