@@ -1,43 +1,30 @@
 import logging
 
-from peewee import fn
+from peewee import Tuple, fn
 from pytz import timezone
 
 from generated import countday_pb2, countday_pb2_grpc
 from scraper.models import Events, Lessons, Trackings
+from util import LATEST_TRACKING
 
 tz = timezone("Europe/Zurich")
-
-# Gets the latest tracking time for a lesson
-LATEST_TRACKING = Trackings.select(
-    Trackings.lesson, fn.MAX(Trackings.track_date).alias("max_date")
-).group_by(Trackings.lesson)
 
 
 class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
     def Weekly(self, request, context):
         logging.info("Request for Weekly")
 
-        # Gets the min places_free per lesson
-        subquery = (
-            Lessons.select(
-                Lessons.id.alias("lesson_id"),
-                fn.MIN(Trackings.places_free).alias("min_places"),
-            )
-            .join(Trackings)
-            .group_by(Lessons)
-        )
-
-        # Gets the average (min) free spaces per hour
+        # Gets the average free spaces per hour
         query = (
             Events.select(
                 Lessons,
-                fn.AVG(subquery.c.min_places).alias("avg_free"),
+                fn.AVG(Trackings.places_free).alias("avg_free"),
                 fn.AVG(Lessons.places_max).alias("avg_max"),
             )
             .join(Lessons)
-            .join(subquery, on=(subquery.c.lesson_id == Lessons.id))
+            .join(Trackings)
             .where(
+                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
                 Events.id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,

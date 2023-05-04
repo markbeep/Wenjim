@@ -1,9 +1,10 @@
-import grpc
-from peewee import fn, DoesNotExist
-from dateutil.parser import parse
-from scraper.models import Events, Lessons
-from generated import countday_pb2_grpc, countday_pb2
 import logging
+
+import grpc
+from peewee import DoesNotExist, fn
+
+from generated import countday_pb2, countday_pb2_grpc
+from scraper.models import Events, Lessons
 
 
 class UtilityServicer(countday_pb2_grpc.UtilityServicer):
@@ -90,7 +91,8 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
             )
         )
         return countday_pb2.TitleReply(
-            titles=[countday_pb2.TitleEvent(eventId=x.id, title=x.title) for x in query]
+            titles=[countday_pb2.TitleEvent(
+                eventId=x.id, title=x.title) for x in query]
         )
 
     def MinMaxDate(self, request, context):

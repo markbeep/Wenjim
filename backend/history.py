@@ -1,16 +1,14 @@
-from peewee import fn
-from scraper.models import Events, Lessons, Trackings
-from generated import countday_pb2_grpc, countday_pb2
 import logging
 import time
+
+from peewee import Tuple, fn
 from pytz import timezone
 
-tz = timezone("Europe/Zurich")
+from generated import countday_pb2, countday_pb2_grpc
+from scraper.models import Events, Lessons, Trackings
+from util import LATEST_TRACKING
 
-# Gets the latest tracking time for a lesson
-LATEST_TRACKING = Trackings.select(
-    Trackings.lesson, fn.MAX(Trackings.track_date).alias("max_date")
-).group_by(Trackings.lesson)
+tz = timezone("Europe/Zurich")
 
 
 class HistoryServicer(countday_pb2_grpc.HistoryServicer):
@@ -24,11 +22,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             )
             .join(Lessons)
             .join(Trackings)
-            .join(
-                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
-            )
             .where(
-                Trackings.track_date == LATEST_TRACKING.c.max_date,
+                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
                 Events.id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
@@ -50,7 +45,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
     def TotalLessons(self, request, context):
         logging.info("Request for TotalLessons")
         tracked_lessons = (
-            Events.select(fn.COUNT(fn.DISTINCT(Lessons.id)).alias("trackedLessons"))
+            Events.select(fn.COUNT(fn.DISTINCT(
+                Lessons.id)).alias("trackedLessons"))
             .join(Lessons)
             .join(Trackings)  # to only show lessons that already have trackings
             .where(
@@ -115,12 +111,9 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             )
             .join(Lessons)
             .join(Trackings)
-            .join(
-                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
-            )
             .where(
+                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
                 Events.id == request.eventId,
-                Trackings.track_date == LATEST_TRACKING.c.max_date,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
@@ -166,7 +159,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
                 dateMaxPlacesFree=int(
                     date_places_free[0].lessons.from_date.timestamp()
                 ),
-                dateMaxPlacesMax=int(date_places_max[0].lessons.from_date.timestamp()),
+                dateMaxPlacesMax=int(
+                    date_places_max[0].lessons.from_date.timestamp()),
             )
         except IndexError:
             return countday_pb2.HistoryStatisticsReply(
