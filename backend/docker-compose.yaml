@@ -1,0 +1,21 @@
+# To be ran with the Flask version
+version: '3'
+
+services:
+  psql:
+    container_name: psql-flask
+    image: postgres:15.2-alpine3.17
+    volumes:
+      - ./data/sql:/var/lib/postgresql/data
+    env_file:
+      - ../.env
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-u postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+networks:
+  wenjim:

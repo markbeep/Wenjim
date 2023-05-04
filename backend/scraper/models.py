@@ -14,7 +14,7 @@ import os
 
 
 database = PostgresqlDatabase(
-    os.getenv("POSTGRES_DB", "postgres"),
+    os.getenv("POSTGRES_DB", "wenjim"),
     user=os.getenv("POSTGRES_USER", "postgres"),
     password=os.getenv("POSTGRES_PASSWORD", "postgres"),
     host=os.getenv("POSTGRES_HOST", "localhost"),
