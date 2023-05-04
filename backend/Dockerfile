@@ -35,9 +35,9 @@ COPY backend/manage.py .
 COPY backend/migrations/ /app/migrations
 
 COPY backend/scraper/models.py scraper/models.py
-COPY backend/server.py backend/history.py backend/utility.py backend/weekly.py ./
+COPY backend/server.py backend/history.py backend/utility.py backend/weekly.py backend/util.py ./
 
 EXPOSE 5000
 
 CMD /venv/bin/python manage.py migrate && \
-    /venv/bin/gunicorn -w 4 -b 0.0.0.0:8080 'server:app'
+    /venv/bin/gunicorn -w 8 -b 0.0.0.0:8080 'server:app'

@@ -1,11 +1,10 @@
 import json
 from datetime import datetime
-import os
 import time
 import requests
 import dateutil.parser
 from pytz import timezone
-from models import Events, Lessons, Trackings
+from models import Events, Lessons, Trackings, database
 
 
 # global timezone as all times received are based in Zurich
@@ -95,6 +94,7 @@ def scrape(FETCH, hours_to_scrape=24):
 def add_to_db(entries: list):
     current_time = int(time.time())
     update_lessons = []
+    database.connect(True)
     for i, e in enumerate(entries):
         # create new activity
         event, _ = Events.get_or_create(
@@ -155,7 +155,7 @@ def add_to_db(entries: list):
             Lessons.livestream,
         ],
     )
-
+    database.close()
     print(f"Successfully inserted/updated {len(entries)} entries into the db")
 
 

@@ -12,14 +12,17 @@ from weekly import WeeklyServicer
 
 app = Flask(__name__)
 app.wsgi_app = grpcWSGI(app)
-countday_pb2_grpc.add_UtilityServicer_to_server(UtilityServicer(), app.wsgi_app)
-countday_pb2_grpc.add_HistoryServicer_to_server(HistoryServicer(), app.wsgi_app)
+
+countday_pb2_grpc.add_UtilityServicer_to_server(
+    UtilityServicer(), app.wsgi_app)
+countday_pb2_grpc.add_HistoryServicer_to_server(
+    HistoryServicer(), app.wsgi_app)
 countday_pb2_grpc.add_WeeklyServicer_to_server(WeeklyServicer(), app.wsgi_app)
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("peewee")
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(level=logging.DEBUG)
+# logger = logging.getLogger("peewee")
+# logger.addHandler(logging.StreamHandler())
+# logger.setLevel(level=logging.DEBUG)
 
 
 def serve():

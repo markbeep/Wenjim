@@ -1,36 +1,31 @@
-from peewee import fn
-from scraper.models import Events, Lessons, Trackings
-from generated import countday_pb2_grpc, countday_pb2
 import logging
+
+from peewee import Tuple, fn
 from pytz import timezone
 
-tz = timezone("Europe/Zurich")
+from generated import countday_pb2, countday_pb2_grpc
+from scraper.models import Events, Lessons, Trackings, database
+from util import LATEST_TRACKING
 
-# Gets the latest tracking time for a lesson
-LATEST_TRACKING = Trackings.select(
-    Trackings.lesson, fn.MAX(Trackings.track_date).alias("max_date")
-).group_by(Trackings.lesson)
+tz = timezone("Europe/Zurich")
 
 
 class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
     def Weekly(self, request, context):
+        database.connect(True)
         logging.info("Request for Weekly")
 
+        # Gets the average free spaces per hour
         query = (
             Events.select(
-                Lessons.id,
+                Lessons,
                 fn.AVG(Trackings.places_free).alias("avg_free"),
                 fn.AVG(Lessons.places_max).alias("avg_max"),
-                Lessons.from_date,
-                Lessons.to_date,
             )
             .join(Lessons)
             .join(Trackings)
-            .join(
-                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
-            )
             .where(
-                Trackings.track_date == LATEST_TRACKING.c.max_date,
+                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
                 Events.id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
@@ -64,7 +59,8 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
             wd = weekdays[x.lessons.from_date.weekday()]
             data[wd][h].append(
                 countday_pb2.WeeklyDetails(
-                    timeFrom=x.lessons.from_date.astimezone(tz).strftime("%H:%M"),
+                    timeFrom=x.lessons.from_date.astimezone(
+                        tz).strftime("%H:%M"),
                     timeTo=x.lessons.to_date.astimezone(tz).strftime("%H:%M"),
                     avgFree=x.avg_free,
                     avgMax=x.avg_max,
@@ -79,6 +75,7 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
                 countday_pb2.WeeklyHour(hour=h, details=data[day][h]) for h in range(24)
             ]
 
+        database.close()
         return countday_pb2.WeeklyReply(
             monday=weekdays["monday"],
             tuesday=weekdays["tuesday"],

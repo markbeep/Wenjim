@@ -1,20 +1,19 @@
-from peewee import fn
-from scraper.models import Events, Lessons, Trackings
-from generated import countday_pb2_grpc, countday_pb2
 import logging
 import time
+
+from peewee import Tuple, fn
 from pytz import timezone
 
-tz = timezone("Europe/Zurich")
+from generated import countday_pb2, countday_pb2_grpc
+from scraper.models import Events, Lessons, Trackings, database
+from util import LATEST_TRACKING
 
-# Gets the latest tracking time for a lesson
-LATEST_TRACKING = Trackings.select(
-    Trackings.lesson, fn.MAX(Trackings.track_date).alias("max_date")
-).group_by(Trackings.lesson)
+tz = timezone("Europe/Zurich")
 
 
 class HistoryServicer(countday_pb2_grpc.HistoryServicer):
     def HistoryId(self, request, context):
+        database.connect(True)
         logging.info("Request for HistoryId")
         query = (
             Events.select(
@@ -24,11 +23,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             )
             .join(Lessons)
             .join(Trackings)
-            .join(
-                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
-            )
             .where(
-                Trackings.track_date == LATEST_TRACKING.c.max_date,
+                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
                 Events.id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
@@ -36,6 +32,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .limit(request.size)
             .offset((request.page + 1) * request.size)
         )
+        database.close()
         return countday_pb2.HistoryReply(
             rows=[
                 countday_pb2.HistoryRow(
@@ -48,36 +45,40 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         )
 
     def TotalLessons(self, request, context):
+        database.connect(True)
         logging.info("Request for TotalLessons")
         tracked_lessons = (
-            Events.select(fn.COUNT(fn.DISTINCT(Lessons.id)).alias("trackedLessons"))
-            .join(Lessons)
-            .join(Trackings)  # to only show lessons that already have trackings
+            Lessons
+            .select(fn.COUNT("1").alias("tracked_lessons"))
             .where(
-                Events.id == request.eventId,
+                Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
         )
+        database.close()
         return countday_pb2.TotalLessonsReply(
-            totalLessons=tracked_lessons[0].trackedLessons
+            totalLessons=tracked_lessons[0].tracked_lessons
         )
 
     def TotalTrackings(self, request, context):
+        database.connect(True)
         logging.info("Request for TotalTrackings")
         trackings = (
-            Events.select(fn.COUNT("*").alias("trackings"))
-            .join(Lessons)
+            Lessons
+            .select(fn.COUNT("1").alias("trackings"))
             .join(Trackings)
             .where(
-                Events.id == request.eventId,
+                Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
         )
+        database.close()
         return countday_pb2.TotalTrackingsReply(totalTrackings=trackings[0].trackings)
 
     def EventStatistics(self, request, context):
+        database.connect(True)
         logging.info("Request for EventStatistics")
         start = time.time()
 
@@ -106,25 +107,21 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             actual_avg_minutes = 0
 
         averages = (
-            Events.select(
-                Events.id.alias("id"),
+            Lessons.select(
+                Lessons.event_id.alias("id"),
                 fn.AVG(Trackings.places_free).alias("avgPlacesFree"),
                 fn.AVG(Lessons.places_max).alias("avgPlacesMax"),
                 fn.MAX(Trackings.places_free).alias("maxPlacesFree"),
                 fn.MAX(Lessons.places_max).alias("maxPlacesMax"),
             )
-            .join(Lessons)
             .join(Trackings)
-            .join(
-                LATEST_TRACKING, on=(LATEST_TRACKING.c.lesson_id == Trackings.lesson.id)
-            )
             .where(
-                Events.id == request.eventId,
-                Trackings.track_date == LATEST_TRACKING.c.max_date,
+                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
+                Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
-            .group_by(Events)
+            .group_by(Lessons.event_id)
         )
 
         # the last date where the event had the max amount of places
@@ -155,9 +152,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .order_by(Lessons.from_date.desc())
         )
 
-        logging.info(f"EventStatistics took {time.time()-start} seconds")
         try:
-            return countday_pb2.HistoryStatisticsReply(
+            reply = countday_pb2.HistoryStatisticsReply(
                 averageMinutes=actual_avg_minutes / 60,  # convert seconds to minutes
                 averagePlacesFree=averages[0].avgPlacesFree,
                 averagePlacesMax=averages[0].avgPlacesMax,
@@ -166,10 +162,12 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
                 dateMaxPlacesFree=int(
                     date_places_free[0].lessons.from_date.timestamp()
                 ),
-                dateMaxPlacesMax=int(date_places_max[0].lessons.from_date.timestamp()),
+                dateMaxPlacesMax=int(
+                    date_places_max[0].lessons.from_date.timestamp()),
             )
-        except IndexError:
-            return countday_pb2.HistoryStatisticsReply(
+        except Exception as e:
+            logging.error(e)
+            reply = countday_pb2.HistoryStatisticsReply(
                 averageMinutes=0,
                 averagePlacesFree=0,
                 averagePlacesMax=0,
@@ -178,3 +176,6 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
                 dateMaxPlacesFree=0,
                 dateMaxPlacesMax=0,
             )
+        logging.info(f"EventStatistics took {time.time()-start} seconds")
+        database.close()
+        return reply
