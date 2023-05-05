@@ -99,7 +99,7 @@ const StatisticsBar = () => {
 
       {statCard(
         stats?.getMaxplacesfree().toString(),
-        "Most recorded total spaces",
+        "Most recorded free spaces",
         stats
           ? new Date(stats.getDatemaxplacesfree() * 1000).toDateString()
           : "n/a",

@@ -1,11 +1,12 @@
 import json
-from datetime import datetime
 import time
-import requests
-import dateutil.parser
-from pytz import timezone
-from models import Events, Lessons, Trackings, database
+from datetime import datetime
 
+import dateutil.parser
+import requests
+from pytz import timezone
+
+from models import Events, Lessons, Trackings, database
 
 # global timezone as all times received are based in Zurich
 tz = timezone("Europe/Zurich")
@@ -38,7 +39,8 @@ def scrape(FETCH, hours_to_scrape=24):
             for e in js["results"]:
                 if e["cancelled"]:
                     continue
-                from_date = dateutil.parser.isoparse(e["from_date"]).astimezone(tz)
+                from_date = dateutil.parser.isoparse(
+                    e["from_date"]).astimezone(tz)
                 if (from_date - dt).total_seconds() / 3600 >= hours_to_scrape:
                     all_scraped = True
                     break
@@ -84,9 +86,11 @@ def scrape(FETCH, hours_to_scrape=24):
 
     # converts datetime to datetime objects for ease of use
     for e in entries:
-        e["from_date"] = dateutil.parser.isoparse(e["from_date"]).astimezone(tz)
+        e["from_date"] = dateutil.parser.isoparse(
+            e["from_date"]).astimezone(tz)
         e["to_date"] = dateutil.parser.isoparse(e["to_date"]).astimezone(tz)
-        e["oe_from_date"] = dateutil.parser.isoparse(e["oe_from_date"]).astimezone(tz)
+        e["oe_from_date"] = dateutil.parser.isoparse(
+            e["oe_from_date"]).astimezone(tz)
 
     return entries
 
@@ -155,6 +159,10 @@ def add_to_db(entries: list):
             Lessons.livestream,
         ],
     )
+
+    # refresh materialized view
+    database.execute_sql(
+        "REFRESH MATERIALIZED VIEW CONCURRENTLY average_statistics_view;")
     database.close()
     print(f"Successfully inserted/updated {len(entries)} entries into the db")
 

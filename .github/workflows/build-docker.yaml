@@ -5,26 +5,21 @@ on:
     branches: ["master", "staging"]
 
 jobs:
-  build:
+  backend:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
       - name: Build and push backend
         uses: docker/build-push-action@v3
         with:
@@ -36,6 +31,21 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:buildcache-${{ github.ref_name }}
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-backend:buildcache-${{ github.ref_name }},mode=max
 
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - name: Build and push frontend
         uses: docker/build-push-action@v3
         with:
@@ -47,6 +57,21 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-${{ github.ref_name }}
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/asvz-graph-frontend:buildcache-${{ github.ref_name }},mode=max
 
+  scraper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - name: Build and push scraper
         uses: docker/build-push-action@v3
         with:
