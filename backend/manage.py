@@ -18,24 +18,36 @@ def main():
         print(
             "No command given. Current commands:\n"
             + "  - migrate      Runs all unapplied migrations\n"
+            + "  - migrate      Reverts the last migration\n"
             + "  - create NAME  Creates a new migration with the given NAME\n"
             + "  - testdata     Fill the database with junk entries to test queries"
         )
         exit(1)
 
     if sys.argv[1] == "migrate":
+        print("Migrating...")
         database.connect(True)
         router.run()
         database.close()
         return
+    
+
+    if sys.argv[1] == "rollback":
+        print("Rolling back...")
+        database.connect(True)
+        router.rollback()
+        database.close()
+        return
 
     if sys.argv[1] == "create":
+        print("Creating a new migration...")
         database.connect(True)
         router.create(sys.argv[2], auto="scraper.models")
         database.close()
         return
 
     if sys.argv[1] == "testdata":
+        print("Adding testdata...")
         EVENTS_NUM = 10
         LESSONS_NUM = 30
         TRACKINGS_NUM = 1000

@@ -4,7 +4,7 @@ import StatisticsBar from "../../../components/statisticsBar";
 import LessonForm from "../../../components/lessonForm";
 import Weekly from "../../../components/weekly";
 
-export default function Lesson({}) {
+export default function Lesson({ }) {
   return (
     <>
       <LessonForm />
@@ -21,6 +21,9 @@ export default function Lesson({}) {
 
         <Tabs.Panel value="overview">
           <StatisticsBar />
+          <Center>
+            <Text c="dimmed" mt="md">Total data (ignoring date range)</Text>
+          </Center>
         </Tabs.Panel>
 
         <Tabs.Panel value="weekly">
@@ -30,13 +33,13 @@ export default function Lesson({}) {
         <Tabs.Panel value="history">
           {/* <HistoryTable /> */}
           <Center>
-            <Text>Curently not available</Text>
+            <Text c="dimmed">Coming soon...</Text>
           </Center>
         </Tabs.Panel>
 
         <Tabs.Panel value="signup">
           <Center>
-            <Text>Curently not available</Text>
+            <Text c="dimmed">Coming soon...</Text>
           </Center>
         </Tabs.Panel>
       </Tabs>

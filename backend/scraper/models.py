@@ -1,17 +1,9 @@
 """Defines all the models used"""
 
-from peewee import (
-    Model,
-    PostgresqlDatabase,
-    TextField,
-    ForeignKeyField,
-    IntegerField,
-    BooleanField,
-    TimestampField,
-    BitField,
-)
 import os
 
+from peewee import (BitField, BooleanField, ForeignKeyField, IntegerField,
+                    Model, PostgresqlDatabase, TextField, TimestampField)
 
 database = PostgresqlDatabase(
     os.getenv("POSTGRES_DB", "wenjim"),
@@ -85,3 +77,16 @@ class Statistics(BaseModel):
     is_places = flags.flag(2)
     is_weekly = flags.flag(4)
     track_date = TimestampField()
+
+
+class AverageStatisticsView(BaseModel):
+    """
+    Model for the average_statistics view
+    """
+    avg_places_free = IntegerField()
+    max_places_free = IntegerField()
+    avg_places_max = IntegerField()
+    max_places_max = IntegerField()
+
+    class Meta:
+        db_table = "average_statistics_view"

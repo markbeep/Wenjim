@@ -5,7 +5,8 @@ from peewee import Tuple, fn
 from pytz import timezone
 
 from generated import countday_pb2, countday_pb2_grpc
-from scraper.models import Events, Lessons, Trackings, database
+from scraper.models import (AverageStatisticsView, Events, Lessons, Trackings,
+                            database)
 from util import LATEST_TRACKING
 
 tz = timezone("Europe/Zurich")
@@ -52,8 +53,6 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .select(fn.COUNT("1").alias("tracked_lessons"))
             .where(
                 Lessons.event_id == request.eventId,
-                Lessons.from_date >= request.dateFrom,
-                Lessons.from_date <= request.dateTo,
             )
         )
         database.close()
@@ -70,8 +69,6 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .join(Trackings)
             .where(
                 Lessons.event_id == request.eventId,
-                Lessons.from_date >= request.dateFrom,
-                Lessons.from_date <= request.dateTo,
             )
         )
         database.close()
@@ -93,8 +90,6 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .where(
                 Trackings.places_free == 0,
                 Events.id == request.eventId,
-                Lessons.from_date >= request.dateFrom,
-                Lessons.from_date <= request.dateTo,
             )
             .group_by(Lessons)
         )
@@ -106,64 +101,55 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         if actual_avg_minutes is None:
             actual_avg_minutes = 0
 
-        averages = (
-            Lessons.select(
-                Lessons.event_id.alias("id"),
-                fn.AVG(Trackings.places_free).alias("avgPlacesFree"),
-                fn.AVG(Lessons.places_max).alias("avgPlacesMax"),
-                fn.MAX(Trackings.places_free).alias("maxPlacesFree"),
-                fn.MAX(Lessons.places_max).alias("maxPlacesMax"),
+        average = (
+            AverageStatisticsView
+            .select(
+                AverageStatisticsView.id,
+                AverageStatisticsView.avg_places_free,
+                AverageStatisticsView.max_places_free,
+                AverageStatisticsView.avg_places_max,
+                AverageStatisticsView.max_places_max,
             )
-            .join(Trackings)
-            .where(
-                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
-                Lessons.event_id == request.eventId,
-                Lessons.from_date >= request.dateFrom,
-                Lessons.from_date <= request.dateTo,
-            )
-            .group_by(Lessons.event_id)
+            .where(AverageStatisticsView.id == request.eventId)
         )
-
         # the last date where the event had the max amount of places
         date_places_max = (
-            Events.select(Lessons.from_date)
-            .join(Lessons)
-            .join(averages, on=(Events.id == averages.c.id))
+            Lessons
+            .select(Lessons.from_date)
+            .join(average, on=(Lessons.event_id == average.c.id))
             .where(
-                Lessons.places_max == averages.c.maxPlacesMax,
-                Events.id == request.eventId,
-                Lessons.from_date >= request.dateFrom,
-                Lessons.from_date <= request.dateTo,
+                Lessons.places_max == average.c.max_places_max,
+                Lessons.event_id == request.eventId,
             )
             .order_by(Lessons.from_date.desc())
+            .limit(1)
         )
 
         date_places_free = (
-            Events.select(Lessons.from_date)
-            .join(Lessons)
+            Lessons
+            .select(Lessons.from_date)
             .join(Trackings)
-            .join(averages, on=(Events.id == averages.c.id))
+            .join(average, on=(Lessons.event_id == average.c.id))
             .where(
-                Trackings.places_free == averages.c.maxPlacesFree,
-                Events.id == request.eventId,
-                Lessons.from_date >= request.dateFrom,
-                Lessons.from_date <= request.dateTo,
+                Trackings.places_free == average.c.max_places_free,
+                Lessons.event_id == request.eventId,
             )
             .order_by(Lessons.from_date.desc())
+            .limit(1)
         )
 
         try:
             reply = countday_pb2.HistoryStatisticsReply(
                 averageMinutes=actual_avg_minutes / 60,  # convert seconds to minutes
-                averagePlacesFree=averages[0].avgPlacesFree,
-                averagePlacesMax=averages[0].avgPlacesMax,
-                maxPlacesFree=averages[0].maxPlacesFree,
-                maxPlacesMax=averages[0].maxPlacesMax,
+                averagePlacesFree=average[0].avg_places_free,
+                averagePlacesMax=average[0].max_places_free,
+                maxPlacesFree=average[0].avg_places_max,
+                maxPlacesMax=average[0].max_places_max,
                 dateMaxPlacesFree=int(
-                    date_places_free[0].lessons.from_date.timestamp()
+                    date_places_free[0].from_date.timestamp()
                 ),
                 dateMaxPlacesMax=int(
-                    date_places_max[0].lessons.from_date.timestamp()),
+                    date_places_max[0].from_date.timestamp()),
             )
         except Exception as e:
             logging.error(e)
