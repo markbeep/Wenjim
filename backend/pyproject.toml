@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "../backend"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 Flask = "^2.2.2"
 python-jwt = "^4.0.0"
 gunicorn = "^20.1.0"
