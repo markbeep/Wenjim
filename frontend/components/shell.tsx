@@ -3,57 +3,57 @@ import {
   AppShell,
   Center,
   Flex,
-  Group,
   Header,
-  Kbd,
+  Modal,
   Text,
   Tooltip,
   Transition,
-  UnstyledButton,
-  useMantineTheme,
 } from "@mantine/core";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   IconBrandGithub,
+  IconHeart,
+  IconHeartMinus,
   IconRefresh,
-  IconSearch,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import {
-  openSpotlight,
-  SpotlightAction,
-  SpotlightProvider,
-} from "@mantine/spotlight";
 import useResize from "./resize";
 import { useEvents, usePing } from "../api/grpc";
+import { useDisclosure } from "@mantine/hooks";
+import { Event } from "../generated/countday_pb";
+import EventCard from "./eventCard";
 
 const Shell = ({ children }: { children: ReactNode }) => {
-  const theme = useMantineTheme();
-  const [bigSearch] = useResize();
   const [count, setCount] = useState(0);
   const router = useRouter();
   const { data, isLoading, isError } = useEvents();
 
-  const actions: SpotlightAction[] =
-    data?.getEventsList().map(e => ({
-      title: `${e.getSport()}: ${e.getTitle()}`,
-      description: `${e.getLocation()} (${e.getNiveau()})`,
-      onTrigger: () => {
-        router.push({ pathname: `/lessons/${e.getId()}` });
-      },
-      keywords: [
-        e.getSport().toLowerCase() ?? "",
-        e.getLocation().toLowerCase() ?? "",
-      ],
-    })) ?? [];
-
   const { data: time } = usePing();
   const currentDate = new Date();
-  console.log(time, currentDate.getTime() / 1000);
   const secondsAgo = currentDate.getTime() / 1000 - (time ?? 0);
   const hoursAgo = secondsAgo / 3600;
+
+  // open/close favorites modal
+  const [opened, { open, close }] = useDisclosure(false);
+  const [favorites, setFavorites] = useState<Event[]>([]);
+  useEffect(() => {
+    const events = data?.getEventsList();
+    const fav = localStorage.getItem("favorites") || "[]";
+    if (fav && events) {
+      const arr: number[] = JSON.parse(fav);
+      setFavorites(events.filter(e => arr.includes(e.getId())));
+    }
+  }, [data]);
+
+
+  const removeFavorite = (id: number) => {
+    const newFavorites = favorites.filter(e => e.getId() !== id);
+    const fav = JSON.stringify(newFavorites.map(e => e.getId()));
+    localStorage.setItem("favorites", fav);
+    setFavorites(newFavorites);
+  }
 
   return (
     <AppShell
@@ -120,61 +120,28 @@ const Shell = ({ children }: { children: ReactNode }) => {
                 <IconRefresh color={hoursAgo < 1 ? "green" : "red"} />
               </Tooltip>
             </Flex>
+
+            <Modal opened={opened} onClose={close} title="Favorites">
+              {favorites.length === 0 && (
+                <Text>{"It's quite empty here. Favorite some events."}</Text>
+              )}
+              {favorites.map(e => (
+                <Flex mb="xs" key={e.getId()}>
+                  <Center>
+                  <ActionIcon mr="sm" onClick={() => removeFavorite(e.getId())}>
+                    <IconHeartMinus />
+                  </ActionIcon>
+                  </Center>
+                  <EventCard event={e} />
+                </Flex>
+              ))}
+            </Modal>
+
             <Flex direction="row" w="100%" justify="right" align="center">
-              <SpotlightProvider
-                actions={actions}
-                searchIcon={<IconSearch size={18} />}
-                searchPlaceholder={isLoading ? "Loading..." : "Search..."}
-                shortcut={isError ? [] : ["mod + P", "mod + K"]}
-                highlightQuery
-                nothingFoundMessage="Nothing found"
-                styles={{ root: { margin: 10 } }}
-                limit={8}
-              >
-                <UnstyledButton
-                  onClick={() => openSpotlight()}
-                  p={bigSearch ? 3 : 0}
-                  w={bigSearch ? "30vw" : ""}
-                  maw={300}
-                  m="sm"
-                  opacity={isLoading || isError ? 0.5 : 1}
-                  disabled={isLoading || isError}
-                  style={{ cursor: isLoading || isError ? "not-allowed" : "" }}
-                >
-                  {!bigSearch && <IconSearch size={30} />}
-                  {bigSearch && (
-                    <Flex
-                      w="100%"
-                      direction="row"
-                      display="flex"
-                      p={3}
-                      style={{
-                        border: `solid 2px ${theme.colors.dark[4]}`,
-                        borderRadius: "3px",
-                      }}
-                    >
-                      <Group w="100%">
-                        <IconSearch size={18} />
-                        <Text size={14} color="dimmed">
-                          {isLoading ? "Loading..." : "Search"}
-                        </Text>
-                      </Group>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "right",
-                          width: "100%",
-                        }}
-                      >
-                        <Kbd>Ctrl</Kbd>
-                        <span style={{ margin: "0 5px" }}>+</span>
-                        <Kbd>K</Kbd>
-                      </div>
-                    </Flex>
-                  )}
-                </UnstyledButton>
-              </SpotlightProvider>
+              <ActionIcon onClick={open}>
+                <IconHeart size={30} />
+              </ActionIcon>
+
               <Link href="https://github.com/markbeep/Wenjim" passHref>
                 <ActionIcon ml="sm">
                   <IconBrandGithub size={30} />

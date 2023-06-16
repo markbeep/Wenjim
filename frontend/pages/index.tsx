@@ -1,92 +1,115 @@
-import Image from "next/image";
 import {
-  Container,
+  Input,
   Text,
   Center,
-  SimpleGrid,
-  Card,
-  Kbd,
-  UnstyledButton,
   Title,
+  Flex,
+  SimpleGrid,
   Loader,
+  Affix,
+  Button,
+  Transition,
 } from "@mantine/core";
-import { useRouter } from "next/router";
-import { useHotkeys } from "@mantine/hooks";
-import useResize from "../components/resize";
-import Link from "next/link";
-import { useTopEvents } from "../api/grpc";
+import { useEvents } from "../api/grpc";
 import { Event } from "../generated/countday_pb";
+import { useEffect, useState } from "react";
+import EventCard from "../components/eventCard";
+import fuzzysort from "fuzzysort";
+import InfiniteScroll from "react-infinite-scroller";
+import useResize from "../components/resize";
+import { useWindowScroll } from "@mantine/hooks";
+import { IconArrowUp } from "@tabler/icons-react";
 
-export default function Home() {
-  const router = useRouter();
-  const keybinds = ["H", "J", "K", "L"];
-  const { data, isLoading } = useTopEvents();
-  const [show] = useResize();
+interface SearchEvent {
+  search: string;
+  event: Event;
+}
 
-  useHotkeys([
-    [keybinds[0], () => data[0] && router.push(`/lessons/${data[0].getId()}`)],
-    [keybinds[1], () => data[1] && router.push(`/lessons/${data[1].getId()}`)],
-    [keybinds[2], () => data[2] && router.push(`/lessons/${data[2].getId()}`)],
-    [keybinds[3], () => data[3] && router.push(`/lessons/${data[3].getId()}`)],
-  ]);
+function searchFilter(events: Event[], search: string): Event[] {
+  const formatted: SearchEvent[] = events.map(e => {
+    return { search: e.getTitle() + e.getSport() + e.getLocation(), event: e };
+  });
+  const results = fuzzysort.go(search, formatted, {
+    key: "search",
+    threshold: -10000,
+    all: true,
+  });
+  return results.map(e => e.obj.event);
+}
+
+export default function Index() {
+  const { isLoading, data } = useEvents();
+  const [search, setSearch] = useState("");
+  const pageSize = 50;
+  const [elements, setElements] = useState(pageSize);
+  const loadMore = () => setElements(a => a + pageSize);
+  const [searchResults, setSearchResults] = useState<Event[]>([]);
+  const [desktop, _] = useResize();
+  const [scroll, scrollTo] = useWindowScroll();
+
+  useEffect(() => {
+    if (data) {
+      setSearchResults(searchFilter(data.getEventsList(), search));
+    }
+  }, [data, search]);
 
   return (
     <>
-      <Center>
-        <Container className="text-center" w="600px">
-          <Center>
-            <Image
-              src="/assets/wenjim_dark.svg"
-              height={80}
-              width={80}
-              blurDataURL="/assets/favicon.png"
-              alt="Logo"
-            />
-          </Center>
-          <Title>Wenjim, the open source ASVZ statistics website</Title>
-          <Text my="xl">
-            Ever wanted to sign up for an ASVZ event only for it to be full?
-            Fret no more! With Wenjim you can lookup all the events you want and
-            find out at what time the least people go and how early you have to
-            enroll to still get a spot.
-          </Text>
-          <Title size={20}>Top Events</Title>
-          <Center mt="sm">{isLoading && <Loader variant="dots" />}</Center>
-          {data && (
-            <SimpleGrid cols={2}>
-              {data.map((e, i) => e && TopCard(e, i, keybinds[i], show))}
-            </SimpleGrid>
+      <Affix position={{ bottom: "2rem", right: "2rem" }}>
+        <Transition transition="slide-up" mounted={scroll.y > 0}>
+          {transitionStyles => (
+            <Button
+              leftIcon={<IconArrowUp size="1rem" />}
+              style={transitionStyles}
+              onClick={() => scrollTo({ y: 0 })}
+            >
+              Scroll to top
+            </Button>
           )}
-        </Container>
-      </Center>
+        </Transition>
+      </Affix>
+
+      <Flex direction="column" w="100%" align="center" mt={50}>
+        <Title>Wenjim</Title>
+        <Text mb="xl">Find the emptiest slots.</Text>
+        <Input
+          placeholder="Fitness"
+          mb="xl"
+          w="80%"
+          maw="60rem"
+          onChange={v => setSearch(v.target.value)}
+        />
+
+        {isLoading && (
+          <Center>
+            <Loader mb="lg" color="gray" variant="dots" />
+          </Center>
+        )}
+
+        {data && (
+          <InfiniteScroll
+            loadMore={loadMore}
+            loader={
+              <Center mt="sm">
+                <Loader color="gray" variant="dots" />
+              </Center>
+            }
+            hasMore={elements < searchResults.length}
+          >
+            <SimpleGrid
+              cols={desktop ? 4 : 2}
+              maw="80rem"
+              px={desktop ? "xl" : "sm"}
+            >
+              {searchResults.slice(0, elements).map(e => (
+                <div style={{ maxWidth: "15rem", height: "6rem" }} key={e.getId()}>
+                  <EventCard event={e} />
+                </div>
+              ))}
+            </SimpleGrid>
+          </InfiniteScroll>
+        )}
+      </Flex>
     </>
   );
 }
-
-const TopCard = (
-  event: Event,
-  index: number,
-  keybind: string,
-  show: boolean,
-) => {
-  return (
-    <Link href={`/lessons/${event.getId()}`} key={index}>
-      <UnstyledButton h="100%" w="100%">
-        <Card shadow="sm" p={4} radius="md" withBorder h="100%" w="100%">
-          {show && (
-            <Kbd right={5} top={5} pos="absolute">
-              {keybind}
-            </Kbd>
-          )}
-          <Text align="center">{event.getSport()}</Text>
-          <Text align="center" color="dimmed">
-            {event.getTitle()}
-          </Text>
-          <Text align="center" color="dimmed">
-            {event.getLocation()}
-          </Text>
-        </Card>
-      </UnstyledButton>
-    </Link>
-  );
-};
