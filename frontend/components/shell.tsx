@@ -7,12 +7,17 @@ import {
   Header,
   Kbd,
   Text,
+  Tooltip,
   Transition,
   UnstyledButton,
   useMantineTheme,
 } from "@mantine/core";
 import { ReactNode, useState } from "react";
-import { IconBrandGithub, IconSearch } from "@tabler/icons-react";
+import {
+  IconBrandGithub,
+  IconRefresh,
+  IconSearch,
+} from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -22,7 +27,7 @@ import {
   SpotlightProvider,
 } from "@mantine/spotlight";
 import useResize from "./resize";
-import { useEvents } from "../api/grpc";
+import { useEvents, usePing } from "../api/grpc";
 
 const Shell = ({ children }: { children: ReactNode }) => {
   const theme = useMantineTheme();
@@ -43,6 +48,12 @@ const Shell = ({ children }: { children: ReactNode }) => {
         e.getLocation().toLowerCase() ?? "",
       ],
     })) ?? [];
+
+  const { data: time } = usePing();
+  const currentDate = new Date();
+  console.log(time, currentDate.getTime() / 1000);
+  const secondsAgo = currentDate.getTime() / 1000 - (time ?? 0);
+  const hoursAgo = secondsAgo / 3600;
 
   return (
     <AppShell
@@ -100,6 +111,14 @@ const Shell = ({ children }: { children: ReactNode }) => {
                   </Text>
                 )}
               </Transition>
+              <Tooltip
+                // round to decimal
+                label={`Last updated ${
+                  Math.round(hoursAgo * 10) / 10
+                } hours ago`}
+              >
+                <IconRefresh color={hoursAgo < 1 ? "green" : "red"} />
+              </Tooltip>
             </Flex>
             <Flex direction="row" w="100%" justify="right" align="center">
               <SpotlightProvider

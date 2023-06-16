@@ -10,15 +10,16 @@ import {
   EventsRequest,
   HistoryIdRequest,
   HistoryPageIdRequest,
+  LastScrapeRequest,
   LocationsRequest,
   MinMaxDateRequest,
   SportsRequest,
   TitleRequest,
 } from "../generated/countday_pb";
 
-const utilityClient = new UtilityClient("/api", null, null);
-const historyClient = new HistoryClient("/api", null, null);
-const weeklyClient = new WeeklyClient("/api", null, null);
+export const utilityClient = new UtilityClient("/api", null, null);
+export const historyClient = new HistoryClient("/api", null, null);
+export const weeklyClient = new WeeklyClient("/api", null, null);
 
 /*
 UTILITY
@@ -110,6 +111,19 @@ export function useTopEvents() {
     isLoading: l1 || l2 || l3 || l4,
     data: [e1, e2, e3, e4],
   };
+}
+
+/**
+ * 
+ * @returns boolean whether the last scrape is less than an hour ago
+ */
+export function usePing() {
+  const { isError, isLoading, data } = useQuery(["scrape"], async () => {
+    const promisified = promisify(utilityClient.lastScrape).bind(utilityClient);
+    const resp = await promisified(new LastScrapeRequest(), {});
+    return resp.getTime();
+  });
+  return { isError, isLoading, data };
 }
 
 /*

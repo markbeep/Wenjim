@@ -19,6 +19,9 @@ service Utility {
 
     /* Returns the minimum and maximum date of the tracked data */
     rpc MinMaxDate(MinMaxDateRequest) returns (MinMaxDateReply) {} 
+
+    /* Returns the last timestamp for scraping */
+    rpc LastScrape(LastScrapeRequest) returns (LastScrapeReply) {}
 }
 
 /*
@@ -91,6 +94,15 @@ message MinMaxDateRequest {}
 message MinMaxDateReply {
     sint64 min = 1;
     sint64 max = 2;
+}
+
+/*
+Last Scrape
+*/
+message LastScrapeRequest {}
+
+message LastScrapeReply {
+    uint64 time = 1;
 }
 
 /*
