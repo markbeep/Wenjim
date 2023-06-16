@@ -121,7 +121,7 @@ const Weekly = () => {
   return (
     <Container fluid>
       <Center>
-        {!data && <Loader variant="dots" />}
+        {!data && <Loader variant="dots" color="gray"/>}
         {data && (
           <ScrollArea type="auto">
             <SimpleGrid cols={8} w={800}>

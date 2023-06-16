@@ -29,6 +29,7 @@
         "@types/node": "^18.14.1",
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.11",
+        "@types/react-infinite-scroller": "^1.2.3",
         "autoprefixer": "^10.4.13",
         "eslint": "^8.34.0",
         "eslint-config-next": "^13.2.1",
@@ -48,7 +49,6 @@
         "typescript": "^4.9.5"
     },
     "devDependencies": {
-        "@types/react-infinite-scroller": "^1.2.3",
         "cross-env": "^7.0.3"
     }
 }

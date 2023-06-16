@@ -45,15 +45,14 @@ const Shell = ({ children }: { children: ReactNode }) => {
       const arr: number[] = JSON.parse(fav);
       setFavorites(events.filter(e => arr.includes(e.getId())));
     }
-  }, [data]);
-
+  }, [data, opened]); // opened make's sure the list is updated when opened
 
   const removeFavorite = (id: number) => {
     const newFavorites = favorites.filter(e => e.getId() !== id);
     const fav = JSON.stringify(newFavorites.map(e => e.getId()));
     localStorage.setItem("favorites", fav);
     setFavorites(newFavorites);
-  }
+  };
 
   return (
     <AppShell
@@ -111,14 +110,6 @@ const Shell = ({ children }: { children: ReactNode }) => {
                   </Text>
                 )}
               </Transition>
-              <Tooltip
-                // round to decimal
-                label={`Last updated ${
-                  Math.round(hoursAgo * 10) / 10
-                } hours ago`}
-              >
-                <IconRefresh color={hoursAgo < 1 ? "green" : "red"} />
-              </Tooltip>
             </Flex>
 
             <Modal opened={opened} onClose={close} title="Favorites">
@@ -128,11 +119,16 @@ const Shell = ({ children }: { children: ReactNode }) => {
               {favorites.map(e => (
                 <Flex mb="xs" key={e.getId()}>
                   <Center>
-                  <ActionIcon mr="sm" onClick={() => removeFavorite(e.getId())}>
-                    <IconHeartMinus />
-                  </ActionIcon>
+                    <ActionIcon
+                      mr="sm"
+                      onClick={() => removeFavorite(e.getId())}
+                    >
+                      <IconHeartMinus />
+                    </ActionIcon>
                   </Center>
-                  <EventCard event={e} />
+                  <div onClick={close} style={{ width: "100%" }}>
+                    <EventCard event={e} />
+                  </div>
                 </Flex>
               ))}
             </Modal>
@@ -143,10 +139,19 @@ const Shell = ({ children }: { children: ReactNode }) => {
               </ActionIcon>
 
               <Link href="https://github.com/markbeep/Wenjim" passHref>
-                <ActionIcon ml="sm">
+                <ActionIcon mx="sm">
                   <IconBrandGithub size={30} />
                 </ActionIcon>
               </Link>
+
+              <Tooltip
+                // round to decimal
+                label={`Last updated ${
+                  Math.round(hoursAgo * 10) / 10
+                } hours ago`}
+              >
+                <IconRefresh color={hoursAgo < 1 ? "green" : "red"} />
+              </Tooltip>
             </Flex>
           </Center>
         </Header>

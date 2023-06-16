@@ -7,15 +7,18 @@ import {
   Modal,
   Text,
   Button,
+  ActionIcon,
 } from "@mantine/core";
 import {
   IconAdjustments,
   IconArrowsHorizontal,
   IconCalendar,
+  IconHeart,
+  IconHeartMinus,
   IconListDetails,
   IconMapPin,
 } from "@tabler/icons-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSingleEvent, useLocations, useTitles } from "../api/grpc";
 import { DatePicker } from "@mantine/dates";
 import Head from "next/head";
@@ -52,12 +55,30 @@ const LessonForm = () => {
     isError: titlesError,
   } = useTitles(eventId);
 
+  const [favorites, setFavorites] = useState<number[]>([]);
+  useEffect(() => {
+    const fav = localStorage.getItem("favorites") || "[]";
+    setFavorites(JSON.parse(fav));
+  }, []);
+
+  const addFavorite = (id: number) => {
+    const newFavorites = [...favorites, id];
+    localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    setFavorites(newFavorites);
+  };
+
+  const removeFavorite = (id: number) => {
+    const newFavorites = favorites.filter(e => e !== id);
+    localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    setFavorites(newFavorites);
+  };
+
   return (
     <>
       <Modal opened={opened} onClose={close} title="Search Settings" centered>
         {isLoading && (
           <Center>
-            <Loader variant="dots" />
+            <Loader variant="dots" color="gray" />
           </Center>
         )}
         {data && (
@@ -146,7 +167,7 @@ const LessonForm = () => {
 
       {isLoading && (
         <Center>
-          <Loader variant="dots" />
+          <Loader variant="dots" color="gray" />
         </Center>
       )}
       {data && (
@@ -157,9 +178,20 @@ const LessonForm = () => {
             </title>
           </Head>
 
-          <Title ml="sm" size={24}>
-            {data.getSport()}
-          </Title>
+          <Flex direction="row">
+            <ActionIcon
+              onClick={() =>
+                favorites.includes(eventId)
+                  ? removeFavorite(eventId)
+                  : addFavorite(eventId)
+              }
+            >
+              {favorites.includes(eventId) ? <IconHeartMinus /> : <IconHeart />}
+            </ActionIcon>
+            <Title ml="sm" size={24}>
+              {data.getSport()}
+            </Title>
+          </Flex>
 
           <Flex direction="row" ml="sm" mt="sm">
             <Center>
