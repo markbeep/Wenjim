@@ -4,7 +4,7 @@ import StatisticsBar from "../../../components/statisticsBar";
 import LessonForm from "../../../components/lessonForm";
 import Weekly from "../../../components/weekly";
 
-export default function Lesson({ }) {
+export default function Lesson() {
   return (
     <>
       <LessonForm />

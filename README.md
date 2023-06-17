@@ -11,8 +11,9 @@ of the specific directory. The general requirements are:
   - Node LTS (>=16)
   - npm
 - Backend
-  - Python 3.11
+  - Python 3.10
   - [Poetry](https://python-poetry.org/) (package manager)
+  - Docker Compose
 
 These should suffice to get everything setup for simple local development.
 There are Dockerfiles for using the scraper or backend if needed.

@@ -56,7 +56,7 @@ const StatisticsBar = () => {
         <Grid.Col span={1}>
           <Flex h="100%" justify="end" direction="column">
             <Center>
-              <Loader variant="dots" />
+              <Loader variant="dots" color="gray" />
             </Center>
             <Text mt="sm">{text}</Text>
           </Flex>

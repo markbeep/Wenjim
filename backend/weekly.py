@@ -4,7 +4,7 @@ from peewee import Tuple, fn
 from pytz import timezone
 
 from generated import countday_pb2, countday_pb2_grpc
-from scraper.models import Events, Lessons, Trackings, database
+from scraper.models import Lessons, Trackings, database
 from util import LATEST_TRACKING
 
 tz = timezone("Europe/Zurich")
@@ -17,28 +17,33 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
 
         # Gets the average free spaces per hour
         query = (
-            Events.select(
-                Lessons,
+            Lessons.select(
                 fn.AVG(Trackings.places_free).alias("avg_free"),
                 fn.AVG(Lessons.places_max).alias("avg_max"),
+                fn.MIN(Lessons.from_date).alias("start_date"),
+                fn.MIN(Lessons.to_date).alias("end_date"),
+                fn.to_char(fn.to_timestamp(Lessons.from_date), "HH24:MI").alias("start"),
+                fn.to_char(fn.to_timestamp(Lessons.to_date), "HH24:MI").alias("end"),
             )
-            .join(Lessons)
             .join(Trackings)
             .where(
                 Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
-                Events.id == request.eventId,
+                Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
             .group_by(
-                Lessons.id,
-                fn.to_char(Lessons.from_date, "Day"),
-                fn.to_char(Lessons.from_date, "HH24:MI")
+                fn.to_char(fn.to_timestamp(Lessons.from_date), "Day"),
+                fn.to_char(fn.to_timestamp(Lessons.from_date), "HH24:MI"),
+                fn.to_char(fn.to_timestamp(Lessons.to_date), "HH24:MI"),
+            )
+            .order_by(
+                fn.to_char(fn.to_timestamp(Lessons.from_date), "HH24:MI"),
             )
         )
+        
 
         data = {}
-        details = {}  # more details when its clicked on
         weekdays = [
             "monday",
             "tuesday",
@@ -50,29 +55,41 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
         ]
         for wd in weekdays:
             data[wd] = {}
-            details[wd] = []
             for rt in range(24):
-                data[wd][rt] = []
+                data[wd][rt] = {}
 
         for x in query:
-            h = x.lessons.from_date.astimezone(tz).hour
-            wd = weekdays[x.lessons.from_date.weekday()]
-            data[wd][h].append(
-                countday_pb2.WeeklyDetails(
-                    timeFrom=x.lessons.from_date.astimezone(
-                        tz).strftime("%H:%M"),
-                    timeTo=x.lessons.to_date.astimezone(tz).strftime("%H:%M"),
+            h = x.start_date.astimezone(tz).hour
+            wd = weekdays[x.start_date.weekday()]
+            if wd == "monday" and h == 6:
+                print(x.start_date, x.end_date, x.start_date.weekday(), x.start, x.end)
+            start = x.start_date.astimezone(tz).strftime("%H:%M")
+            end = x.end_date.astimezone(tz).strftime("%H:%M")
+            timeslot = f"{start}-{end}"
+            prev = data[wd][h].get(timeslot)
+            # make sure that only one value exists for every time slot
+            if prev is None:
+                data[wd][h][timeslot] = countday_pb2.WeeklyDetails(
+                    timeFrom=start,
+                    timeTo=end,
                     avgFree=x.avg_free,
                     avgMax=x.avg_max,
                 )
+                continue
+            # average up the scores. a bit inaccurate but passable
+            data[wd][h][timeslot] = countday_pb2.WeeklyDetails(
+                timeFrom=start,
+                timeTo=end,
+                avgFree=(prev.avgFree + float(x.avg_free)) / 2,
+                avgMax=(prev.avgMax + float(x.avg_max)) / 2,
             )
-
+        
         # an hour can have multiple details
-        # if there's nothing in an hour, simply give out an list
+        # if there's nothing in an hour, simply give out an empty list
         weekdays = {}
         for day, _ in data.items():
             weekdays[day] = [
-                countday_pb2.WeeklyHour(hour=h, details=data[day][h]) for h in range(24)
+                countday_pb2.WeeklyHour(hour=h, details=data[day][h].values()) for h in range(24)
             ]
 
         database.close()

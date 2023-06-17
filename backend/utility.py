@@ -2,9 +2,9 @@ import logging
 
 import grpc
 from peewee import DoesNotExist, fn
-
+from datetime import datetime
 from generated import countday_pb2, countday_pb2_grpc
-from scraper.models import Events, Lessons, database
+from scraper.models import Events, Lessons, Trackings, database
 
 
 class UtilityServicer(countday_pb2_grpc.UtilityServicer):
@@ -104,8 +104,7 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
         )
         database.close()
         return countday_pb2.TitleReply(
-            titles=[countday_pb2.TitleEvent(
-                eventId=x.id, title=x.title) for x in query]
+            titles=[countday_pb2.TitleEvent(eventId=x.id, title=x.title) for x in query]
         )
 
     def MinMaxDate(self, request, context):
@@ -119,3 +118,10 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
         return countday_pb2.MinMaxDateReply(
             min=int(query[0].min.timestamp()), max=int(query[0].max.timestamp())
         )
+
+    def LastScrape(self, request, context):
+        logging.info("Request for LastScrape")
+        database.connect(True)
+        query = Trackings.select(fn.MAX(Trackings.track_date).alias("max"))
+        database.close()
+        return countday_pb2.LastScrapeReply(time=int(datetime.timestamp(query[0].max)))

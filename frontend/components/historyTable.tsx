@@ -145,7 +145,7 @@ const HistoryTable = () => {
     <>
       {historyLoading && (
         <Center>
-          <Loader variant="dots" />
+          <Loader variant="dots" color="gray" />
         </Center>
       )}
       <ScrollArea h="50vh" type="auto">
@@ -184,7 +184,7 @@ const HistoryTable = () => {
         </Container>
       </ScrollArea>
       <Center mb="xl">
-        {historyFetching && <Loader mr="sm" />}
+        {historyFetching && <Loader variant="dots" color="gray" mr="sm" />}
         <Button disabled={historyFetching} onClick={() => fetchNextPage()}>
           Load more
         </Button>

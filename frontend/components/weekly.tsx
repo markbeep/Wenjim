@@ -97,7 +97,7 @@ const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
           c={c.dark[4]}
           sx={{ borderRadius: "5%" }}
         >
-          {Math.round(avgFree)}
+          {data.getDetailsList().length > 0 ? Math.round(avgFree): ""}
         </Container>
       </button>
     </>
@@ -121,7 +121,7 @@ const Weekly = () => {
   return (
     <Container fluid>
       <Center>
-        {!data && <Loader variant="dots" />}
+        {!data && <Loader variant="dots" color="gray"/>}
         {data && (
           <ScrollArea type="auto">
             <SimpleGrid cols={8} w={800}>
