@@ -19,7 +19,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import useResize from "./resize";
 import { useEvents, usePing } from "../api/grpc";
 import { useDisclosure } from "@mantine/hooks";
 import { Event } from "../generated/countday_pb";
@@ -28,7 +27,7 @@ import EventCard from "./eventCard";
 const Shell = ({ children }: { children: ReactNode }) => {
   const [count, setCount] = useState(0);
   const router = useRouter();
-  const { data, isLoading, isError } = useEvents();
+  const { data } = useEvents();
 
   const { data: time } = usePing();
   const currentDate = new Date();
@@ -146,9 +145,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
 
               <Tooltip
                 // round to decimal
-                label={`Last updated ${
-                  Math.round(hoursAgo * 10) / 10
-                } hours ago`}
+                label={`Last updated ${lastUpdatedAt(secondsAgo)}`}
               >
                 <IconRefresh color={hoursAgo < 1 ? "green" : "red"} />
               </Tooltip>
@@ -170,5 +167,21 @@ const Shell = ({ children }: { children: ReactNode }) => {
     </AppShell>
   );
 };
+
+/**
+ * To produce a dynamic string saying how many seconds/hours/minutes ago
+ * something was
+ */
+function lastUpdatedAt(secondsAgo: number): string {
+  if (secondsAgo < 60) {
+    return `${secondsAgo} seconds ago`;
+  }
+  const minutesAgo = Math.round(secondsAgo / 60);
+  if (minutesAgo < 60) {
+    return `${minutesAgo} minutes ago`;
+  }
+  const hoursAgo = Math.round(minutesAgo / 60);
+  return `${hoursAgo} hours ago`;
+}
 
 export default Shell;

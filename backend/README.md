@@ -20,7 +20,10 @@ Enables hot-reload, but requires you to set the environment variables manually.
 cd backend
 poetry install
 poetry run start
+docker compose up --build # separate terminal
 ```
+
+(The docker-compose file in the backend directory only starts up a postgres service)
 
 If the start fails, you can also start it differently: `poetry run flask --debug -A server run -h "0.0.0.0" -p 8080`
 
@@ -39,6 +42,14 @@ To make database changes consistent, there is a list of migrations which can be 
 
 If you change the database models, run `poetry run python manage.py create NAME` to create
 a new migration with the `NAME`. To apply all migrations run `poetry run python manage.py migrate`.
+
+## Testdata
+
+Add random testdata locally by running the following:
+
+`poetry run python manage.py testdata`
+
+This requires the postgres server to be running.
 
 ## Accessing Postgres in Kubernetes
 
