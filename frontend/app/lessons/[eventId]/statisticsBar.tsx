@@ -7,35 +7,25 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { useRouter } from "next/router";
 import React from "react";
 import {
   useEventStatistics,
   useTotalLessons,
   useTotalTrackings,
-} from "../api/grpc";
+} from "../../../api/grpc";
 
-const StatisticsBar = () => {
-  const router = useRouter();
-  const eventId = Number(router.query.eventId ?? "-1");
-  const dateFrom = new Date(
-    router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
-  );
-  const dateTo = new Date(
-    router.query.dateTo ? String(router.query.dateTo) : "2030-12-31",
-  );
-  const {
-    data: stats,
-    isLoading: statsLoading,
-    isError: statsError,
-  } = useEventStatistics(eventId, dateFrom, dateTo);
-  const { data: totalLessons, isLoading: lessonsLoading } = useTotalLessons(
-    eventId,
-    dateFrom,
-    dateTo,
-  );
-  const { data: totalTrackings, isLoading: trackingsLoading } =
-    useTotalTrackings(eventId, dateFrom, dateTo);
+const StatisticsBar = ({
+  eventId,
+  dateFrom,
+  dateTo,
+}: {
+  eventId: number;
+  dateFrom: Date;
+  dateTo: Date;
+}) => {
+  const { data: stats } = useEventStatistics(eventId, dateFrom, dateTo);
+  const { data: totalLessons } = useTotalLessons(eventId, dateFrom, dateTo);
+  const { data: totalTrackings } = useTotalTrackings(eventId, dateFrom, dateTo);
 
   const statCard = (
     header: string | undefined,

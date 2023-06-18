@@ -15,28 +15,27 @@ import {
   IconSortAscending2,
   IconSortDescending2,
 } from "@tabler/icons-react";
-import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { useHistoryById } from "../api/grpc";
-import { HistoryPageIdRequest } from "../generated/countday_pb";
+import { useHistoryById } from "../../../api/grpc";
+import { HistoryPageIdRequest } from "../../../generated/countday_pb";
 import InfiniteScroll from "react-infinite-scroller";
 import { useWindowScroll } from "@mantine/hooks";
 
 const pageSize = 200;
 
-const HistoryTable = () => {
+const HistoryTable = ({
+  eventId,
+  dateFrom,
+  dateTo,
+}: {
+  eventId: number;
+  dateFrom: Date;
+  dateTo: Date;
+}) => {
   const [orderBy, setOrderBy] = useState(HistoryPageIdRequest.SORT.DATE);
   const [descend, setDescend] = useState(false);
   const [scroll, scrollTo] = useWindowScroll();
   const theme = useMantineTheme();
-  const router = useRouter();
-  const eventId = Number(router.query.eventId ?? "-1");
-  const dateFrom = new Date(
-    router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
-  );
-  const dateTo = new Date(
-    router.query.dateTo ? String(router.query.dateTo) : "2030-12-31",
-  );
   const {
     data: history,
     isLoading: historyLoading,

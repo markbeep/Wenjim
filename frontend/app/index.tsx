@@ -1,5 +1,6 @@
+"use client";
+
 import {
-  Input,
   Text,
   Center,
   Title,

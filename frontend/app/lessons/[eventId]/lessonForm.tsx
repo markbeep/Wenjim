@@ -19,29 +19,28 @@ import {
   IconMapPin,
 } from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
-import { useSingleEvent, useLocations, useTitles } from "../api/grpc";
+import { useSingleEvent, useLocations, useTitles } from "../../../api/grpc";
 import { DatePickerInput } from "@mantine/dates";
 import Head from "next/head";
 import { useDisclosure } from "@mantine/hooks";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 const formatDate = (date: Date) => {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 };
 
-const LessonForm = () => {
+const LessonForm = ({
+  eventId,
+  dateFrom,
+  dateTo,
+}: {
+  eventId: number;
+  dateFrom: Date;
+  dateTo: Date;
+}) => {
   const [opened, { open, close }] = useDisclosure(false);
 
   const router = useRouter();
-  const eventId = Number(router.query.eventId ?? "-1");
-  const [dateFrom, setDateFrom] = useState(
-    new Date(
-      router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
-    ),
-  );
-  const [dateTo, setDateTo] = useState(
-    new Date(router.query.dateTo ? String(router.query.dateTo) : "2030-12-31"),
-  );
 
   const { data, isLoading } = useSingleEvent(eventId);
   const {
@@ -134,7 +133,6 @@ const LessonForm = () => {
                 clearable={false}
                 onChange={v => {
                   const newDate = v ?? new Date("2022-01-01");
-                  setDateFrom(newDate);
                   router.push(
                     `${eventId}?dateFrom=${formatDate(
                       newDate,
@@ -151,7 +149,6 @@ const LessonForm = () => {
                 clearable={false}
                 onChange={v => {
                   const newDate = v ?? new Date("2030-12-31");
-                  setDateTo(newDate);
                   router.push(
                     `${eventId}?dateFrom=${formatDate(
                       dateFrom,

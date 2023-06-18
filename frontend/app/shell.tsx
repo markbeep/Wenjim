@@ -21,15 +21,15 @@ import {
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { useEvents, usePing } from "../api/grpc";
 import { useDisclosure } from "@mantine/hooks";
 import { Event } from "../generated/countday_pb";
-import EventCard from "./eventCard";
+import EventCard from "../components/eventCard";
 
 const Shell = ({ children }: { children: ReactNode }) => {
   const [count, setCount] = useState(0);
-  const router = useRouter();
+  const pathname = usePathname();
   const { data } = useEvents();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const { data: time } = usePing();
@@ -77,7 +77,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
                 <ActionIcon
                   variant="transparent"
                   onClick={() => {
-                    if (router.pathname === "/") {
+                    if (pathname === "/") {
                       setCount(c => (c += 1));
                     }
                   }}

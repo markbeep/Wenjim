@@ -12,9 +12,9 @@ import {
   useMantineColorScheme,
 } from "@mantine/core";
 import React, { useState } from "react";
-import { useWeekly } from "../api/grpc";
-import { WeeklyHour } from "../generated/countday_pb";
-import { useRouter } from "next/router";
+import { useWeekly } from "../../../api/grpc";
+import { WeeklyHour } from "../../../generated/countday_pb";
+import { useRouter } from "next/navigation";
 import { useDisclosure } from "@mantine/hooks";
 
 const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
@@ -111,19 +111,16 @@ const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
   );
 };
 
-const Weekly = () => {
-  const router = useRouter();
-  const eventId = Number(router.query.eventId ?? "-1");
-  const [dateFrom] = useState(
-    new Date(
-      router.query.dateFrom ? String(router.query.dateFrom) : "2022-01-01",
-    ),
-  );
-  const [dateTo] = useState(
-    new Date(router.query.dateTo ? String(router.query.dateTo) : "2030-12-31"),
-  );
-
-  const { data, isLoading } = useWeekly(eventId, dateFrom, dateTo);
+const Weekly = ({
+  eventId,
+  dateFrom,
+  dateTo,
+}: {
+  eventId: number;
+  dateFrom: Date;
+  dateTo: Date;
+}) => {
+  const { data } = useWeekly(eventId, dateFrom, dateTo);
 
   return (
     <Container fluid>

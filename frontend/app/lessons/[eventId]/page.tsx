@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Text,
   Divider,
@@ -8,19 +10,25 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import React from "react";
-import StatisticsBar from "../../../components/statisticsBar";
-import LessonForm from "../../../components/lessonForm";
-import Weekly from "../../../components/weekly";
-import HistoryTable from "../../../components/historyTable";
+import StatisticsBar from "./statisticsBar";
+import LessonForm from "./lessonForm";
+import Weekly from "./weekly";
+import HistoryTable from "./historyTable";
 import useResize from "../../../components/resize";
+import { useSearchParams } from "next/navigation";
 
-export default function Lesson() {
+export default function Lesson({ params }: { params: { eventId: string } }) {
+  const searchParams = useSearchParams();
   const theme = useMantineTheme();
   const [wide] = useResize(theme.breakpoints.md);
+  const eventId = Number(params.eventId);
+
+  const dateFrom = new Date(searchParams.get("dateFrom") || "2022-01-01");
+  const dateTo = new Date(searchParams.get("dateTo") || "2030-12-31");
 
   return (
     <>
-      <LessonForm />
+      <LessonForm eventId={eventId} dateFrom={dateFrom} dateTo={dateTo} />
 
       <Divider my="sm" />
 
@@ -34,16 +42,20 @@ export default function Lesson() {
         <Tabs.Panel value="overview">
           <Center>
             <Flex direction={wide ? "row" : "column"} align="center">
-              <StatisticsBar />
+              <StatisticsBar
+                eventId={eventId}
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+              />
               <ScrollArea maw="100vw">
-                <Weekly />
+                <Weekly eventId={eventId} dateFrom={dateFrom} dateTo={dateTo} />
               </ScrollArea>
             </Flex>
           </Center>
         </Tabs.Panel>
 
         <Tabs.Panel value="history">
-          <HistoryTable />
+          <HistoryTable eventId={eventId} dateFrom={dateFrom} dateTo={dateTo} />
         </Tabs.Panel>
 
         <Tabs.Panel value="signup">
