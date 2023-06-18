@@ -40,6 +40,7 @@ const HistoryTable = () => {
   const {
     data: history,
     isLoading: historyLoading,
+    isFetching,
     hasNextPage,
     fetchNextPage,
     refetch,
@@ -129,7 +130,7 @@ const HistoryTable = () => {
       )}
       <Container sx={{ minHeight: "30rem" }} fluid>
         <InfiniteScroll
-          loadMore={() => fetchNextPage()}
+          loadMore={() => !isFetching && fetchNextPage()}
           hasMore={hasNextPage}
           loader={
             <Center>

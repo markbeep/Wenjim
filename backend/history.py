@@ -49,7 +49,6 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             )
             for x in query
         ]
-        print("SIZE", len(response), request.size, request.page)
         return countday_pb2.HistoryReply(rows=response)
 
     def TotalLessons(self, request, context):
