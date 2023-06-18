@@ -61,8 +61,6 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
         for x in query:
             h = x.start_date.astimezone(tz).hour
             wd = weekdays[x.start_date.weekday()]
-            if wd == "monday" and h == 6:
-                print(x.start_date, x.end_date, x.start_date.weekday(), x.start, x.end)
             start = x.start_date.astimezone(tz).strftime("%H:%M")
             end = x.end_date.astimezone(tz).strftime("%H:%M")
             timeslot = f"{start}-{end}"

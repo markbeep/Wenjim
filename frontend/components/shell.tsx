@@ -8,13 +8,16 @@ import {
   Text,
   Tooltip,
   Transition,
+  useMantineColorScheme,
 } from "@mantine/core";
 import { ReactNode, useEffect, useState } from "react";
 import {
   IconBrandGithub,
   IconHeart,
   IconHeartMinus,
+  IconMoon,
   IconRefresh,
+  IconSun,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,7 +31,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
   const [count, setCount] = useState(0);
   const router = useRouter();
   const { data } = useEvents();
-
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const { data: time } = usePing();
   const currentDate = new Date();
   const secondsAgo = currentDate.getTime() / 1000 - (time ?? 0);
@@ -81,10 +84,13 @@ const Shell = ({ children }: { children: ReactNode }) => {
                   m="sm"
                 >
                   <Image
-                    src="/assets/wenjim_dark.svg"
+                    src={
+                      colorScheme === "dark"
+                        ? "/assets/wenjim_dark.svg"
+                        : "/assets/wenjim_light.svg"
+                    }
                     height={30}
                     width={30}
-                    blurDataURL="/assets/favicon.png"
                     alt="Logo"
                     style={{
                       transform: count % 20 >= 10 ? "rotate(180deg)" : "",
@@ -135,6 +141,14 @@ const Shell = ({ children }: { children: ReactNode }) => {
             <Flex direction="row" w="100%" justify="right" align="center">
               <ActionIcon onClick={open}>
                 <IconHeart size={30} />
+              </ActionIcon>
+
+              <ActionIcon ml="sm" onClick={() => toggleColorScheme()}>
+                {colorScheme === "dark" ? (
+                  <IconSun size={30} />
+                ) : (
+                  <IconMoon size={30} />
+                )}
               </ActionIcon>
 
               <Link href="https://github.com/markbeep/Wenjim" passHref>

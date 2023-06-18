@@ -9,6 +9,8 @@ import {
   Affix,
   Button,
   Transition,
+  FocusTrap,
+  TextInput,
 } from "@mantine/core";
 import { useEvents } from "../api/grpc";
 import { Event } from "../generated/countday_pb";
@@ -61,6 +63,7 @@ export default function Index() {
             <Button
               leftIcon={<IconArrowUp size="1rem" />}
               style={transitionStyles}
+              bg={"blue"}
               onClick={() => scrollTo({ y: 0 })}
             >
               Scroll to top
@@ -71,14 +74,19 @@ export default function Index() {
 
       <Flex direction="column" w="100%" align="center" mt={50}>
         <Title>Wenjim</Title>
-        <Text mb="xl">Find the emptiest slots.</Text>
-        <Input
-          placeholder="Fitness"
-          mb="xl"
-          w="80%"
-          maw="60rem"
-          onChange={v => setSearch(v.target.value)}
-        />
+        <Text mb="xl">When gym.</Text>
+        <FocusTrap active>
+          <TextInput
+            tabIndex={1}
+            placeholder="Fitness"
+            mb="xl"
+            w="80%"
+            maw="60rem"
+            onChange={v => setSearch(v.target.value)}
+            autoFocus
+            style={{ fontSize: 16 }}
+          />
+        </FocusTrap>
 
         {isLoading && (
           <Center>
@@ -102,7 +110,10 @@ export default function Index() {
               px={desktop ? "xl" : "sm"}
             >
               {searchResults.slice(0, elements).map(e => (
-                <div style={{ maxWidth: "15rem", height: "6rem" }} key={e.getId()}>
+                <div
+                  style={{ width: "15vw", minWidth: "10rem", height: "6rem" }}
+                  key={e.getId()}
+                >
                   <EventCard event={e} />
                 </div>
               ))}

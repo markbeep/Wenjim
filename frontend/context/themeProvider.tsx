@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import React from "react";
-import { MantineProvider } from "@mantine/core";
+import { ColorScheme, ColorSchemeProvider, MantineProvider } from "@mantine/core";
 import { Global } from "@emotion/react";
 
 export enum Pages {
@@ -12,12 +12,28 @@ interface Children {
 }
 
 export default function ThemeProvider({ children }: Children) {
+  const [colorScheme, setColorScheme] = useState<ColorScheme>('dark');
+  // check colorscheme in localstorage
+  useEffect(() => {
+    const color = localStorage.getItem("theme")
+    if (color === "dark" || color === "light") {
+      toggleColorScheme(color);
+    }
+  }, [])
+
+  const toggleColorScheme = (value?: ColorScheme) => {
+    const color = value || (colorScheme === "dark" ? "light": "dark")
+    setColorScheme(color)
+    localStorage.setItem("theme", color)
+  }
+
   return (
+    <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
     <MantineProvider
       withGlobalStyles
       withNormalizeCSS
       theme={{
-        colorScheme: "dark",
+        colorScheme,
         fontFamily: "OpenSans, sans-serif",
       }}
     >
@@ -34,5 +50,6 @@ export default function ThemeProvider({ children }: Children) {
       />
       {children}
     </MantineProvider>
+    </ColorSchemeProvider>
   );
 }

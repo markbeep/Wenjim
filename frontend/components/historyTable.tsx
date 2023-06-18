@@ -1,30 +1,33 @@
 import {
-  Button,
   Center,
   Container,
   Flex,
   Loader,
-  ScrollArea,
   Table,
   useMantineTheme,
+  Text,
+  Affix,
+  Button,
+  Transition,
 } from "@mantine/core";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import {
+  IconArrowUp,
+  IconSortAscending2,
+  IconSortDescending2,
+} from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useHistoryById } from "../api/grpc";
-import { HistoryRow } from "../generated/countday_pb";
-
-enum sortOrder {
-  DATE,
-  PLACES_FREE,
-  PLACES_MAX,
-}
+import { HistoryPageIdRequest } from "../generated/countday_pb";
+import InfiniteScroll from "react-infinite-scroller";
+import { useWindowScroll } from "@mantine/hooks";
 
 const pageSize = 200;
 
 const HistoryTable = () => {
-  const [orderBy, setOrderBy] = useState(sortOrder.DATE);
+  const [orderBy, setOrderBy] = useState(HistoryPageIdRequest.SORT.DATE);
   const [descend, setDescend] = useState(false);
+  const [scroll, scrollTo] = useWindowScroll();
   const theme = useMantineTheme();
   const router = useRouter();
   const eventId = Number(router.query.eventId ?? "-1");
@@ -37,63 +40,12 @@ const HistoryTable = () => {
   const {
     data: history,
     isLoading: historyLoading,
-    isFetching: historyFetching,
+    hasNextPage,
     fetchNextPage,
-  } = useHistoryById(eventId, dateFrom, dateTo, pageSize);
-  const [data, setData] = useState<HistoryRow[]>([]);
-  const sortData = (
-    data: HistoryRow[],
-    descend: boolean,
-    orderBy: sortOrder,
-  ) => {
-    let sortedData: HistoryRow[] = [];
-    if (descend) {
-      switch (orderBy) {
-        case sortOrder.DATE:
-          sortedData = [...data.sort((a, b) => a.getDate() - b.getDate())];
-          break;
-        case sortOrder.PLACES_FREE:
-          sortedData = [
-            ...data.sort((a, b) => a.getPlacesfree() - b.getPlacesfree()),
-          ];
-          break;
-        case sortOrder.PLACES_MAX:
-          sortedData = [
-            ...data.sort((a, b) => a.getPlacesmax() - b.getPlacesmax()),
-          ];
-          break;
-      }
-    } else {
-      switch (orderBy) {
-        case sortOrder.DATE:
-          sortedData = [...data.sort((a, b) => b.getDate() - a.getDate())];
-          break;
-        case sortOrder.PLACES_FREE:
-          sortedData = [
-            ...data.sort((a, b) => b.getPlacesfree() - a.getPlacesfree()),
-          ];
-          break;
-        case sortOrder.PLACES_MAX:
-          sortedData = [
-            ...data.sort((a, b) => b.getPlacesmax() - a.getPlacesmax()),
-          ];
-          break;
-      }
-    }
-    setData(sortedData);
-    return sortedData;
-  };
-  useEffect(() => {
-    if (!history) return;
-    const all = history.pages.flat();
-    setData(sortData(all, descend, orderBy));
-  }, [history, descend, orderBy]);
+    refetch,
+  } = useHistoryById(eventId, dateFrom, dateTo, pageSize, orderBy, descend);
 
-  useEffect(() => {
-    if (data) sortData(data, descend, orderBy);
-  }, [data, descend, orderBy]); // data is not here to avoid infinite loops
-
-  const handleSortClick = (d: sortOrder) => {
+  const handleSortClick = (d: HistoryPageIdRequest.SORT) => {
     if (orderBy === d) {
       setDescend(d => !d);
     } else {
@@ -102,39 +54,53 @@ const HistoryTable = () => {
     }
   };
 
-  const ths = (data: HistoryRow[]) => (
+  useEffect(() => {
+    refetch();
+  }, [orderBy, descend, refetch]);
+
+  const ths = (size: number) => (
     <tr>
-      <th>{data.length} rows</th>
-      <th className={orderBy === sortOrder.DATE ? `bg-neutral-content` : ""}>
-        <button onClick={() => handleSortClick(sortOrder.DATE)}>
+      <th>{size} rows</th>
+      <th
+        className={
+          orderBy === HistoryPageIdRequest.SORT.DATE ? `bg-neutral-content` : ""
+        }
+      >
+        <button onClick={() => handleSortClick(HistoryPageIdRequest.SORT.DATE)}>
           <Flex justify="center" direction="row" align="center">
-            DATE
-            {orderBy === sortOrder.DATE &&
-              (descend ? <IconChevronUp /> : <IconChevronDown />)}
+            <Text mr="sm">DATE</Text>
+            {orderBy === HistoryPageIdRequest.SORT.DATE &&
+              (descend ? <IconSortDescending2 /> : <IconSortAscending2 />)}
           </Flex>
         </button>
       </th>
       <th
         className={
-          orderBy === sortOrder.PLACES_FREE ? `bg-neutral-content` : ""
+          orderBy === HistoryPageIdRequest.SORT.FREE ? `bg-neutral-content` : ""
         }
       >
-        <button onClick={() => handleSortClick(sortOrder.PLACES_FREE)}>
+        <button onClick={() => handleSortClick(HistoryPageIdRequest.SORT.FREE)}>
           <Flex justify="center" direction="row" align="center">
-            SPOTS FREE
-            {orderBy === sortOrder.PLACES_FREE &&
-              (descend ? <IconChevronUp /> : <IconChevronDown />)}
+            <Text mr="sm">SPOTS FREE</Text>
+            {orderBy === HistoryPageIdRequest.SORT.FREE &&
+              (descend ? <IconSortDescending2 /> : <IconSortAscending2 />)}
           </Flex>
         </button>
       </th>
       <th
-        className={orderBy === sortOrder.PLACES_MAX ? `bg-neutral-content` : ""}
+        className={
+          orderBy === HistoryPageIdRequest.SORT.TOTAL
+            ? `bg-neutral-content`
+            : ""
+        }
       >
-        <button onClick={() => handleSortClick(sortOrder.PLACES_MAX)}>
+        <button
+          onClick={() => handleSortClick(HistoryPageIdRequest.SORT.TOTAL)}
+        >
           <Flex justify="center" direction="row" align="center">
-            SPOTS TOTAL
-            {orderBy === sortOrder.PLACES_MAX &&
-              (descend ? <IconChevronUp /> : <IconChevronDown />)}
+            <Text mr="sm">SPOTS TOTAL</Text>
+            {orderBy === HistoryPageIdRequest.SORT.TOTAL &&
+              (descend ? <IconSortDescending2 /> : <IconSortAscending2 />)}
           </Flex>
         </button>
       </th>
@@ -143,29 +109,50 @@ const HistoryTable = () => {
 
   return (
     <>
+      <Affix position={{ bottom: "2rem", right: "2rem" }}>
+        <Transition transition="slide-up" mounted={scroll.y > 0}>
+          {transitionStyles => (
+            <Button
+              leftIcon={<IconArrowUp size="1rem" />}
+              style={transitionStyles}
+              onClick={() => scrollTo({ y: 0 })}
+            >
+              Scroll to top
+            </Button>
+          )}
+        </Transition>
+      </Affix>
       {historyLoading && (
         <Center>
           <Loader variant="dots" color="gray" />
         </Center>
       )}
-      <ScrollArea h="50vh" type="auto">
-        <Container sx={{ minHeight: "30rem" }} fluid>
-          {data && (
-            <Table captionSide="bottom" highlightOnHover striped>
-              <thead
-                style={{
-                  top: 0,
-                  position: "sticky",
-                  backgroundColor:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[7]
-                      : theme.white,
-                }}
-              >
-                {ths(data)}
-              </thead>
+      <Container sx={{ minHeight: "30rem" }} fluid>
+        <InfiniteScroll
+          loadMore={() => fetchNextPage()}
+          hasMore={hasNextPage}
+          loader={
+            <Center>
+              <Loader variant="dots" color="gray" />
+            </Center>
+          }
+        >
+          <Table captionSide="bottom" highlightOnHover striped>
+            <thead
+              style={{
+                top: 0,
+                position: "sticky",
+                backgroundColor:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[7]
+                    : theme.white,
+              }}
+            >
+              {ths(history?.pages.flat().length ?? 0)}
+            </thead>
+            {history && (
               <tbody>
-                {data.map((e, i) => (
+                {history.pages.flat().map((e, i) => (
                   <tr key={i + e.getDate()}>
                     <th>{i}</th>
                     <td>
@@ -179,16 +166,10 @@ const HistoryTable = () => {
                   </tr>
                 ))}
               </tbody>
-            </Table>
-          )}
-        </Container>
-      </ScrollArea>
-      <Center mb="xl">
-        {historyFetching && <Loader variant="dots" color="gray" mr="sm" />}
-        <Button disabled={historyFetching} onClick={() => fetchNextPage()}>
-          Load more
-        </Button>
-      </Center>
+            )}
+          </Table>
+        </InfiniteScroll>
+      </Container>
     </>
   );
 };

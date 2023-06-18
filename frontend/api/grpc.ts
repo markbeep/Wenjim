@@ -114,7 +114,7 @@ export function useTopEvents() {
 }
 
 /**
- * 
+ *
  * @returns boolean whether the last scrape is less than an hour ago
  */
 export function usePing() {
@@ -135,26 +135,37 @@ export function useHistoryById(
   dateFrom: Date,
   dateTo: Date,
   pageSize: number,
+  sortBy: HistoryPageIdRequest.SORT,
+  descending: boolean,
 ) {
-  const { isError, isFetching, isLoading, data, fetchNextPage } =
-    useInfiniteQuery({
-      queryKey: ["historyId", eventId, dateFrom, dateTo],
-      queryFn: async ({ pageParam = 0 }) => {
-        const promisified = promisify(historyClient.historyId).bind(
-          historyClient,
-        );
-        const req = new HistoryPageIdRequest();
-        req.setEventid(eventId);
-        req.setDatefrom(Math.round(dateFrom.getTime() / 1e3));
-        req.setDateto(Math.round(dateTo.getTime() / 1e3));
-        req.setSize(pageSize);
-        req.setPage(pageParam);
-        const resp = await promisified(req, {});
-        return resp.getRowsList();
-      },
-      getNextPageParam: (_, pages) => pages.length,
-    });
-  return { isError, isFetching, isLoading, data, fetchNextPage };
+  return useInfiniteQuery({
+    queryKey: [
+      "historyId",
+      eventId,
+      dateFrom,
+      dateTo,
+      pageSize,
+      sortBy,
+      descending,
+    ],
+    queryFn: async ({ pageParam = 1 }) => {
+      const promisified = promisify(historyClient.historyId).bind(
+        historyClient,
+      );
+      const req = new HistoryPageIdRequest();
+      req.setEventid(eventId);
+      req.setDatefrom(Math.round(dateFrom.getTime() / 1e3));
+      req.setDateto(Math.round(dateTo.getTime() / 1e3));
+      req.setSize(pageSize);
+      req.setPage(pageParam);
+      req.setSortby(sortBy);
+      req.setDescending(descending);
+      const resp = await promisified(req, {});
+      return resp.getRowsList();
+    },
+    getNextPageParam: (last, pages) =>
+      last.length === 0 ? undefined : pages.length + 1,
+  });
 }
 
 export function useTotalLessons(eventId: number, dateFrom: Date, dateTo: Date) {

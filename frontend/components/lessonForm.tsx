@@ -178,7 +178,10 @@ const LessonForm = () => {
             </title>
           </Head>
 
-          <Flex direction="row">
+          <Flex direction="row" align="center">
+            <Title mx="sm" size={24}>
+              {data.getSport()}
+            </Title>
             <ActionIcon
               onClick={() =>
                 favorites.includes(eventId)
@@ -188,9 +191,6 @@ const LessonForm = () => {
             >
               {favorites.includes(eventId) ? <IconHeartMinus /> : <IconHeart />}
             </ActionIcon>
-            <Title ml="sm" size={24}>
-              {data.getSport()}
-            </Title>
           </Flex>
 
           <Flex direction="row" ml="sm" mt="sm">

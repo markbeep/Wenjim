@@ -132,11 +132,19 @@ message HistoryIdRequest {
 }
 
 message HistoryPageIdRequest {
+    enum SORT {
+        Date = 0;
+        Free = 1;
+        Total = 2;
+    }
+
     sint32 eventId = 1;
     sint64 dateFrom = 2;
     sint64 dateTo = 3;
     sint32 size = 4;
     sint32 page = 5;
+    SORT sortBy = 6;
+    bool descending = 7;
 }
 
 /*
