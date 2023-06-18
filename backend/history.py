@@ -5,55 +5,58 @@ from peewee import Tuple, fn
 from pytz import timezone
 
 from generated import countday_pb2, countday_pb2_grpc
-from scraper.models import (AverageStatisticsView, Events, Lessons, Trackings,
-                            database)
+from scraper.models import AverageStatisticsView, Events, Lessons, Trackings, database
 from util import LATEST_TRACKING
 
 tz = timezone("Europe/Zurich")
 
 
 class HistoryServicer(countday_pb2_grpc.HistoryServicer):
-    def HistoryId(self, request, context):
+    def HistoryId(self, request: countday_pb2.HistoryPageIdRequest, context):
         database.connect(True)
         logging.info("Request for HistoryId")
+        
+        order_by = Lessons.from_date
+        if request.sortBy == countday_pb2.HistoryPageIdRequest.Free:
+            order_by = Trackings.places_free
+        elif request.sortBy == countday_pb2.HistoryPageIdRequest.Total:
+            order_by = Lessons.places_max
+        if request.descending:
+            order_by = order_by.desc()
+        
         query = (
-            Events.select(
+            Lessons.select(
                 Lessons.from_date,
                 Lessons.places_max,
                 Trackings.places_free,
             )
-            .join(Lessons)
             .join(Trackings)
             .where(
                 Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
-                Events.id == request.eventId,
+                Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
             )
-            .limit(request.size)
-            .offset((request.page + 1) * request.size)
+            .order_by(order_by)
+            .paginate(request.page + 1, request.size)
         )
         database.close()
-        return countday_pb2.HistoryReply(
-            rows=[
-                countday_pb2.HistoryRow(
-                    date=round(x.lessons.from_date.astimezone(tz).timestamp()),
-                    placesMax=x.lessons.places_max,
-                    placesFree=x.lessons.trackings.places_free,
-                )
-                for x in query
-            ]
-        )
+        response = [
+            countday_pb2.HistoryRow(
+                date=round(x.from_date.astimezone(tz).timestamp()),
+                placesMax=x.places_max,
+                placesFree=x.trackings.places_free,
+            )
+            for x in query
+        ]
+        print("SIZE", len(response), request.size, request.page)
+        return countday_pb2.HistoryReply(rows=response)
 
     def TotalLessons(self, request, context):
         database.connect(True)
         logging.info("Request for TotalLessons")
-        tracked_lessons = (
-            Lessons
-            .select(fn.COUNT("1").alias("tracked_lessons"))
-            .where(
-                Lessons.event_id == request.eventId,
-            )
+        tracked_lessons = Lessons.select(fn.COUNT("1").alias("tracked_lessons")).where(
+            Lessons.event_id == request.eventId,
         )
         database.close()
         return countday_pb2.TotalLessonsReply(
@@ -64,8 +67,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         database.connect(True)
         logging.info("Request for TotalTrackings")
         trackings = (
-            Lessons
-            .select(fn.COUNT("1").alias("trackings"))
+            Lessons.select(fn.COUNT("1").alias("trackings"))
             .join(Trackings)
             .where(
                 Lessons.event_id == request.eventId,
@@ -82,9 +84,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         # gets the maximum time away from the start of the event to find the
         # earliest time all places were taken up
         max_time_full = (
-            Events.select(
-                fn.MAX(Lessons.from_date - Trackings.track_date).alias("max")
-            )
+            Events.select(fn.MAX(Lessons.from_date - Trackings.track_date).alias("max"))
             .join(Lessons)
             .join(Trackings)
             .where(
@@ -101,21 +101,16 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         if actual_avg_minutes is None:
             actual_avg_minutes = 0
 
-        average = (
-            AverageStatisticsView
-            .select(
-                AverageStatisticsView.id,
-                AverageStatisticsView.avg_places_free,
-                AverageStatisticsView.max_places_free,
-                AverageStatisticsView.avg_places_max,
-                AverageStatisticsView.max_places_max,
-            )
-            .where(AverageStatisticsView.id == request.eventId)
-        )
+        average = AverageStatisticsView.select(
+            AverageStatisticsView.id,
+            AverageStatisticsView.avg_places_free,
+            AverageStatisticsView.max_places_free,
+            AverageStatisticsView.avg_places_max,
+            AverageStatisticsView.max_places_max,
+        ).where(AverageStatisticsView.id == request.eventId)
         # the last date where the event had the max amount of places
         date_places_max = (
-            Lessons
-            .select(Lessons.from_date)
+            Lessons.select(Lessons.from_date)
             .join(average, on=(Lessons.event_id == average.c.id))
             .where(
                 Lessons.places_max == average.c.max_places_max,
@@ -126,8 +121,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         )
 
         date_places_free = (
-            Lessons
-            .select(Lessons.from_date)
+            Lessons.select(Lessons.from_date)
             .join(Trackings)
             .join(average, on=(Lessons.event_id == average.c.id))
             .where(
@@ -145,11 +139,8 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
                 averagePlacesMax=average[0].max_places_free,
                 maxPlacesFree=average[0].avg_places_max,
                 maxPlacesMax=average[0].max_places_max,
-                dateMaxPlacesFree=int(
-                    date_places_free[0].from_date.timestamp()
-                ),
-                dateMaxPlacesMax=int(
-                    date_places_max[0].from_date.timestamp()),
+                dateMaxPlacesFree=int(date_places_free[0].from_date.timestamp()),
+                dateMaxPlacesMax=int(date_places_max[0].from_date.timestamp()),
             )
         except Exception as e:
             logging.error(e)

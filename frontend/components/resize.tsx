@@ -6,21 +6,23 @@ Checks the size of the window to allow for easily checking if it should be
 mobile formatted or desktop
 */
 export default function useResize(
-  breakpoint: number = -1,
+  breakpoint?: string,
   default_ = false,
 ): [boolean, React.Dispatch<React.SetStateAction<boolean>>] {
   const theme = useMantineTheme();
-  breakpoint = breakpoint < 0 ? theme.breakpoints.sm : breakpoint;
+  // 1 rem = 16 px
+  const numBreakpoint =
+    parseInt(breakpoint ? breakpoint : theme.breakpoints.sm) * 16;
   const [show, setShow] = useState(default_);
   const handleResize = useCallback(
     (width: number) => {
-      if (width < breakpoint) {
+      if (width < numBreakpoint) {
         setShow(false);
       } else {
         setShow(true);
       }
     },
-    [breakpoint],
+    [numBreakpoint],
   );
   // initially check for window size
   useEffect(() => {

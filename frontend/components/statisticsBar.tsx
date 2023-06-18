@@ -8,16 +8,14 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useRouter } from "next/router";
-import React, { ReactNode } from "react";
+import React from "react";
 import {
   useEventStatistics,
   useTotalLessons,
   useTotalTrackings,
 } from "../api/grpc";
-import useResize from "./resize";
 
 const StatisticsBar = () => {
-  const [show, _] = useResize();
   const router = useRouter();
   const eventId = Number(router.query.eventId ?? "-1");
   const dateFrom = new Date(
@@ -66,7 +64,7 @@ const StatisticsBar = () => {
   );
 
   return (
-    <Grid grow className="text-center" columns={show ? 12 : 1}>
+    <Grid grow className="text-center" columns={1} maw="10rem">
       {statCard(
         totalTrackings?.getTotaltrackings().toString(),
         "Total data points",

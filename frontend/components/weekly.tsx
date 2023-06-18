@@ -9,6 +9,7 @@ import {
   Center,
   Modal,
   Loader,
+  useMantineColorScheme,
 } from "@mantine/core";
 import React, { useState } from "react";
 import { useWeekly } from "../api/grpc";
@@ -18,13 +19,17 @@ import { useDisclosure } from "@mantine/hooks";
 
 const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
   const theme = useMantineTheme();
+  const { colorScheme } = useMantineColorScheme();
   const [opened, { open, close }] = useDisclosure(false);
+
+  const emptyColor =
+    colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.gray[3];
 
   if (!data) {
     return (
       <Container
         mt={5}
-        bg={theme.colors.dark[7]}
+        bg={emptyColor}
         mih={25}
         w="100%"
         sx={{ borderRadius: "5%" }}
@@ -46,7 +51,7 @@ const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
       <Modal
         opened={opened}
         onClose={close}
-        overlayBlur={2}
+        overlayProps={{ blur: 2 }}
         title="Detailed View"
       >
         {data.getDetailsList().length === 0 && "There's no lesson here"}
@@ -90,14 +95,16 @@ const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
       <button style={{ width: "100%", height: "100%" }} onClick={open}>
         <Container
           mt={5}
-          bg={colors[ind] ? colors[ind][4] : c.dark[6]}
+          bg={colors[ind] ? colors[ind][4] : emptyColor}
           mih={25}
           w="100%"
           pt={4}
-          c={c.dark[4]}
           sx={{ borderRadius: "5%" }}
+          c={
+            colorScheme === "dark" ? theme.colors.gray[3] : theme.colors.dark[7]
+          }
         >
-          {data.getDetailsList().length > 0 ? Math.round(avgFree): ""}
+          {data.getDetailsList().length > 0 ? Math.round(avgFree) : ""}
         </Container>
       </button>
     </>
@@ -121,7 +128,7 @@ const Weekly = () => {
   return (
     <Container fluid>
       <Center>
-        {!data && <Loader variant="dots" color="gray"/>}
+        {!data && <Loader variant="dots" color="gray" />}
         {data && (
           <ScrollArea type="auto">
             <SimpleGrid cols={8} w={800}>
