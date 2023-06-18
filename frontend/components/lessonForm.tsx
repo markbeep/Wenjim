@@ -20,7 +20,7 @@ import {
 } from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
 import { useSingleEvent, useLocations, useTitles } from "../api/grpc";
-import { DatePicker } from "@mantine/dates";
+import { DatePickerInput } from "@mantine/dates";
 import Head from "next/head";
 import { useDisclosure } from "@mantine/hooks";
 import { useRouter } from "next/router";
@@ -128,7 +128,7 @@ const LessonForm = () => {
             )}
 
             <Flex direction="row" w="100%">
-              <DatePicker
+              <DatePickerInput
                 label="From"
                 value={dateFrom}
                 clearable={false}
@@ -145,7 +145,7 @@ const LessonForm = () => {
                 w="100%"
               />
 
-              <DatePicker
+              <DatePickerInput
                 label="To"
                 value={dateTo}
                 clearable={false}

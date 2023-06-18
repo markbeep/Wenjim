@@ -51,7 +51,7 @@ const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
       <Modal
         opened={opened}
         onClose={close}
-        overlayBlur={2}
+        overlayProps={{ blur: 2 }}
         title="Detailed View"
       >
         {data.getDetailsList().length === 0 && "There's no lesson here"}
