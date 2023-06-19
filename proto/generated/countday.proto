@@ -180,7 +180,7 @@ message HistoryReply {
 
 message HistoryStatisticsReply {
     reserved 1;
-    /* the average amount of minutes before the event starts where it's full */
+    /* The average amount of minutes before the event starts where it's full */
     float averageMinutes = 2;
     float averagePlacesFree = 3;
     float averagePlacesMax = 4;
@@ -208,7 +208,20 @@ WEEKLY
 */
 
 service Weekly {
+    /* The amount of places taken up per slot in a weekly basis */
     rpc Weekly(HistoryIdRequest) returns (WeeklyReply) {}
+
+    /* The amount of free spaces. Last element being when the event starts */
+    rpc FreeGraph(HistoryIdRequest) returns (FreeGraphReply) {}
+}
+
+message Point {
+    sint32 x = 1;
+    sint32 y = 2;
+}
+
+message FreeGraphReply {
+    repeated Point data = 1;
 }
 
 message WeeklyDetails {

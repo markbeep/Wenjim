@@ -124,7 +124,7 @@ const LessonForm = ({
           <Text>{dateTo.toDateString()}</Text>
         </Flex>
 
-        <Accordion variant="contained" mt="sm" chevronPosition="left">
+        <Accordion variant="separated" mt="sm" chevronPosition="left">
           <Accordion.Item value="settings">
             <Accordion.Control>
               <Text>Search Parameters</Text>

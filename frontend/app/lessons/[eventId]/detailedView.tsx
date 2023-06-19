@@ -4,7 +4,7 @@ import LineChart from "./lineChart";
 
 export default function DetailedView({ data }: { data: WeeklyHour }) {
   return (
-    <Accordion>
+    <Accordion variant="separated">
       {data.getDetailsList().length === 0 && "There's no lesson here"}
       {data.getDetailsList().map((d, i) => (
         <Accordion.Item value={i.toString()} key={i}>
