@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Text,
   Divider,
   Tabs,
   Center,
@@ -20,7 +19,7 @@ import { useSearchParams } from "next/navigation";
 export default function Lesson({ params }: { params: { eventId: string } }) {
   const searchParams = useSearchParams();
   const theme = useMantineTheme();
-  const [wide] = useResize(theme.breakpoints.md);
+  const [wide] = useResize(theme.breakpoints.md, true);
   const eventId = Number(params.eventId);
 
   const dateFrom = new Date(searchParams.get("dateFrom") || "2022-01-01");
@@ -36,7 +35,6 @@ export default function Lesson({ params }: { params: { eventId: string } }) {
         <Tabs.List mb="sm">
           <Tabs.Tab value="overview">Overview</Tabs.Tab>
           <Tabs.Tab value="history">History</Tabs.Tab>
-          <Tabs.Tab value="signup">Signup Speed</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="overview">
@@ -56,12 +54,6 @@ export default function Lesson({ params }: { params: { eventId: string } }) {
 
         <Tabs.Panel value="history">
           <HistoryTable eventId={eventId} dateFrom={dateFrom} dateTo={dateTo} />
-        </Tabs.Panel>
-
-        <Tabs.Panel value="signup">
-          <Center>
-            <Text c="dimmed">Coming soon...</Text>
-          </Center>
         </Tabs.Panel>
       </Tabs>
     </>

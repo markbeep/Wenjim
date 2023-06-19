@@ -42,7 +42,6 @@ const HistoryTable = ({
     isFetching,
     hasNextPage,
     fetchNextPage,
-    refetch,
   } = useHistoryById(eventId, dateFrom, dateTo, pageSize, orderBy, descend);
 
   const handleSortClick = (d: HistoryPageIdRequest.SORT) => {
@@ -54,18 +53,10 @@ const HistoryTable = ({
     }
   };
 
-  useEffect(() => {
-    refetch();
-  }, [orderBy, descend, refetch]);
-
   const ths = (size: number) => (
     <tr>
       <th>{size} rows</th>
-      <th
-        className={
-          orderBy === HistoryPageIdRequest.SORT.DATE ? `bg-neutral-content` : ""
-        }
-      >
+      <th>
         <button onClick={() => handleSortClick(HistoryPageIdRequest.SORT.DATE)}>
           <Flex justify="center" direction="row" align="center">
             <Text mr="sm">DATE</Text>
@@ -74,11 +65,7 @@ const HistoryTable = ({
           </Flex>
         </button>
       </th>
-      <th
-        className={
-          orderBy === HistoryPageIdRequest.SORT.FREE ? `bg-neutral-content` : ""
-        }
-      >
+      <th>
         <button onClick={() => handleSortClick(HistoryPageIdRequest.SORT.FREE)}>
           <Flex justify="center" direction="row" align="center">
             <Text mr="sm">SPOTS FREE</Text>
@@ -87,13 +74,7 @@ const HistoryTable = ({
           </Flex>
         </button>
       </th>
-      <th
-        className={
-          orderBy === HistoryPageIdRequest.SORT.TOTAL
-            ? `bg-neutral-content`
-            : ""
-        }
-      >
+      <th>
         <button
           onClick={() => handleSortClick(HistoryPageIdRequest.SORT.TOTAL)}
         >

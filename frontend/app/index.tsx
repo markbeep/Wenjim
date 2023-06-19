@@ -85,7 +85,7 @@ export default function Index() {
             maw="60rem"
             onChange={v => setSearch(v.target.value)}
             autoFocus
-            style={{ fontSize: 16 }}
+            sx={{ fontSize: 16 }}
           />
         </FocusTrap>
 

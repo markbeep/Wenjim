@@ -8,14 +8,14 @@ import {
   useMantineTheme,
   Center,
   Modal,
-  Loader,
   useMantineColorScheme,
+  Skeleton,
 } from "@mantine/core";
-import React, { useState } from "react";
+import React from "react";
 import { useWeekly } from "../../../api/grpc";
 import { WeeklyHour } from "../../../generated/countday_pb";
-import { useRouter } from "next/navigation";
 import { useDisclosure } from "@mantine/hooks";
+import DetailedView from "./detailedView";
 
 const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
   const theme = useMantineTheme();
@@ -54,43 +54,7 @@ const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
         overlayProps={{ blur: 2 }}
         title="Detailed View"
       >
-        {data.getDetailsList().length === 0 && "There's no lesson here"}
-        {data.getDetailsList().map((d, i) => (
-          <Container key={i}>
-            {i > 0 && <Divider size="sm" />}
-            <Flex
-              w="100%"
-              direction="row"
-              align="center"
-              justify="center"
-              my="sm"
-            >
-              <Flex
-                w="100%"
-                direction="column"
-                align="flex-start"
-                justify="flex-start"
-                mr="sm"
-              >
-                <Text>Time</Text>
-                <Text>Average Free Spots</Text>
-                <Text>Average Total Spots</Text>
-              </Flex>
-              <Flex
-                w="100%"
-                direction="column"
-                align="flex-end"
-                justify="flex-start"
-              >
-                <Text>
-                  {d.getTimefrom()} - {d.getTimeto()}
-                </Text>
-                <Text>{Math.round(d.getAvgfree())}</Text>
-                <Text>{Math.round(d.getAvgmax())}</Text>
-              </Flex>
-            </Flex>
-          </Container>
-        ))}
+        <DetailedView data={data} />
       </Modal>
       <button style={{ width: "100%", height: "100%" }} onClick={open}>
         <Container
@@ -125,9 +89,8 @@ const Weekly = ({
   return (
     <Container fluid>
       <Center>
-        {!data && <Loader variant="dots" color="gray" />}
-        {data && (
-          <ScrollArea type="auto">
+        <ScrollArea type="auto">
+          <Skeleton visible={!data}>
             <SimpleGrid cols={8} w={800}>
               <Center>Time</Center>
               <Center>Monday</Center>
@@ -153,50 +116,57 @@ const Weekly = ({
                 }
               </Flex>
               <Flex direction="column" align="center">
-                {data.getMondayList().map((e, i) => (
-                  <Hour key={"monday" + i} data={e} />
-                ))}
+                {data &&
+                  data
+                    .getMondayList()
+                    .map((e, i) => <Hour key={"monday" + i} data={e} />)}
               </Flex>
               <Flex direction="column" align="center">
-                {data.getTuesdayList().map((e, i) => (
-                  <Hour key={"tuesday" + i} data={e} />
-                ))}
+                {data &&
+                  data
+                    .getTuesdayList()
+                    .map((e, i) => <Hour key={"tuesday" + i} data={e} />)}
               </Flex>
               <Flex direction="column" align="center">
-                {data.getWednesdayList().map((e, i) => (
-                  <Hour key={"wednesday" + i} data={e} />
-                ))}
+                {data &&
+                  data
+                    .getWednesdayList()
+                    .map((e, i) => <Hour key={"wednesday" + i} data={e} />)}
               </Flex>
               <Flex direction="column" align="center">
-                {data.getThursdayList().map((e, i) => (
-                  <Hour key={"thursday" + i} data={e} />
-                ))}
+                {data &&
+                  data
+                    .getThursdayList()
+                    .map((e, i) => <Hour key={"thursday" + i} data={e} />)}
               </Flex>
               <Flex direction="column" align="center">
-                {data.getFridayList().map((e, i) => (
-                  <Hour key={"friday" + i} data={e} />
-                ))}
+                {data &&
+                  data
+                    .getFridayList()
+                    .map((e, i) => <Hour key={"friday" + i} data={e} />)}
               </Flex>
               <Flex direction="column" align="center">
-                {data.getSaturdayList().map((e, i) => (
-                  <Hour key={"saturday" + i} data={e} />
-                ))}
+                {data &&
+                  data
+                    .getSaturdayList()
+                    .map((e, i) => <Hour key={"saturday" + i} data={e} />)}
               </Flex>
               <Flex direction="column" align="center">
-                {data.getSundayList().map((e, i) => (
-                  <Hour key={"sunday" + i} data={e} />
-                ))}
+                {data &&
+                  data
+                    .getSundayList()
+                    .map((e, i) => <Hour key={"sunday" + i} data={e} />)}
               </Flex>
             </SimpleGrid>
-            <Center>
-              {
-                <Text>
-                  Hourly average free spots. Click to view in more detail.
-                </Text>
-              }
-            </Center>
-          </ScrollArea>
-        )}
+          </Skeleton>
+          <Center>
+            {
+              <Text>
+                Hourly average free spots. Click to view in more detail.
+              </Text>
+            }
+          </Center>
+        </ScrollArea>
       </Center>
     </Container>
   );

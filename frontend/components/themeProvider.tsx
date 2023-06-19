@@ -1,11 +1,13 @@
+"use client";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import React from "react";
 import {
   ColorScheme,
   ColorSchemeProvider,
   MantineProvider,
+  createEmotionCache,
 } from "@mantine/core";
-import { Global } from "@emotion/react";
+import { useServerInsertedHTML } from "next/navigation";
 
 export enum Pages {
   home,
@@ -33,6 +35,18 @@ export default function ThemeProvider({ children }: Children) {
     }
   }, [toggleColorScheme]);
 
+  const cache = createEmotionCache({ key: "mantine" });
+  cache.compat = true;
+
+  useServerInsertedHTML(() => (
+    <style
+      data-emotion={`${cache.key} ${Object.keys(cache.inserted).join(" ")}`}
+      dangerouslySetInnerHTML={{
+        __html: Object.values(cache.inserted).join(" "),
+      }}
+    />
+  ));
+
   return (
     <ColorSchemeProvider
       colorScheme={colorScheme}
@@ -43,20 +57,9 @@ export default function ThemeProvider({ children }: Children) {
         withNormalizeCSS
         theme={{
           colorScheme,
-          fontFamily: "OpenSans, sans-serif",
         }}
+        emotionCache={cache}
       >
-        <Global
-          styles={[
-            {
-              "@font-face": {
-                fontFamily: "OpenSans",
-                src: "local('OpenSans'), url('OpenSans-Regular.ttf') format('truetype')",
-                fontDisplay: "swap",
-              },
-            },
-          ]}
-        />
         {children}
       </MantineProvider>
     </ColorSchemeProvider>
