@@ -21,15 +21,15 @@ import {
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { useEvents, usePing } from "../api/grpc";
 import { useDisclosure } from "@mantine/hooks";
 import { Event } from "../generated/countday_pb";
-import EventCard from "./eventCard";
+import EventCard from "../components/eventCard";
 
 const Shell = ({ children }: { children: ReactNode }) => {
   const [count, setCount] = useState(0);
-  const router = useRouter();
+  const pathname = usePathname();
   const { data } = useEvents();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const { data: time } = usePing();
@@ -47,7 +47,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
       const arr: number[] = JSON.parse(fav);
       setFavorites(events.filter(e => arr.includes(e.getId())));
     }
-  }, [data, opened]); // opened make's sure the list is updated when opened
+  }, [data, opened]); // 'opened' makes sure the list is updated when opened
 
   const removeFavorite = (id: number) => {
     const newFavorites = favorites.filter(e => e.getId() !== id);
@@ -61,12 +61,12 @@ const Shell = ({ children }: { children: ReactNode }) => {
       header={
         <Header
           height={60}
-          style={{
+          sx={{
             backgroundColor: "rgba(0,0,0,0)",
             border: 0,
             transition: "250ms ease",
+            backdropFilter: "blur(4px)",
           }}
-          className="backdrop-blur-sm"
           zIndex={100}
           pl="sm"
           pr="md"
@@ -77,7 +77,7 @@ const Shell = ({ children }: { children: ReactNode }) => {
                 <ActionIcon
                   variant="transparent"
                   onClick={() => {
-                    if (router.pathname === "/") {
+                    if (pathname === "/") {
                       setCount(c => (c += 1));
                     }
                   }}

@@ -148,7 +148,7 @@ export function useHistoryById(
       sortBy,
       descending,
     ],
-    queryFn: async ({ pageParam = 1 }) => {
+    queryFn: async ({ pageParam }) => {
       const promisified = promisify(historyClient.historyId).bind(
         historyClient,
       );
