@@ -109,6 +109,8 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
             .join(Trackings)
             .where(
                 Lessons.event_id == request.eventId,
+                Lessons.from_date >= request.dateFrom,
+                Lessons.from_date <= request.dateTo,
                 fn.to_char(fn.to_timestamp(Lessons.from_date), "HH24:MI")
                 == request.timeFrom,
                 fn.to_char(fn.to_timestamp(Lessons.to_date), "HH24:MI")
@@ -122,7 +124,7 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
 
         print(query)
         
-        print("SIZE", len(query), request.eventId, request.timeFrom, request.timeTo, request.weekday)
+        print("SIZE", len(query), request.eventId, request.timeFrom, request.timeTo, request.weekday, request.dateFrom, request.dateTo)
 
         return countday_pb2.FreeGraphReply(
             data=[countday_pb2.Point(x=x.hours_before, y=x.avg_free) for x in query]

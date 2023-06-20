@@ -256,6 +256,8 @@ export function useFreeGraph(
   timeFrom: string,
   timeTo: string,
   weekday: string,
+  dateFrom: Date,
+  dateTo: Date,
 ) {
   const { isError, isLoading, data } = useQuery(
     ["freegraph", eventId, timeFrom, timeTo, weekday],
@@ -266,6 +268,8 @@ export function useFreeGraph(
       req.setTimefrom(timeFrom);
       req.setTimeto(timeTo);
       req.setWeekday(weekday);
+      req.setDatefrom(Math.round(dateFrom.getTime() / 1e3));
+      req.setDateto(Math.round(dateTo.getTime() / 1e3));
       const resp = await promisified(req, {});
       return resp;
     },

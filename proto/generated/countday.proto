@@ -220,6 +220,8 @@ message SlotRequest {
     string timeFrom = 2;
     string timeTo = 3;
     string weekday = 4;
+    sint64 dateFrom = 5;
+    sint64 dateTo = 6;
 }
 
 message Point {
