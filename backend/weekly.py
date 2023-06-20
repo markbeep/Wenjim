@@ -15,7 +15,7 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
     def Weekly(self, request, context):
         database.connect(True)
         logging.info("Request for Weekly")
-        
+
         database.set_time_zone(TIMEZONE)
 
         # Gets the average free spaces per hour
@@ -65,24 +65,25 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
         for x in query:
             h = x.start_date.astimezone(tz).hour
             wd = day_names[x.start_date.weekday()]
-            data[wd][h].append(countday_pb2.WeeklyDetails(
-                timeFrom=x.start_date.astimezone(tz).strftime("%H:%M"),
-                timeTo=x.end_date.astimezone(tz).strftime("%H:%M"),
-                avgFree=x.avg_free,
-                avgMax=x.avg_max,
-                weekday=wd,
-            ))
+            data[wd][h].append(
+                countday_pb2.WeeklyDetails(
+                    timeFrom=x.start,
+                    timeTo=x.end,
+                    avgFree=x.avg_free,
+                    avgMax=x.avg_max,
+                    weekday=wd,
+                )
+            )
+        database.close()
 
         # an hour can have multiple details
         # if there's nothing in an hour, simply give out an empty list
         weekdays = {}
         for day, _ in data.items():
             weekdays[day] = [
-                countday_pb2.WeeklyHour(hour=h, details=data[day][h])
-                for h in range(24)
+                countday_pb2.WeeklyHour(hour=h, details=data[day][h]) for h in range(24)
             ]
 
-        database.close()
         return countday_pb2.WeeklyReply(
             monday=weekdays["monday"],
             tuesday=weekdays["tuesday"],
@@ -95,10 +96,16 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
 
     def FreeGraph(self, request, context):
         database.connect(True)
-        logging.info("Request for FreeGraph: %s, %s, %s, %s", request.eventId, request.timeFrom, request.timeTo, request.weekday)
-        
+        logging.info(
+            "Request for FreeGraph: %s, %s, %s, %s",
+            request.eventId,
+            request.timeFrom,
+            request.timeTo,
+            request.weekday,
+        )
+
         database.set_time_zone(TIMEZONE)
-        
+
         query = (
             Lessons.select(
                 ((Trackings.track_date - Lessons.from_date) / 3600).alias(
@@ -115,17 +122,15 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
                 == request.timeFrom,
                 fn.to_char(fn.to_timestamp(Lessons.to_date), "HH24:MI")
                 == request.timeTo,
-                fn.btrim(fn.lower(fn.to_char(fn.to_timestamp(Lessons.from_date), "Day")))
-                == str(request.weekday),
+                fn.btrim(
+                    fn.lower(fn.to_char(fn.to_timestamp(Lessons.from_date), "Day"))
+                )
+                == request.weekday,
             )
             .group_by((Trackings.track_date - Lessons.from_date) / 3600)
         )
+
+        resp = [countday_pb2.Point(x=x.hours_before, y=x.avg_free) for x in query]
         database.close()
 
-        print(query)
-        
-        print("SIZE", len(query), request.eventId, request.timeFrom, request.timeTo, request.weekday, request.dateFrom, request.dateTo)
-
-        return countday_pb2.FreeGraphReply(
-            data=[countday_pb2.Point(x=x.hours_before, y=x.avg_free) for x in query]
-        )
+        return countday_pb2.FreeGraphReply(data=resp)

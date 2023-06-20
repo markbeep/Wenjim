@@ -61,14 +61,14 @@ export default function FreeChart({
                   width={350}
                   height={200}
                   data={data?.getDataList().map(v => {
-                    return { x: v.getX(), "Places Free": v.getY() };
+                    return { x: v.getX(), "Spots Free": v.getY() };
                   })}
                 >
-                  <Bar dataKey="Places Free" fill={fg} />
+                  <Bar dataKey="Spots Free" fill={fg} />
                   <YAxis
-                    dataKey="Places Free"
+                    dataKey="Spots Free"
                     label={{
-                      value: "Average free spaces",
+                      value: "Average free spots",
                       angle: -90,
                       dx: -10,
                     }}
@@ -77,7 +77,7 @@ export default function FreeChart({
                     dataKey="x"
                     label={{
                       value: "Hours before slot",
-                      dy: 10,
+                      dy: 12,
                     }}
                   />
                   <Tooltip
