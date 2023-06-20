@@ -15,7 +15,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
     def HistoryId(self, request: countday_pb2.HistoryPageIdRequest, context):
         database.connect(True)
         logging.info("Request for HistoryId")
-        
+
         order_by = Lessons.from_date
         if request.sortBy == countday_pb2.HistoryPageIdRequest.Free:
             order_by = Trackings.places_free
@@ -23,7 +23,7 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             order_by = Lessons.places_max
         if request.descending:
             order_by = order_by.desc()
-        
+
         query = (
             Lessons.select(
                 Lessons.from_date,
@@ -40,7 +40,6 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             .order_by(order_by)
             .paginate(request.page + 1, request.size)
         )
-        database.close()
         response = [
             countday_pb2.HistoryRow(
                 date=round(x.from_date.astimezone(tz).timestamp()),
@@ -49,31 +48,32 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
             )
             for x in query
         ]
+        database.close()
         return countday_pb2.HistoryReply(rows=response)
 
     def TotalLessons(self, request, context):
         database.connect(True)
         logging.info("Request for TotalLessons")
-        tracked_lessons = Lessons.select(fn.COUNT("1").alias("tracked_lessons")).where(
+        query = Lessons.select(fn.COUNT("1").alias("tracked_lessons")).where(
             Lessons.event_id == request.eventId,
         )
+        resp = countday_pb2.TotalLessonsReply(totalLessons=query[0].tracked_lessons)
         database.close()
-        return countday_pb2.TotalLessonsReply(
-            totalLessons=tracked_lessons[0].tracked_lessons
-        )
+        return resp
 
     def TotalTrackings(self, request, context):
         database.connect(True)
         logging.info("Request for TotalTrackings")
-        trackings = (
+        query = (
             Lessons.select(fn.COUNT("1").alias("trackings"))
             .join(Trackings)
             .where(
                 Lessons.event_id == request.eventId,
             )
         )
+        resp = countday_pb2.TotalTrackingsReply(totalTrackings=query[0].trackings)
         database.close()
-        return countday_pb2.TotalTrackingsReply(totalTrackings=trackings[0].trackings)
+        return resp
 
     def EventStatistics(self, request, context):
         database.connect(True)

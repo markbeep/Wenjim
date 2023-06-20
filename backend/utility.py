@@ -21,8 +21,7 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
             .join(Lessons)  # to only show events with lessons
             .order_by(Events.sport.asc())
         )
-        database.close()
-        return countday_pb2.EventsReply(
+        resp = countday_pb2.EventsReply(
             events=[
                 countday_pb2.Event(
                     id=x.id,
@@ -34,6 +33,8 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
                 for x in query
             ]
         )
+        database.close()
+        return resp
 
     def SingleEvent(self, request, context):
         database.connect(True)
@@ -45,14 +46,15 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
             context.set_details("Invalid EventId")
             logging.error("Invalid EventId in 'SingleEvent'")
             return countday_pb2.Event()
-        database.close()
-        return countday_pb2.Event(
+        resp = countday_pb2.Event(
             id=query.id,
             sport=query.sport,
             title=query.title,
             location=query.location,
             niveau=query.niveau,
         )
+        database.close()
+        return resp
 
     def Locations(self, request, context):
         database.connect(True)
@@ -74,13 +76,11 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
                 Events.title == event.title,
             )
         )
+        resp = [
+            countday_pb2.LocationEvent(eventId=x.id, location=x.location) for x in query
+        ]
         database.close()
-        return countday_pb2.LocationsReply(
-            locations=[
-                countday_pb2.LocationEvent(eventId=x.id, location=x.location)
-                for x in query
-            ]
-        )
+        return countday_pb2.LocationsReply(locations=resp)
 
     def Titles(self, request, context):
         database.connect(True)
@@ -102,10 +102,9 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
                 Events.location == event.location,
             )
         )
+        resp = [countday_pb2.TitleEvent(eventId=x.id, title=x.title) for x in query]
         database.close()
-        return countday_pb2.TitleReply(
-            titles=[countday_pb2.TitleEvent(eventId=x.id, title=x.title) for x in query]
-        )
+        return countday_pb2.TitleReply(titles=resp)
 
     def MinMaxDate(self, request, context):
         database.connect(True)
@@ -114,14 +113,15 @@ class UtilityServicer(countday_pb2_grpc.UtilityServicer):
             fn.MIN(Lessons.from_date).alias("min"),
             fn.MAX(Lessons.to_date).alias("max"),
         )
+        mnt = query[0].min.timestamp()
+        mxt = query[0].max.timestamp()
         database.close()
-        return countday_pb2.MinMaxDateReply(
-            min=int(query[0].min.timestamp()), max=int(query[0].max.timestamp())
-        )
+        return countday_pb2.MinMaxDateReply(min=int(mnt), max=int(mxt))
 
     def LastScrape(self, request, context):
         logging.info("Request for LastScrape")
         database.connect(True)
         query = Trackings.select(fn.MAX(Trackings.track_date).alias("max"))
+        resp = query[0].max
         database.close()
-        return countday_pb2.LastScrapeReply(time=int(datetime.timestamp(query[0].max)))
+        return countday_pb2.LastScrapeReply(time=int(datetime.timestamp(resp)))
