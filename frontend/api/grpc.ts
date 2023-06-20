@@ -13,6 +13,7 @@ import {
   LastScrapeRequest,
   LocationsRequest,
   MinMaxDateRequest,
+  SlotRequest,
   SportsRequest,
   TitleRequest,
 } from "../generated/countday_pb";
@@ -241,6 +242,32 @@ export function useWeekly(eventId: number, dateFrom: Date, dateTo: Date) {
       const promisified = promisify(weeklyClient.weekly).bind(weeklyClient);
       const req = new HistoryIdRequest();
       req.setEventid(eventId);
+      req.setDatefrom(Math.round(dateFrom.getTime() / 1e3));
+      req.setDateto(Math.round(dateTo.getTime() / 1e3));
+      const resp = await promisified(req, {});
+      return resp;
+    },
+  );
+  return { isError, isLoading, data };
+}
+
+export function useFreeGraph(
+  eventId: number,
+  timeFrom: string,
+  timeTo: string,
+  weekday: string,
+  dateFrom: Date,
+  dateTo: Date,
+) {
+  const { isError, isLoading, data } = useQuery(
+    ["freegraph", eventId, timeFrom, timeTo, weekday],
+    async () => {
+      const promisified = promisify(weeklyClient.freeGraph).bind(weeklyClient);
+      const req = new SlotRequest();
+      req.setEventid(eventId);
+      req.setTimefrom(timeFrom);
+      req.setTimeto(timeTo);
+      req.setWeekday(weekday);
       req.setDatefrom(Math.round(dateFrom.getTime() / 1e3));
       req.setDateto(Math.round(dateTo.getTime() / 1e3));
       const resp = await promisified(req, {});

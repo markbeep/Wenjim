@@ -212,12 +212,21 @@ service Weekly {
     rpc Weekly(HistoryIdRequest) returns (WeeklyReply) {}
 
     /* The amount of free spaces. Last element being when the event starts */
-    rpc FreeGraph(HistoryIdRequest) returns (FreeGraphReply) {}
+    rpc FreeGraph(SlotRequest) returns (FreeGraphReply) {}
+}
+
+message SlotRequest {
+    sint32 eventId = 1;
+    string timeFrom = 2;
+    string timeTo = 3;
+    string weekday = 4;
+    sint64 dateFrom = 5;
+    sint64 dateTo = 6;
 }
 
 message Point {
     sint32 x = 1;
-    sint32 y = 2;
+    float y = 2;
 }
 
 message FreeGraphReply {

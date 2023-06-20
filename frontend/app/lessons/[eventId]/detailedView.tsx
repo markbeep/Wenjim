@@ -1,8 +1,18 @@
 import { Flex, Text, Accordion } from "@mantine/core";
 import { WeeklyHour } from "../../../generated/countday_pb";
-import LineChart from "./lineChart";
+import FreeChart from "./freeChart";
 
-export default function DetailedView({ data }: { data: WeeklyHour }) {
+export default function DetailedView({
+  eventId,
+  data,
+  dateFrom,
+  dateTo,
+}: {
+  eventId: number;
+  data: WeeklyHour;
+  dateFrom: Date;
+  dateTo: Date;
+}) {
   return (
     <Accordion variant="separated">
       {data.getDetailsList().length === 0 && "There's no lesson here"}
@@ -42,7 +52,14 @@ export default function DetailedView({ data }: { data: WeeklyHour }) {
             </Flex>
           </Accordion.Control>
           <Accordion.Panel>
-            <LineChart />
+            <FreeChart
+              eventId={eventId}
+              timeFrom={d.getTimefrom()}
+              timeTo={d.getTimeto()}
+              weekday={d.getWeekday()}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+            />
           </Accordion.Panel>
         </Accordion.Item>
       ))}

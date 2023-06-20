@@ -17,7 +17,17 @@ import { WeeklyHour } from "../../../generated/countday_pb";
 import { useDisclosure } from "@mantine/hooks";
 import DetailedView from "./detailedView";
 
-const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
+const Hour = ({
+  eventId,
+  data,
+  dateFrom,
+  dateTo,
+}: {
+  eventId: number;
+  data: WeeklyHour | undefined;
+  dateFrom: Date;
+  dateTo: Date;
+}) => {
   const theme = useMantineTheme();
   const { colorScheme } = useMantineColorScheme();
   const [opened, { open, close }] = useDisclosure(false);
@@ -54,7 +64,12 @@ const Hour = ({ data }: { data: WeeklyHour | undefined }) => {
         overlayProps={{ blur: 2 }}
         title="Detailed View"
       >
-        <DetailedView data={data} />
+        <DetailedView
+          eventId={eventId}
+          data={data}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+        />
       </Modal>
       <button style={{ width: "100%", height: "100%" }} onClick={open}>
         <Container
@@ -119,43 +134,99 @@ const Weekly = ({
                 {data &&
                   data
                     .getMondayList()
-                    .map((e, i) => <Hour key={"monday" + i} data={e} />)}
+                    .map((e, i) => (
+                      <Hour
+                        eventId={eventId}
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        key={"monday" + i}
+                        data={e}
+                      />
+                    ))}
               </Flex>
               <Flex direction="column" align="center">
                 {data &&
                   data
                     .getTuesdayList()
-                    .map((e, i) => <Hour key={"tuesday" + i} data={e} />)}
+                    .map((e, i) => (
+                      <Hour
+                        eventId={eventId}
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        key={"tuesday" + i}
+                        data={e}
+                      />
+                    ))}
               </Flex>
               <Flex direction="column" align="center">
                 {data &&
                   data
                     .getWednesdayList()
-                    .map((e, i) => <Hour key={"wednesday" + i} data={e} />)}
+                    .map((e, i) => (
+                      <Hour
+                        eventId={eventId}
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        key={"wednesday" + i}
+                        data={e}
+                      />
+                    ))}
               </Flex>
               <Flex direction="column" align="center">
                 {data &&
                   data
                     .getThursdayList()
-                    .map((e, i) => <Hour key={"thursday" + i} data={e} />)}
+                    .map((e, i) => (
+                      <Hour
+                        eventId={eventId}
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        key={"thursday" + i}
+                        data={e}
+                      />
+                    ))}
               </Flex>
               <Flex direction="column" align="center">
                 {data &&
                   data
                     .getFridayList()
-                    .map((e, i) => <Hour key={"friday" + i} data={e} />)}
+                    .map((e, i) => (
+                      <Hour
+                        eventId={eventId}
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        key={"friday" + i}
+                        data={e}
+                      />
+                    ))}
               </Flex>
               <Flex direction="column" align="center">
                 {data &&
                   data
                     .getSaturdayList()
-                    .map((e, i) => <Hour key={"saturday" + i} data={e} />)}
+                    .map((e, i) => (
+                      <Hour
+                        eventId={eventId}
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        key={"saturday" + i}
+                        data={e}
+                      />
+                    ))}
               </Flex>
               <Flex direction="column" align="center">
                 {data &&
                   data
                     .getSundayList()
-                    .map((e, i) => <Hour key={"sunday" + i} data={e} />)}
+                    .map((e, i) => (
+                      <Hour
+                        eventId={eventId}
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        key={"sunday" + i}
+                        data={e}
+                      />
+                    ))}
               </Flex>
             </SimpleGrid>
           </Skeleton>
