@@ -1,7 +1,8 @@
 "use client";
 
-import { Flex, SimpleGrid, Tabs, Title, rem } from "@mantine/core";
+import { Center, Flex, SimpleGrid, Tabs, Title, rem } from "@mantine/core";
 import { useMove } from "@mantine/hooks";
+import { IconMenu, IconMenu2 } from "@tabler/icons-react";
 import { useState } from "react";
 
 export default function Fullness() {
@@ -38,7 +39,7 @@ export default function Fullness() {
           style={{
             height: rem(500),
             width: rem(300),
-            backgroundColor: "darkgray",
+            backgroundColor: "#222222",
             position: "relative",
           }}
         >
@@ -47,12 +48,16 @@ export default function Fullness() {
               position: "absolute",
               left: 0,
               top: `${value.y * 100}%`,
-              height: rem(5),
+              height: rem(15),
               width: rem(300),
-              backgroundColor: "green",
+              backgroundColor: "#444444",
               zIndex: 1,
             }}
-          />
+          >
+            <Center>
+              <IconMenu2 size={14} />
+            </Center>
+          </div>
           <div
             style={{
               position: "absolute",
@@ -60,7 +65,7 @@ export default function Fullness() {
               top: `${value.y * 100}%`,
               height: rem(500 * (1 - value.y)),
               width: rem(300),
-              backgroundColor: "red",
+              backgroundColor: "#333333",
               overflow: "hidden",
             }}
           />
