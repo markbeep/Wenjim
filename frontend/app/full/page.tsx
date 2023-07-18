@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Center,
   Flex,
   SimpleGrid,
   Tabs,
@@ -11,19 +10,20 @@ import {
   rem,
 } from "@mantine/core";
 import { useMove } from "@mantine/hooks";
-import { IconMenu2, IconUser } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconUser } from "@tabler/icons-react";
+import { useCallback, useState } from "react";
 
 export default function Fullness() {
   const [value, setValue] = useState({ x: 0, y: 1 });
-  const { ref, active } = useMove(({ y }) => setValue({ x: 0, y }));
+  const { ref } = useMove(({ y }) => setValue({ x: 0, y }));
   const [sliderHeight, sliderWidth] = [500, 300];
 
-  const [people] = useState(
-    new Array(100)
-      .fill(0)
-      .map(_ => getRandomPos(sliderHeight, sliderWidth, 20)),
+  const bridsonCallback = useCallback(
+    () => getBridsonPoissonDisk(1, sliderHeight, sliderWidth, 10),
+    [sliderHeight, sliderWidth],
   );
+
+  const [people] = useState(bridsonCallback);
 
   const locations = [
     "Sport Center Polyterrasse",
@@ -61,25 +61,10 @@ export default function Fullness() {
           style={{
             height: rem(sliderHeight),
             width: rem(sliderWidth),
-            backgroundColor: `#222222`,
+            backgroundColor: `#555555`,
             position: "relative",
           }}
         >
-          {new Array(4).fill(0).map((_, i) => (
-            <div
-              key={`line-${i}`}
-              style={{
-                position: "absolute",
-                left: 0,
-                top: (i / 4) * sliderHeight,
-                height: rem(3),
-                width: rem(sliderWidth),
-                backgroundColor: "#111111",
-                zIndex: 5,
-              }}
-            />
-          ))}
-
           {people.map(({ x, y }, i) => (
             <Transition
               key={i}
@@ -100,18 +85,14 @@ export default function Fullness() {
             style={{
               position: "absolute",
               left: 0,
-              top: `calc(${value.y * 100}%)`,
+              top: `${value.y * 100}%`,
               height: rem(30),
               width: rem(sliderWidth),
               opacity: 0.3,
               backgroundColor: "#444444",
               zIndex: 50,
             }}
-          >
-            <Center>
-              <IconMenu2 size={30} />
-            </Center>
-          </div>
+          />
           <div
             style={{
               position: "absolute",
@@ -128,13 +109,84 @@ export default function Fullness() {
   );
 }
 
-function getRandomPos(
+function getBridsonPoissonDisk(
+  k: number,
   sliderHeight: number,
   sliderWidth: number,
   iconSize: number,
-): { x: number; y: number } {
-  return {
-    x: Math.round(Math.random() * (sliderWidth - 2 * iconSize) + iconSize),
-    y: Math.round(Math.random() * (sliderHeight - 2 * iconSize) + iconSize),
-  };
+): { x: number; y: number }[] {
+  let active = [0];
+  let grid = new Array(sliderHeight * sliderWidth).fill(false);
+  const indexToCoords = (i: number) => ({
+    y: Math.floor(i / sliderWidth),
+    x: grid.length - Math.floor(i / sliderWidth),
+  });
+  let index = active[0];
+
+  while (active.length > 0) {
+    const newPoint = getNewPoint(
+      indexToCoords(index),
+      grid,
+      k,
+      sliderWidth,
+      iconSize,
+    );
+    if (newPoint === null) {
+      active = active.filter(v => v === index);
+    } else {
+      active.push(newPoint);
+      index = newPoint;
+    }
+  }
+
+  return grid.map((_, i) => indexToCoords(i));
+}
+
+function getNewPoint(
+  point: { x: number; y: number },
+  grid: boolean[],
+  k: number,
+  sliderWidth: number,
+  iconSize: number,
+): null | number {
+  for (let j = 0; j < k; j++) {
+    const rad = Math.random() * 2 * Math.PI;
+    const radius = ((Math.random() + 1) * iconSize) / 2;
+    const x = Math.round(radius * Math.sin(rad) + point.x);
+    const y = Math.round(radius * Math.cos(rad) + point.y);
+    if (x + y * sliderWidth >= grid.length || x + y * sliderWidth < 0) continue;
+
+    // check if the point has enough space
+    if (isValidPoint(point, iconSize, grid, sliderWidth)) {
+      return x + y * sliderWidth;
+    }
+  }
+  return null;
+}
+
+function isValidPoint(
+  point: { x: number; y: number },
+  iconSize: number,
+  grid: boolean[],
+  sliderWidth: number,
+): boolean {
+  const radius = Math.round(iconSize / 2);
+  for (let ix = point.x - radius; ix < point.x + radius; ix++) {
+    for (let iy = point.y - radius; iy < point.y + radius; iy++) {
+      if (!grid[ix + iy * sliderWidth]) continue; // no point here (false or undefined)
+      if (
+        grid[ix + iy * sliderWidth] &&
+        dist2({ x: ix, y: iy }, point) < radius
+      )
+        return false;
+    }
+  }
+  return true;
+}
+
+function dist2(
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+): number {
+  return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 }
