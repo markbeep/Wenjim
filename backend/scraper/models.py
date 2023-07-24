@@ -90,3 +90,11 @@ class AverageStatisticsView(BaseModel):
 
     class Meta:
         db_table = "average_statistics_view"
+
+class LatestTrackingView(BaseModel):
+        lesson = ForeignKeyField(Lessons, backref="latest_tracking")
+        track_date = TimestampField()
+        places_free = IntegerField()
+
+        class Meta:
+            table_name = "latest_tracking_view"

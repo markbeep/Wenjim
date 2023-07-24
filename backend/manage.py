@@ -18,7 +18,7 @@ def main():
         print(
             "No command given. Current commands:\n"
             + "  - migrate      Runs all unapplied migrations\n"
-            + "  - migrate      Reverts the last migration\n"
+            + "  - rollback      Reverts the last migration\n"
             + "  - create NAME  Creates a new migration with the given NAME\n"
             + "  - testdata     Fill the database with junk entries to test queries"
         )
