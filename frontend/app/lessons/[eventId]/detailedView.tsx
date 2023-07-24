@@ -36,6 +36,7 @@ export default function DetailedView({
                 <Text>Time</Text>
                 <Text>Average Free Spots</Text>
                 <Text>Average Total Spots</Text>
+                <Text>Average Free</Text>
               </Flex>
               <Flex
                 w="100%"
@@ -48,6 +49,9 @@ export default function DetailedView({
                 </Text>
                 <Text>{Math.round(d.getAvgfree())}</Text>
                 <Text>{Math.round(d.getAvgmax())}</Text>
+                <Text>
+                  {Math.round((10000 * d.getAvgfree()) / d.getAvgmax()) / 100}%
+                </Text>
               </Flex>
             </Flex>
           </Accordion.Control>
