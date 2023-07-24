@@ -163,6 +163,8 @@ def add_to_db(entries: list):
     # refresh materialized view
     database.execute_sql(
         "REFRESH MATERIALIZED VIEW CONCURRENTLY average_statistics_view;")
+    database.execute_sql(
+        "REFRESH MATERIALIZED VIEW CONCURRENTLY latest_tracking_view;")
     database.close()
     print(f"Successfully inserted/updated {len(entries)} entries into the db")
 

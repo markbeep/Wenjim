@@ -1,12 +1,11 @@
 import logging
 import time
 
-from peewee import Tuple, fn
+from peewee import fn
 from pytz import timezone
 
 from generated import countday_pb2, countday_pb2_grpc
-from scraper.models import AverageStatisticsView, Events, Lessons, Trackings, database
-from util import LATEST_TRACKING
+from scraper.models import AverageStatisticsView, Events, Lessons, Trackings, LatestTrackingView, database
 
 tz = timezone("Europe/Zurich")
 
@@ -18,21 +17,20 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
 
         order_by = Lessons.from_date
         if request.sortBy == countday_pb2.HistoryPageIdRequest.Free:
-            order_by = Trackings.places_free
+            order_by = LatestTrackingView.places_free
         elif request.sortBy == countday_pb2.HistoryPageIdRequest.Total:
             order_by = Lessons.places_max
         if request.descending:
             order_by = order_by.desc()
 
         query = (
-            Lessons.select(
+            LatestTrackingView.select(
                 Lessons.from_date,
                 Lessons.places_max,
-                Trackings.places_free,
+                LatestTrackingView.places_free,
             )
-            .join(Trackings)
+            .join(Lessons)
             .where(
-                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
                 Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
@@ -42,9 +40,9 @@ class HistoryServicer(countday_pb2_grpc.HistoryServicer):
         )
         response = [
             countday_pb2.HistoryRow(
-                date=round(x.from_date.astimezone(tz).timestamp()),
-                placesMax=x.places_max,
-                placesFree=x.trackings.places_free,
+                date=round(x.lesson.from_date.astimezone(tz).timestamp()),
+                placesMax=x.lesson.places_max,
+                placesFree=x.places_free,
             )
             for x in query
         ]

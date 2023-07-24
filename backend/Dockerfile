@@ -35,7 +35,7 @@ COPY backend/manage.py .
 COPY backend/migrations/ /app/migrations
 
 COPY backend/scraper/models.py scraper/models.py
-COPY backend/server.py backend/history.py backend/utility.py backend/weekly.py backend/util.py ./
+COPY backend/server.py backend/history.py backend/utility.py backend/weekly.py ./
 
 EXPOSE 5000
 

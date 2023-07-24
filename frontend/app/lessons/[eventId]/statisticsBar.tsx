@@ -1,24 +1,16 @@
 import { Flex, Grid, Title, Text, Tooltip, Skeleton } from "@mantine/core";
 import React from "react";
-import {
-  useEventStatistics,
-  useTotalLessons,
-  useTotalTrackings,
-} from "../../../api/grpc";
+import { HistoryStatisticsReply, TotalLessonsReply, TotalTrackingsReply } from "../../../generated/countday_pb";
 
 const StatisticsBar = ({
-  eventId,
-  dateFrom,
-  dateTo,
+  stats,
+  totalLessons,
+  totalTrackings,
 }: {
-  eventId: number;
-  dateFrom: Date;
-  dateTo: Date;
+  stats: HistoryStatisticsReply,
+  totalLessons: TotalLessonsReply,
+  totalTrackings: TotalTrackingsReply
 }) => {
-  const { data: stats } = useEventStatistics(eventId, dateFrom, dateTo);
-  const { data: totalLessons } = useTotalLessons(eventId, dateFrom, dateTo);
-  const { data: totalTrackings } = useTotalTrackings(eventId, dateFrom, dateTo);
-
   const statCard = (
     header: string | undefined,
     text: string,

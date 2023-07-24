@@ -4,8 +4,7 @@ from peewee import Tuple, fn
 from pytz import timezone
 
 from generated import countday_pb2, countday_pb2_grpc
-from scraper.models import Lessons, Trackings, database
-from util import LATEST_TRACKING
+from scraper.models import Lessons, Trackings, LatestTrackingView, database
 
 TIMEZONE = "Europe/Zurich"
 tz = timezone(TIMEZONE)
@@ -21,7 +20,7 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
         # Gets the average free spaces per hour
         query = (
             Lessons.select(
-                fn.AVG(Trackings.places_free).alias("avg_free"),
+                fn.AVG(LatestTrackingView.places_free).alias("avg_free"),
                 fn.AVG(Lessons.places_max).alias("avg_max"),
                 fn.MIN(Lessons.from_date).alias("start_date"),
                 fn.MIN(Lessons.to_date).alias("end_date"),
@@ -30,9 +29,8 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
                 ),
                 fn.to_char(fn.to_timestamp(Lessons.to_date), "HH24:MI").alias("end"),
             )
-            .join(Trackings)
+            .join(LatestTrackingView)
             .where(
-                Tuple(Lessons.id, Trackings.id).in_(LATEST_TRACKING),
                 Lessons.event_id == request.eventId,
                 Lessons.from_date >= request.dateFrom,
                 Lessons.from_date <= request.dateTo,
@@ -46,7 +44,6 @@ class WeeklyServicer(countday_pb2_grpc.WeeklyServicer):
                 fn.to_char(fn.to_timestamp(Lessons.from_date), "HH24:MI"),
             )
         )
-
         data = {}
         day_names = [
             "monday",
