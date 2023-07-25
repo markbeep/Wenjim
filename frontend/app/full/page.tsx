@@ -12,6 +12,7 @@ import {
 import { useMove } from "@mantine/hooks";
 import { IconUser } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
+import getBridsonPoissonDisk from "./poissonDisk";
 
 export default function Fullness() {
   const [value, setValue] = useState({ x: 0, y: 1 });
@@ -107,86 +108,4 @@ export default function Fullness() {
       </Flex>
     </>
   );
-}
-
-function getBridsonPoissonDisk(
-  k: number,
-  sliderHeight: number,
-  sliderWidth: number,
-  iconSize: number,
-): { x: number; y: number }[] {
-  let active = [0];
-  let grid = new Array(sliderHeight * sliderWidth).fill(false);
-  const indexToCoords = (i: number) => ({
-    y: Math.floor(i / sliderWidth),
-    x: grid.length - Math.floor(i / sliderWidth),
-  });
-  let index = active[0];
-
-  while (active.length > 0) {
-    const newPoint = getNewPoint(
-      indexToCoords(index),
-      grid,
-      k,
-      sliderWidth,
-      iconSize,
-    );
-    if (newPoint === null) {
-      active = active.filter(v => v === index);
-    } else {
-      active.push(newPoint);
-      index = newPoint;
-    }
-  }
-
-  return grid.map((_, i) => indexToCoords(i));
-}
-
-function getNewPoint(
-  point: { x: number; y: number },
-  grid: boolean[],
-  k: number,
-  sliderWidth: number,
-  iconSize: number,
-): null | number {
-  for (let j = 0; j < k; j++) {
-    const rad = Math.random() * 2 * Math.PI;
-    const radius = ((Math.random() + 1) * iconSize) / 2;
-    const x = Math.round(radius * Math.sin(rad) + point.x);
-    const y = Math.round(radius * Math.cos(rad) + point.y);
-    if (x + y * sliderWidth >= grid.length || x + y * sliderWidth < 0) continue;
-
-    // check if the point has enough space
-    if (isValidPoint(point, iconSize, grid, sliderWidth)) {
-      return x + y * sliderWidth;
-    }
-  }
-  return null;
-}
-
-function isValidPoint(
-  point: { x: number; y: number },
-  iconSize: number,
-  grid: boolean[],
-  sliderWidth: number,
-): boolean {
-  const radius = Math.round(iconSize / 2);
-  for (let ix = point.x - radius; ix < point.x + radius; ix++) {
-    for (let iy = point.y - radius; iy < point.y + radius; iy++) {
-      if (!grid[ix + iy * sliderWidth]) continue; // no point here (false or undefined)
-      if (
-        grid[ix + iy * sliderWidth] &&
-        dist2({ x: ix, y: iy }, point) < radius
-      )
-        return false;
-    }
-  }
-  return true;
-}
-
-function dist2(
-  p1: { x: number; y: number },
-  p2: { x: number; y: number },
-): number {
-  return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 }
