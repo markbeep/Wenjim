@@ -12,8 +12,7 @@ import {
   Skeleton,
 } from "@mantine/core";
 import React from "react";
-import { useWeekly } from "../../../api/grpc";
-import { WeeklyHour } from "../../../generated/countday_pb";
+import { WeeklyHour, WeeklyReply } from "../../../generated/countday_pb";
 import { useDisclosure } from "@mantine/hooks";
 import DetailedView from "./detailedView";
 
@@ -94,13 +93,13 @@ const Weekly = ({
   eventId,
   dateFrom,
   dateTo,
+  data
 }: {
   eventId: number;
   dateFrom: Date;
   dateTo: Date;
+  data: WeeklyReply
 }) => {
-  const { data } = useWeekly(eventId, dateFrom, dateTo);
-
   return (
     <Container fluid>
       <Center>

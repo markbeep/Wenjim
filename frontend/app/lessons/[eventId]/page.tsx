@@ -7,6 +7,7 @@ import {
   Flex,
   ScrollArea,
   useMantineTheme,
+  Loader,
 } from "@mantine/core";
 import React from "react";
 import StatisticsBar from "./statisticsBar";
@@ -15,6 +16,12 @@ import Weekly from "./weekly";
 import HistoryTable from "./historyTable";
 import useResize from "../../../components/resize";
 import { useSearchParams } from "next/navigation";
+import {
+  useEventStatistics,
+  useTotalLessons,
+  useTotalTrackings,
+  useWeekly,
+} from "../../../api/grpc";
 
 export default function Lesson({ params }: { params: { eventId: string } }) {
   const searchParams = useSearchParams();
@@ -24,6 +31,31 @@ export default function Lesson({ params }: { params: { eventId: string } }) {
 
   const dateFrom = new Date(searchParams.get("dateFrom") || "2022-01-01");
   const dateTo = new Date(searchParams.get("dateTo") || "2030-12-31");
+
+  const { data: stats, isLoading: statsLoading } = useEventStatistics(
+    eventId,
+    dateFrom,
+    dateTo,
+  );
+  const { data: totalLessons, isLoading: totalLessonsLoading } =
+    useTotalLessons(eventId, dateFrom, dateTo);
+  const { data: totalTrackings, isLoading: totalTrackingsLoading } =
+    useTotalTrackings(eventId, dateFrom, dateTo);
+  const { data: weekly, isLoading: weeklyLoading } = useWeekly(
+    eventId,
+    dateFrom,
+    dateTo,
+  );
+
+  const isLoading =
+    !stats ||
+    !totalLessons ||
+    !totalTrackings ||
+    !weekly ||
+    statsLoading ||
+    totalLessonsLoading ||
+    totalTrackingsLoading ||
+    weeklyLoading;
 
   return (
     <>
@@ -39,16 +71,25 @@ export default function Lesson({ params }: { params: { eventId: string } }) {
 
         <Tabs.Panel value="overview">
           <Center>
-            <Flex direction={wide ? "row" : "column"} align="center">
-              <StatisticsBar
-                eventId={eventId}
-                dateFrom={dateFrom}
-                dateTo={dateTo}
-              />
-              <ScrollArea maw="100vw">
-                <Weekly eventId={eventId} dateFrom={dateFrom} dateTo={dateTo} />
-              </ScrollArea>
-            </Flex>
+            {isLoading ? (
+              <Loader />
+            ) : (
+              <Flex direction={wide ? "row" : "column"} align="center">
+                <StatisticsBar
+                  stats={stats}
+                  totalLessons={totalLessons}
+                  totalTrackings={totalTrackings}
+                />
+                <ScrollArea maw="100vw">
+                  <Weekly
+                    eventId={eventId}
+                    dateFrom={dateFrom}
+                    dateTo={dateTo}
+                    data={weekly}
+                  />
+                </ScrollArea>
+              </Flex>
+            )}
           </Center>
         </Tabs.Panel>
 

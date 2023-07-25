@@ -42,7 +42,8 @@ export default function FreeChart({
   useEffect(() => {
     setBg(colorScheme === "dark" ? dark : light);
     setFg(colorScheme === "dark" ? light : dark);
-  }, [theme]);
+  }, [theme, colorScheme, dark, light]);
+
   return (
     <>
       <ScrollArea>
