@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <PlausibleProvider
-          domain="wenjim.markc.su"
+          domain={process.env.HOST ?? ""}
           customDomain="https://plausible.markc.su"
         />
       </head>
