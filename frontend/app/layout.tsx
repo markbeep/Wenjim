@@ -21,6 +21,7 @@ export default function RootLayout({
           domain={process.env.HOST ?? ""}
           customDomain="https://plausible.markc.su"
         />
+        <meta name="host" content={process.env.HOST} />
       </head>
       <body>
         <ThemeProvider>
