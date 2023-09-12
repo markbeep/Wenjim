@@ -2,6 +2,9 @@ FROM node:18-bullseye-slim as build-stage
 
 WORKDIR /app
 
+# envsubst
+RUN apt-get update && apt-get install -y gettext-base
+
 COPY frontend/package*.json /app/
 RUN npm install --omit=dev
 COPY proto /proto
@@ -11,4 +14,4 @@ RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+ENTRYPOINT sh entrypoint.sh

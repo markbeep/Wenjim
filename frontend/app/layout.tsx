@@ -1,37 +1,24 @@
-"use client";
-
 import "../styles/globals.css";
-import ThemeProvider from "../components/themeProvider";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
-import React, { useState } from "react";
-import Shell from "./shell";
+import React from "react";
 import PlausibleProvider from "next-plausible";
+import Provider from "./provider";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [queryClient] = useState(() => new QueryClient());
   return (
     <html lang="en">
       <head>
         <PlausibleProvider
-          domain={process.env.HOST ?? ""}
+          domain="wenjim.markc.su" // TODO: make dynamic with env variables
           customDomain="https://plausible.markc.su"
         />
         <meta name="host" content={process.env.HOST} />
       </head>
       <body>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <Shell>
-              {children}
-              <ReactQueryDevtools initialIsOpen={false} />
-            </Shell>
-          </QueryClientProvider>
-        </ThemeProvider>
+        <Provider>{children}</Provider>
       </body>
     </html>
   );
