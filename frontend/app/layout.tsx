@@ -10,13 +10,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <PlausibleProvider
-          domain="wenjim.markc.su" // TODO: make dynamic with env variables
-          customDomain="https://plausible.markc.su"
-        />
-        <meta name="host" content={process.env.HOST} />
-      </head>
+      <PlausibleProvider domain={process.env.HOST ?? ""} />
+      <meta name="host" content={process.env.HOST} />
       <body>
         <Provider>{children}</Provider>
       </body>
