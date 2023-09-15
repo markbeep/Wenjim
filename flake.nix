@@ -29,7 +29,7 @@
             stdenv.cc.cc.lib
             python310
             poetry
-            nodejs-18_x
+            nodejs_20
 
             (mkPoetryEnv
               {
