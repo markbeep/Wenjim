@@ -23,6 +23,8 @@
         "@mantine/spotlight": "^6.0.13",
         "@next/bundle-analyzer": "^13.4.6",
         "@tabler/icons-react": "^2.22.0",
+        "@tanstack/react-query": "^4.0.5",
+        "@tanstack/react-query-devtools": "^4.35.3",
         "@types/google-protobuf": "^3.15.6",
         "@types/node": "^20.3.1",
         "@types/react": "^18.2.12",
@@ -43,7 +45,6 @@
         "react-dom": "18.2.0",
         "react-ga": "^3.3.1",
         "react-infinite-scroller": "^1.2.6",
-        "@tanstack/react-query": "^4.0.5",
         "recharts": "^2.7.1",
         "tailwindcss": "^3.3.2",
         "typescript": "^5.1.3"
