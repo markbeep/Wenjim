@@ -10,8 +10,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <PlausibleProvider domain={process.env.HOST ?? ""} />
-      <meta name="host" content={process.env.HOST} />
+      <PlausibleProvider domain={process.env.HOST ?? "wenjim.markc.su"} />
+      <meta name="host" content={process.env.HOST ?? "wenjim.markc.su"} />
       <body>
         <Provider>{children}</Provider>
       </body>

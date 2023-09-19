@@ -11,7 +11,7 @@ of the specific directory. The general requirements are:
   - Node LTS (>=16)
   - npm
 - Backend
-  - Python 3.10
+  - Python 3.11
   - [Poetry](https://python-poetry.org/) (package manager)
   - Docker Compose
 
