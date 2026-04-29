@@ -33,7 +33,7 @@
         "autoprefixer": "^10.4.14",
         "eslint": "^8.43.0",
         "eslint-config-next": "^13.4.6",
-        "fuzzysort": "^2.0.4",
+        "fuzzysort": "^3.0.0",
         "google-protobuf": "^3.21.2",
         "grpc-tools": "^1.12.4",
         "grpc-web": "^1.4.2",
