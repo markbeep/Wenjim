@@ -34,7 +34,7 @@
         "eslint": "^8.43.0",
         "eslint-config-next": "^13.4.6",
         "fuzzysort": "^2.0.4",
-        "google-protobuf": "^3.21.2",
+        "google-protobuf": "^4.0.0",
         "grpc-tools": "^1.12.4",
         "grpc-web": "^1.4.2",
         "next": "^13.4.6",
