@@ -31,7 +31,7 @@
         "@types/react-dom": "^18.2.5",
         "@types/react-infinite-scroller": "^1.2.3",
         "autoprefixer": "^10.4.14",
-        "eslint": "^8.43.0",
+        "eslint": "^10.0.0",
         "eslint-config-next": "^13.4.6",
         "fuzzysort": "^2.0.4",
         "google-protobuf": "^3.21.2",
